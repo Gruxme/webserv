@@ -31,7 +31,7 @@ int	main()
 		perror("socket create err");
 		exit(EXIT_FAILURE);
 	}
-	fcntl(mainSock, F_SETFL, O_NONBLOCK);
+	// fcntl(mainSock, F_SETFL, O_NONBLOCK);
 	if(setsockopt(mainSock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))){
 		perror("setsockopt err");
 		exit(EXIT_FAILURE);
@@ -55,8 +55,9 @@ int	main()
 
 	while (1)
 	{
+		bzero(&buff, 1025);
 		FD_ZERO(&readfds);
-
+		newSock = 0;
 		FD_SET(mainSock, &readfds);
 		max_sd = mainSock;
 
@@ -80,21 +81,22 @@ int	main()
 				exit(EXIT_FAILURE);
 			}
 		}
-		fcntl(newSock, F_SETFL, O_NONBLOCK);
-		std::string	ipAddr(inet_ntoa(address.sin_addr));
-		std::cout << "New connection, socket fd is: " << newSock << ", ip: " << ipAddr << ", port: " << ntohs(address.sin_port) << std::endl;
-		char *msg = "ECHO Daemon v1.0 \r\n";
-		if(send(newSock, msg, strlen(msg), 0) < 0){
-			perror("send err");
-		}
-
-		std::cout << "Welcome msg sent\n";
-		for (int i = 0; i < MAXCLIENTS; i++)
-		{
-			if(clientSocks[i] == 0){
-				clientSocks[i] = newSock;
-				std::cout << "adding to list of sockets as: " << i << std::endl;
-				break; 
+		// fcntl(newSock, F_SETFL, O_NONBLOCK);
+		if(newSock){
+			std::string ipAddr(inet_ntoa(address.sin_addr));
+			std::cout << "New connection, socket fd is: " << newSock << ", ip: " << ipAddr << ", port: " << ntohs(address.sin_port) << std::endl;
+			// std::string	msg("Connected to server \r\n");
+			// if (send(newSock, msg.c_str(), msg.length(), 0) < 0)
+			// 	perror("send err");
+			// std::cout << "Welcome msg sent\n";
+			for (int i = 0; i < MAXCLIENTS; i++)
+			{
+				if (clientSocks[i] == 0)
+				{
+					clientSocks[i] = newSock;
+					std::cout << "added to list of sockets as: " << i << std::endl;
+					break;
+				}
 			}
 		}
 		
@@ -108,12 +110,22 @@ int	main()
 					close(sd);
 					clientSocks[i] = 0;
 				}
-			}
-			else{
 				buff[valRead] = '\0';
-				send(sd, buff, strlen(buff), 0);
+				break ;
 			}
 		}
+		for (int i = 0; i < MAXCLIENTS; i++)
+		{
+			std::string buffer("HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 306\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n</body>\n</html>");
+			sd = clientSocks[i];
+			if(FD_ISSET(sd, &readfds)){
+				send(sd, buffer.c_str(), buffer.length(), 0);
+				close(sd);
+				std::cout << "response sent\n";
+				break ;
+			}
+		}
+		
 	}
 	return 0;
 }
