@@ -31,7 +31,7 @@ int	main()
 		perror("socket create err");
 		exit(EXIT_FAILURE);
 	}
-	// fcntl(mainSock, F_SETFL, O_NONBLOCK);
+	fcntl(mainSock, F_SETFL, O_NONBLOCK);
 	if(setsockopt(mainSock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))){
 		perror("setsockopt err");
 		exit(EXIT_FAILURE);
@@ -81,7 +81,7 @@ int	main()
 				exit(EXIT_FAILURE);
 			}
 		}
-		// fcntl(newSock, F_SETFL, O_NONBLOCK);
+		fcntl(newSock, F_SETFL, O_NONBLOCK);
 		if(newSock){
 			std::string ipAddr(inet_ntoa(address.sin_addr));
 			std::cout << "New connection, socket fd is: " << newSock << ", ip: " << ipAddr << ", port: " << ntohs(address.sin_port) << std::endl;
@@ -104,7 +104,7 @@ int	main()
 		{
 			sd = clientSocks[i];
 			if(FD_ISSET(sd, &readfds)){
-				if((valRead = read(sd, buff, 1024)) == 0){
+				if((valRead = recv(sd, buff, 1024, 0)) == 0){
 					getpeername(sd, (SA *)&address, (socklen_t*)&addrlen);
 					std::cout << "Host disconnected, ip: " << inet_ntoa(address.sin_addr) << ", port: " << ntohs(address.sin_port) << std::endl;
 					close(sd);
@@ -120,7 +120,7 @@ int	main()
 			sd = clientSocks[i];
 			if(FD_ISSET(sd, &readfds)){
 				send(sd, buffer.c_str(), buffer.length(), 0);
-				close(sd);
+				// close(sd);
 				std::cout << "response sent\n";
 				break ;
 			}
