@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2021/12/24 14:39:24 by abiari           ###   ########.fr       */
+/*   Updated: 2022/01/03 15:37:01 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,13 @@
 class sockets
 {
 	public:
-		sockets(unsigned short port): _sd(-1), _clients(), _port(port){
+		sockets(unsigned short port): _mainSd(-1), _clients(), _port(port){
 			int	opt = 1;
-			if((_sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+			if((_mainSd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 				throw socketErr("socket: ");
-			if(setsockopt(_sd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+			if(setsockopt(_mainSd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 				throw socketErr("setsockopt: ");
-			_maxSd = _sd;
+			_nsds = 1;
 		}
 		
 		sockets(const sockets& x){ 
@@ -38,45 +38,50 @@ class sockets
 		
 		virtual ~sockets(){
 			std::vector<int>::iterator it = _clients.begin(), ite = _clients.end();
-			close(_sd);
+			close(_mainSd);
 			while (it != ite){
 				close(*it);
 				it++;
 			}
 		}
 		sockets&	operator=(const sockets& x){
-			_sd = x._sd;
+			_mainSd = x._mainSd;
+			_nsds = x._nsds;
 			_clients = x._clients;
 			_port = x._port;
 			_address = x._address;
 			return *this;
 		}
 		void	bindSock(){
+			//check port if already bound
 			_address.sin_addr.s_addr = INADDR_ANY;
 			_address.sin_port = htons(_port);
 			_address.sin_family = AF_INET;
-			if(bind(_sd, (SA *)&_address, sizeof(_address)) < 0)
+			if(bind(_mainSd, (SA *)&_address, sizeof(_address)) < 0)
 				throw socketErr("bind: ");
 		}
 		void	listener(int maxLoad){
-			if(listen(_sd, maxLoad) < 0)
+			if(listen(_mainSd, maxLoad) < 0)
 				throw socketErr("Listen: ");
 			std::cout << "Socket listening on port " << _port << std::endl;
 		}
-		void	acceptClient(){
+		int		acceptClient(){
 			int	newClient = -1, addrlen = sizeof(_address);			
-			if((newClient = accept(_sd, (SA *)&_address, (socklen_t *)&addrlen)) < 0)
+			if((newClient = accept(_mainSd, (SA *)&_address, (socklen_t *)&addrlen)) < 0)
 				throw socketErr("accept: ");
-			if(newClient > _maxSd)
-				_maxSd = newClient;
+			std::cout << "new connection on port " << _port << std::endl;
+			_nsds++;
 			_clients.push_back(newClient);
+			return newClient;
 		}
 		void	setNonBlock(){
-			fcntl(_sd, F_SETFL, O_NONBLOCK);
+			//protect system call
+			fcntl(_mainSd, F_SETFL, O_NONBLOCK);
 		}
 		std::vector<int>	getClientsVec() {return _clients; }
-		int					MaxSd() {return _maxSd; }
-		int					getMainSock() {return _sd; }
+		int					getNumSds() {return _nsds; }
+		int					getMainSock() {return _mainSd; }
+		unsigned short		getPort() {return _port; }
 		struct sockaddr_in	getAddr() { return _address;}
 		class socketErr: public std::exception{
 			public:
@@ -90,7 +95,7 @@ class sockets
 				std::string	_errStr;
 		};
 	private:
-		int					_sd, _maxSd;
+		int					_mainSd, _nsds;
 		std::vector<int>	_clients;
 		unsigned short		_port;
 		struct sockaddr_in	_address;
