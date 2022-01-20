@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/01/03 15:37:01 by abiari           ###   ########.fr       */
+/*   Updated: 2022/01/13 19:06:53 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,8 @@ class sockets
 			std::cout << "Socket listening on port " << _port << std::endl;
 		}
 		int		acceptClient(){
-			int	newClient = -1, addrlen = sizeof(_address);			
+			int	newClient = -1, addrlen = sizeof(_address);
+			//can loop over accept and check errno if != EWOULDBLOCK
 			if((newClient = accept(_mainSd, (SA *)&_address, (socklen_t *)&addrlen)) < 0)
 				throw socketErr("accept: ");
 			std::cout << "new connection on port " << _port << std::endl;
@@ -78,7 +79,7 @@ class sockets
 			//protect system call
 			fcntl(_mainSd, F_SETFL, O_NONBLOCK);
 		}
-		std::vector<int>	getClientsVec() {return _clients; }
+		std::vector<int>&	getClientsVec() {return _clients; }
 		int					getNumSds() {return _nsds; }
 		int					getMainSock() {return _mainSd; }
 		unsigned short		getPort() {return _port; }

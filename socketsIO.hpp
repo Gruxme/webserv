@@ -6,12 +6,11 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/01/03 18:19:52 by abiari           ###   ########.fr       */
+/*   Updated: 2022/01/13 17:35:01 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "sockets.hpp"
-// #include <sys/select.h>
 #include <poll.h>
 #include <memory>
 
@@ -62,33 +61,38 @@ class socketsIO
 				it++;
 			}
 		}
+		void	fixPollfd(){
+			
+		}
 		void	eventListener(){
-			std::vector<char> buffer(4096);
+			std::vector<char>	buffer(1024);
+			std::string			req;
 			struct	pollfd	fds;
 			int				wasMainSock = 0;
 			int		rc = -1;
-			bool	endServer = false, closeConn = false;
+			bool	endServer = false/* , closeConn = false */;
 			while(endServer == false) {
+				wasMainSock = 0;
 				std::cout << "Waiting on poll..." << std::endl;
 				rc = poll(&_pollfds[0], _nfds, -1);
 				if (rc < 0){
-					// throw poll failed exeption
+					throw socketIOErr("poll: ");
 					break ;
 				}
 				if (rc == 0){
-					// throw poll timed out exeption
+					throw socketIOErr("poll: ");
 					break ;
 				}
 				for (int i = 0; i < _nfds; i++) {
 					if (_pollfds[i].revents == 0)
 						continue;
-					if (_pollfds[i].revents != POLLIN || _pollfds[i].revents != POLLOUT)
+					if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT && _pollfds[i].revents != (POLLIN | POLLOUT))
 					{
-						std::cout << "Error: revents = " << _pollfds[i].revents << std::endl; 
+						std::cout << "Error: revents = " << std::hex <<_pollfds[i].revents << std::endl; 
 						endServer = true;
 						break;
 					}
-					for(int j = 0; j < _socks.size(); j++){
+					for(size_t j = 0; j < _socks.size(); j++){
 						if(_pollfds[i].fd != _socks[j]->getMainSock())
 							continue ;
 						wasMainSock = 1;
@@ -107,12 +111,31 @@ class socketsIO
 					}
 					if(!wasMainSock){
 						rc = recv(_pollfds[i].fd, &buffer[0], buffer.size(), 0);
+						req.append(&buffer[0]);
+						std::cout << "===============REQUEST BEGIN===================\n";
+						std::cout << req << std::endl;
+						std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 306\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n</body>\n</html>");
+						send(_pollfds[i].fd, res.c_str(), res.length(), 0);
+						close(_pollfds[i].fd);
+						_pollfds.erase(_pollfds.begin() + i);
+						_nfds--;
 						//need request object to append buffer into
 						//need a map with fd as key and body of request as value (check mouad if you forgot details)
 					}
 				}
 			}
 		}
+		class socketIOErr: public std::exception{
+			public:
+				socketIOErr(std::string errStr) throw() : _errStr(errStr) {}
+				~socketIOErr() throw(){}
+				virtual const char *what() const throw(){
+					perror(_errStr.c_str());
+					return "";
+				}
+			private:
+				std::string	_errStr;
+		};
 	private:
 		int							_nfds;
 		std::allocator<sockets>		_socksAlloc;
