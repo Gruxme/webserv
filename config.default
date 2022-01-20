@@ -1,0 +1,31 @@
+server {
+  listen = 8080
+  server_name = server1
+  host = 192.168.1.1
+  location = [
+    path = /
+    root = /var/www/html
+    access_log = logs/server1.access.log
+  ]
+  location = [
+    path = //
+    root = //var//www//html
+    access_log = //logs//server1.access.log
+  ]
+}
+
+server {
+  listen = 4242
+  server_name = server2
+  host = 192.168.1.2
+  location = [
+    path = /
+    root = /var/www/html
+    access_log = logs/server2.access.log
+  ]
+  location = [
+    path = //
+    root = //var//www//html
+    access_log = //logs//server2.access.log
+  ]
+}
