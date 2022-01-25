@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   temporaryHeader.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/19 01:07:32 by aabounak          #+#    #+#             */
-/*   Updated: 2022/01/25 05:00:54 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/01/25 17:26:09 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include <fstream>
 # include <vector>
 # include <string>
+# include <cstring>
 # include <algorithm>
 
 # include <sys/socket.h>
