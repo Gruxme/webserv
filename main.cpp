@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/01/25 05:03:21 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/01/25 05:49:56 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,27 +41,29 @@ int main( int ac, char **av ) {
     std::cout << s.__serverConf[0].__port << std::endl;
     std::cout << s.__serverConf[0].__serverName << std::endl;
     std::cout << s.__serverConf[0].__host << std::endl;
+    std::cout << s.__serverConf[0].__bodySizeLimit << std::endl;
+    std::cout << s.__serverConf[0].__accessLog << std::endl;
+    std::cout << s.__serverConf[0].__errorPage << std::endl;
     std::cout << "-------- server 1 | location 1 --------" << std::endl;
     std::cout << s.__serverConf[0].__location[0].__path << std::endl;
     std::cout << s.__serverConf[0].__location[0].__root << std::endl;
-    std::cout << s.__serverConf[0].__location[0].__access_log << std::endl;
     std::cout << "-------- server 1 | location 2 --------" << std::endl;
     std::cout << s.__serverConf[0].__location[1].__path << std::endl;
     std::cout << s.__serverConf[0].__location[1].__root << std::endl;
-    std::cout << s.__serverConf[0].__location[1].__access_log << std::endl;
     std::cout << std::endl;
     std::cout << "-------- server 2 --------" << std::endl;
     std::cout << s.__serverConf[1].__port << std::endl;
     std::cout << s.__serverConf[1].__serverName << std::endl;
     std::cout << s.__serverConf[1].__host << std::endl;
+    std::cout << s.__serverConf[1].__bodySizeLimit << std::endl;
+    std::cout << s.__serverConf[1].__accessLog << std::endl;
+    std::cout << s.__serverConf[1].__errorPage << std::endl;
     std::cout << "-------- server 2 | location 1 --------" << std::endl;
     std::cout << s.__serverConf[1].__location[0].__path << std::endl;
     std::cout << s.__serverConf[1].__location[0].__root << std::endl;
-    std::cout << s.__serverConf[1].__location[0].__access_log << std::endl;
     std::cout << "-------- server 2 | location 2 --------" << std::endl;
     std::cout << s.__serverConf[1].__location[1].__path << std::endl;
     std::cout << s.__serverConf[1].__location[1].__root << std::endl;
-    std::cout << s.__serverConf[1].__location[1].__access_log << std::endl;
 
     return EXIT_SUCCESS;
 }
