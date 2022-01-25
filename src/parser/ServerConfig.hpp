@@ -6,16 +6,13 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 14:53:26 by aabounak          #+#    #+#             */
-/*   Updated: 2022/01/20 21:58:58 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/01/25 05:01:18 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-# include "header.hpp"
+# include "temporaryHeader.hpp"
 # include "LocationClass.hpp"
-
-#include <fstream>
-
 
 namespace ft {
     class ServerConfig {

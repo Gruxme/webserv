@@ -6,11 +6,11 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/01/20 22:18:34 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/01/25 05:03:21 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "header.hpp"
+# include "src/parser/temporaryHeader.hpp"
 
 // class m
 // {
@@ -31,6 +31,10 @@
 
 /* CONFIGURATION FILE MAIN -- DO NOT TOUCH */
 int main( int ac, char **av ) {
+
+    (void)ac;
+    (void)av;
+
     ft::ConfigFileParser s = ft::ConfigFileParser();
     s.parseConfigFile();
     std::cout << "-------- server 1 --------" << std::endl;

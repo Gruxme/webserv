@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #pragma once
-# include "header.hpp"
 # include "ServerConfig.hpp"
 
 namespace ft {
@@ -24,7 +23,7 @@ namespace ft {
             ServerConfig *  __serverConf;
 
         public:
-            ConfigFileParser() : __configFile("./config.default"), __serverCount(0), __serverConf() {}
+            ConfigFileParser() : __configFile("./conf.d/default.conf"), __serverCount(0), __serverConf() {}
             ConfigFileParser( std::string const & configFile ) { this->__configFile = configFile; }
             ConfigFileParser( ConfigFileParser const &rhs ) { *this = rhs; }
             ConfigFileParser & operator =( ConfigFileParser const & rhs) { this->__configFile = rhs.__configFile; return *this; }
