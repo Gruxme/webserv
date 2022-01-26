@@ -23,7 +23,7 @@
 class sockets
 {
 	public:
-		sockets(unsigned short port): _mainSd(-1), _clients(), _port(port){
+		explicit sockets(unsigned short port): _mainSd(-1), _clients(), _port(port), _address(){
 			int	opt = 1;
 			if((_mainSd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 				throw socketErr("socket: ");
@@ -32,9 +32,7 @@ class sockets
 			_nsds = 1;
 		}
 		
-		sockets(const sockets& x){ 
-			this->operator=(x);
-		}
+		sockets(const sockets& x) : _mainSd(x._mainSd), _nsds(x._nsds), _port(x._port), _address(x._address){}
 		
 		virtual ~sockets(){
 			std::vector<int>::iterator it = _clients.begin(), ite = _clients.end();
@@ -60,13 +58,13 @@ class sockets
 			if(bind(_mainSd, (SA *)&_address, sizeof(_address)) < 0)
 				throw socketErr("bind: ");
 		}
-		void	listener(int maxLoad){
+		void	listener(int maxLoad) const{
 			if(listen(_mainSd, maxLoad) < 0)
 				throw socketErr("Listen: ");
 			std::cout << "Socket listening on port " << _port << std::endl;
 		}
 		int		acceptClient(){
-			int	newClient = -1, addrlen = sizeof(_address);
+			int	newClient, addrlen = sizeof(_address);
 			//can loop over accept and check errno if != EWOULDBLOCK
 			if((newClient = accept(_mainSd, (SA *)&_address, (socklen_t *)&addrlen)) < 0)
 				throw socketErr("accept: ");
@@ -75,18 +73,18 @@ class sockets
 			_clients.push_back(newClient);
 			return newClient;
 		}
-		void	setNonBlock(){
+		void	setNonBlock() const{
 			//protect system call
 			fcntl(_mainSd, F_SETFL, O_NONBLOCK);
 		}
 		std::vector<int>&	getClientsVec() {return _clients; }
-		int					getNumSds() {return _nsds; }
-		int					getMainSock() {return _mainSd; }
-		unsigned short		getPort() {return _port; }
-		struct sockaddr_in	getAddr() { return _address;}
+		int					getNumSds() const {return _nsds; }
+		int					getMainSock() const {return _mainSd; }
+		unsigned short		getPort() const {return _port; }
+		struct sockaddr_in	getAddr() const { return _address;}
 		class socketErr: public std::exception{
 			public:
-				socketErr(std::string errStr) throw() : _errStr(errStr) {}
+				explicit socketErr(const std::string& errStr) throw() : _errStr(errStr) {}
 				~socketErr() throw(){}
 				virtual const char *what() const throw(){
 					perror(_errStr.c_str());

@@ -21,9 +21,10 @@ class socketsIO
 			// FD_ZERO(&_readSocks);
 			// FD_ZERO(&_writeSocks);
 		}
-		socketsIO(const socketsIO& x) {this->operator=(x);}
+		socketsIO(const socketsIO& x): _nfds(0) {this->operator=(x);}
 		~socketsIO(){
-			std::vector<sockets *>::iterator it = _socks.begin(), ite = _socks.end();
+			std::vector<sockets *>::iterator it = _socks.begin();
+			std::vector<sockets *>::iterator ite = _socks.end();
 			while (it != ite){
 				_socksAlloc.destroy(*it);
 				_socksAlloc.deallocate(*it, 1);
@@ -40,7 +41,7 @@ class socketsIO
 			return *this;
 		}
 		void	setSock(const sockets& sock){
-			struct	pollfd	fds;
+			struct	pollfd	fds = {};
 			sockets *newSock = _socksAlloc.allocate(1);
 			_socksAlloc.construct(newSock, sock);
 			std::vector<int>::iterator it = newSock->getClientsVec().begin();
@@ -61,28 +62,24 @@ class socketsIO
 				it++;
 			}
 		}
-		void	fixPollfd(){
-			
-		}
+//		void	fixPollfd(){
+//
+//		}
 		void	eventListener(){
 			std::vector<char>	buffer(1024);
 			std::string			req;
-			struct	pollfd	fds;
-			int				wasMainSock = 0;
-			int		rc = -1;
+			struct	pollfd	fds = {};
+			int				wasMainSock;
+			int		rc;
 			bool	endServer = false/* , closeConn = false */;
-			while(endServer == false) {
+			while(!endServer) {
 				wasMainSock = 0;
 				std::cout << "Waiting on poll..." << std::endl;
 				rc = poll(&_pollfds[0], _nfds, -1);
-				if (rc < 0){
+				if (rc < 0)
 					throw socketIOErr("poll: ");
-					break ;
-				}
-				if (rc == 0){
+				if (rc == 0)
 					throw socketIOErr("poll: ");
-					break ;
-				}
 				for (int i = 0; i < _nfds; i++) {
 					if (_pollfds[i].revents == 0)
 						continue;
@@ -127,7 +124,7 @@ class socketsIO
 		}
 		class socketIOErr: public std::exception{
 			public:
-				socketIOErr(std::string errStr) throw() : _errStr(errStr) {}
+				explicit socketIOErr(const std::string& errStr) throw() : _errStr(errStr) {}
 				~socketIOErr() throw(){}
 				virtual const char *what() const throw(){
 					perror(_errStr.c_str());
