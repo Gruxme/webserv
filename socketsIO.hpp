@@ -110,7 +110,7 @@ class socketsIO
 						}
 					}
 					if(!wasMainSock){
-						rc = recv(_pollfds[i].fd, &buffer[0], buffer.size(), 0);
+						recv(_pollfds[i].fd, &buffer[0], buffer.size(), 0);
 						req.append(&buffer[0]);
 						std::cout << "===============REQUEST BEGIN===================\n";
 						std::cout << req << std::endl;

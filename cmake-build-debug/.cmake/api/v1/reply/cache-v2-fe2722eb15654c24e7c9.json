@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/Users/abiari/CLionProjects/webserv/cmake-build-debug"
+			"value" : "/Users/abiari/Developer/webserv/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -515,7 +515,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/Users/abiari/CLionProjects/webserv"
+			"value" : "/Users/abiari/Developer/webserv"
 		},
 		{
 			"name" : "CMAKE_INSTALL_NAME_TOOL",
@@ -1087,7 +1087,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/abiari/CLionProjects/webserv/cmake-build-debug"
+			"value" : "/Users/abiari/Developer/webserv/cmake-build-debug"
 		},
 		{
 			"name" : "webserv_IS_TOP_LEVEL",
@@ -1111,7 +1111,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/abiari/CLionProjects/webserv"
+			"value" : "/Users/abiari/Developer/webserv"
 		}
 	],
 	"kind" : "cache",

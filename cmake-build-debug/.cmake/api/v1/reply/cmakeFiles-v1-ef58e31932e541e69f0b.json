@@ -150,8 +150,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "/Users/abiari/CLionProjects/webserv/cmake-build-debug",
-		"source" : "/Users/abiari/CLionProjects/webserv"
+		"build" : "/Users/abiari/Developer/webserv/cmake-build-debug",
+		"source" : "/Users/abiari/Developer/webserv"
 	},
 	"version" : 
 	{
