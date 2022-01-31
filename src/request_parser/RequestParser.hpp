@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/31 10:30:00 by aabounak          #+#    #+#             */
-/*   Updated: 2022/01/31 16:35:55 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/01/31 18:25:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,11 +44,21 @@ namespace ft {
                 }
             }
 
+            /* PVT -- Private method for removing a substring (Made for "\r\r") -- */
+            void    __eraseSubstr( std::string & str, const std::string & substr ) {
+                __SIZE_TYPE__ pos = str.find(substr);
+                if (pos != std::string::npos)
+                    str.erase(pos, substr.length());
+            }
+            void    __eraseAllSubstr( std::string & str, const std::string & substr ) {
+                __SIZE_TYPE__ pos = std::string::npos;
+                while ((pos = str.find(substr)) != std::string::npos)
+                    str.erase(pos, substr.length());
+            }
 
-            /* --- This method splits a string and returns a vector of strings --- */
             std::vector<std::string> __split( std::string str, char separator ) {
                 std::vector<std::string>  myvec;
-                size_t currentIndex = 0, i = 0, startIndex = 0, endIndex = 0;
+                __SIZE_TYPE__ currentIndex = 0, i = 0, startIndex = 0, endIndex = 0;
                 while (i <= str.length()) {
                     if (str[i] == separator || i == str.length()) {
                         endIndex = i;
@@ -68,14 +78,32 @@ namespace ft {
                 std::istringstream iss(this->__content);
                 std::string token;
                 std::getline(iss, token);
+                if (!token.empty() && token[token.size() - 1] == '\r')
+                    token.erase(token.size() - 1);
                 std::vector<std::string> myvec = __split(token, ' ');
+                
                 /* --- THROW EXCEPTIONS --- */
-                myvec[2].erase(myvec[2].size() - 1);
-                myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw "Server doesn't handle this method";
-                myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw "Server doesn't handle this TP";
+                myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw UnsupportedMethod();
                 this->__path = myvec[1];
+                myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw UnsupportedTransferProtocol();
             }
             
             /* ----- Getters ----- */
+
+
+            /* ----- Exceptions ----- */
+            class UnsupportedTransferProtocol : public std::exception {
+			public:
+				virtual const char * what() const throw() {
+					return ("UnsupportedTransferProtocol");
+				}
+		    };
+
+            class UnsupportedMethod : public std::exception {
+			public:
+				virtual const char * what() const throw() {
+					return ("UnsupportedMethod");
+				}
+		    };
     };
 }
