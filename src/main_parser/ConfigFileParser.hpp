@@ -12,8 +12,6 @@
 
 #pragma once
 # include "ServerConfig.hpp"
-// # include <cstring>
-
 namespace ft {
     class ConfigFileParser {
         /* ----- PRIVATE ----- */
@@ -106,6 +104,7 @@ namespace ft {
                         n_serv++;
                     }
                 }
+                /* Write check Method */
             }
 
             /* ----- Exceptions ----- */

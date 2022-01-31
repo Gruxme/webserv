@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   temporaryHeader.hpp                                :+:      :+:    :+:   */
+/*   TempHeader.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/19 01:07:32 by aabounak          #+#    #+#             */
-/*   Updated: 2022/01/25 17:26:09 by abiari           ###   ########.fr       */
+/*   Updated: 2022/01/31 10:28:46 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,10 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 
-# include "ConfigFileParser.hpp"
-# include "ServerConfig.hpp"
-# include "LocationClass.hpp"
+# include "main_parser/ConfigFileParser.hpp"
+# include "main_parser/ServerConfig.hpp"
+# include "main_parser/LocationClass.hpp"
+# include "request_parser/RequestParser.hpp"
 
 # define PORT 8080
 # define SERVER 1
