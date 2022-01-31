@@ -6,11 +6,16 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/04 11:51:00 by aabounak          #+#    #+#             */
-/*   Updated: 2022/01/25 05:00:21 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/01/31 12:00:44 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "temporaryHeader.hpp"
+#pragma once
+# include <vector>
+# include <string>
+# include <map>
+# include <iostream>
+# include <algorithm>
 
 // RequestParser
 class RequestParser

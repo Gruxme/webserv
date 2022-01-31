@@ -20,6 +20,7 @@
 # include <map>
 # include <list>
 
+# include <sstream>
 # include <iostream>
 # include <fstream>
 # include <vector>

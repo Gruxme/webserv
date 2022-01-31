@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/01/31 11:08:48 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/01/31 15:50:15 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,12 @@ int main( int ac, char **av ) {
     ft::RequestParser s = ft::RequestParser();
     s.parseRequest();
     
-    std::cout << "------ basic request -----" << std::endl;
+    std::cout << "------ basic request __content -----" << std::endl << std::endl;
     std::cout << s.__content << std::endl;
+    std::cout << "------ request line extraction ------" << std::endl;
+    s.__extractRequestLine();
+    std::cout << s.__method << std::endl;
+    std::cout << s.__path << std::endl;
+    std::cout << s.__protocol << std::endl;
     return EXIT_SUCCESS;
 }

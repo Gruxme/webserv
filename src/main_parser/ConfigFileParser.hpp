@@ -104,7 +104,7 @@ namespace ft {
                         n_serv++;
                     }
                 }
-                /* Write check Method */
+                /* Write final check Method */
             }
 
             /* ----- Exceptions ----- */
