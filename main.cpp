@@ -7,7 +7,6 @@ int	main()
 	socketsIO	server;
 	sock.bindSock();
 	sock.listener(10);
-	sock.setNonBlock();
 	server.setSock(sock);
 	server.eventListener();
 }
