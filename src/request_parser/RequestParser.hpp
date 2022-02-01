@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/31 10:30:00 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/01 14:50:31 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/01 16:00:01 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,12 +21,14 @@ namespace ft {
             std::string __method;
             std::string __uri;
             std::string __protocol;
+
+            std::string __body;
             
             std::map<std::string, std::string>  __headers;
             
         public:
             /* ----- Constructors & Destructor respectively ----- */
-            RequestParser() : __content(""), __method(""), __uri(""), __protocol("") {}
+            RequestParser() : __content(""), __method(""), __uri(""), __protocol(""), __body("") {}
             ~RequestParser() {}
 
             void    append( std::string x ) {
@@ -35,8 +37,7 @@ namespace ft {
             }
 
             /* PVT -- THIS METHOD SHOULD CHECK FOR STANDARDS LATER -- */
-            void    __extractRequestLine( void ) {
-                std::istringstream iss(this->__content);
+            void    __extractRequestLine( std::istringstream & iss ) {
                 std::string line;
                 std::getline(iss, line);
                 if (!line.empty() && line[line.size() - 1] == '\r')
@@ -50,10 +51,8 @@ namespace ft {
             }
 
             /* PVT -- -- */
-            void    __extractHeaders( void ) {
-                std::istringstream  iss(this->__content);
+            void    __extractHeaders( std::istringstream & iss ) {
                 std::string line;
-                std::getline(iss, line); /* -- This line is to be skipped */
                 std::vector<std::string> myvec;
                 while (std::getline(iss, line)) {
                     if (line.size() == 1)
@@ -67,19 +66,30 @@ namespace ft {
             }
 
             /* PVT -- -- */
+            void    __extractContent( std::istringstream & iss ) {
+                std::string line;
+                std::cout << std::endl;
+                while (std::getline(iss, line)) {
+                    /* -- TO RECALL LATER */
+                    this->__body.append(line + "\r\n");
+                }
+            }
             
             /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
             void    parseRequest( void ) {
+
+                /* -- THIS IS FOR TEST AND SHOULD BE DELETED LATER */
                 std::ifstream   file("./src/request_parser/post_request.example");
                 std::string     buffer;
                 while (getline(file, buffer)) {
-                    // \r\n is temporary
                     this->append(buffer + "\r\n");
                 }
 
                 /* -- REFACTOR {PHASE 1} */
-                
-                
+                std::istringstream  iss(this->__content);
+                this->__extractRequestLine(iss);
+                this->__extractHeaders(iss);
+                this->__extractContent(iss);
             }
 
             std::vector<std::string> __split( std::string str, char separator ) {

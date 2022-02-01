@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/01 14:41:32 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/01 15:55:42 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,18 +77,18 @@ int main( int ac, char **av ) {
     ft::RequestParser s = ft::RequestParser();
     s.parseRequest();
     
-    std::cout << "------ basic request __content -----" << std::endl << std::endl;
+    /* std::cout << std::endl << "------ basic request __content -----" << std::endl << std::endl;
     std::cout << s.__content << std::endl;
     std::cout << "------ request line extraction ------" << std::endl << std::endl;
-    s.__extractRequestLine();
     std::cout << s.__method << std::endl;
     std::cout << s.__uri << std::endl;
     std::cout << s.__protocol << std::endl;
     std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
-    s.__extractHeaders();
     std::map<std::string, std::string>::iterator it;
     for (it = s.__headers.begin(); it != s.__headers.end(); it++) {
         std::cout << it->first << ':' << it->second << std::endl;
-    }
+    } */
+    std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
+    std::cout << s.__body << std::endl;
     return EXIT_SUCCESS;
 }
