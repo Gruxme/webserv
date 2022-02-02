@@ -6,7 +6,7 @@ SRC := main.cpp sockets.cpp socketsIO.cpp
 all: $(NAME)
 
 $(NAME): $(SRC) $(HPP)
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(SRC) -o $@
 
 debug: $(SRC) $(HPP)
 	$(CC) $(CFLAGS) $(DFLAGS) $< -o $(NAME)
