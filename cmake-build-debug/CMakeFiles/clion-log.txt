@@ -1,4 +1,0 @@
-/goinfre/abiari/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/goinfre/abiari/CLion.app/Contents/bin/ninja/mac/ninja -G Ninja /Users/abiari/Desktop/webserv
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/abiari/Desktop/webserv/cmake-build-debug
