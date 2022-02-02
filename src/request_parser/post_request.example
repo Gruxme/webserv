@@ -7,13 +7,9 @@ Accept-Language: en-us
 Accept-Encoding: gzip, deflate
 Connection: Keep-Alive
 
-4\r\n
-Wiki\r\n
-6\r\n
-pedia \r\n
-E\r\n
-in \r\n
-\r\n
-5chunks.\r\n
-0\r\n
-\r\n
+10
+
+Wiki
+nn
+
+0

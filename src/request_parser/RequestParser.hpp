@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/31 10:30:00 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/02 18:30:40 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/02 19:21:28 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,28 +77,23 @@ namespace ft {
                 // }
 
                 /* -- PARSE CHUNKED REQUESTS */
-                std::string line;
-                std::cout << std::endl;
+                // std::string line;
                 
-                while (std::getline(iss, line)) {
-                    const char *x = line.c_str(); ++x;
-                    if (std::isdigit(line[0]) && strcmp(x, "\r\n"))
-                        std::getline(iss, line);
-                    try { 
-                        if (std::stoi(line, 0, 16)) {
-                            
-                        }
-                    } catch ()
-                    std::cout << line << std::endl;
-                }
+                const char *s;
+                std::string line;
+                std::getline(iss, line);
+                s = line.c_str();
+                iss.readsome(const_cast<char *>(s), std::stoi(line));
+                std::cout << s << std::endl;
+                
+                std::cout << std::endl;
+            }
 
                 /*
                     Wikipedia in 
     
                     chunks.
                 */
-                std::cout << std::endl;
-            }
             
             /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
             void    parseRequest( void ) {
