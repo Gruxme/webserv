@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/31 10:30:00 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/01 16:00:01 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/02 18:30:40 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,19 +60,44 @@ namespace ft {
                     if (!line.empty() && line[line.size() - 1] == '\r')
                         line.erase(line.size() - 1);
                     myvec = __split(line, ':');
-                    myvec[1] = this->ltrim(myvec[1]);
+                    myvec[1] = this->ltrim(myvec[1], " :");
                     this->__headers[myvec[0]] = myvec[1];
                 }
             }
 
             /* PVT -- -- */
             void    __extractContent( std::istringstream & iss ) {
+
+                /* -- THIS IS FOR RAW DATA */
+                // std::string line;
+                // std::cout << std::endl;
+                // while (std::getline(iss, line)) {
+                //     /* -- TO RECALL LATER */
+                //     this->__body.append(line + "\r\n");
+                // }
+
+                /* -- PARSE CHUNKED REQUESTS */
                 std::string line;
                 std::cout << std::endl;
+                
                 while (std::getline(iss, line)) {
-                    /* -- TO RECALL LATER */
-                    this->__body.append(line + "\r\n");
+                    const char *x = line.c_str(); ++x;
+                    if (std::isdigit(line[0]) && strcmp(x, "\r\n"))
+                        std::getline(iss, line);
+                    try { 
+                        if (std::stoi(line, 0, 16)) {
+                            
+                        }
+                    } catch ()
+                    std::cout << line << std::endl;
                 }
+
+                /*
+                    Wikipedia in 
+    
+                    chunks.
+                */
+                std::cout << std::endl;
             }
             
             /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
@@ -109,23 +134,22 @@ namespace ft {
                 return myvec;
             }
             
-
             /* ----- Utils ------ */
             /* PVT -- Private methods for removing a substring (Made for "\r\n") -- */
-            void    __eraseSubstr( std::string & str, const std::string & substr ) {
+            void    __eraseSubstr( std::string &str, const std::string &substr ) {
                 __SIZE_TYPE__ pos = str.find(substr);
                 if (pos != std::string::npos)
                     str.erase(pos, substr.length());
             }
-            void    __eraseAllSubstr( std::string & str, const std::string & substr ) {
+            void    __eraseAllSubstr( std::string &str, const std::string &substr ) {
                 __SIZE_TYPE__ pos = std::string::npos;
                 while ((pos = str.find(substr)) != std::string::npos)
                     str.erase(pos, substr.length());
             }
 
-            std::string ltrim( const std::string &s )
+            std::string ltrim( const std::string &s, const std::string &delim )
             {
-                size_t start = s.find_first_not_of(" :");
+                size_t start = s.find_first_not_of(delim);
                 return (start == std::string::npos) ? "" : s.substr(start);
             }
 
