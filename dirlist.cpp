@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/01 16:32:45 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/02 18:54:47 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/03 14:33:19 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,28 +21,30 @@
 
 int main(void)
 {
-	DIR *dir, *dirCheck;
+	DIR *dir;
 	struct dirent	*ent;
-	struct stat		*status = (struct stat *)malloc(sizeof(struct stat));
-	std::string		path = "/Users/abiari/Desktop/test"; // to be replaced with URI
-	char	date[15];
+	struct stat		*status = new struct stat();
+	std::string		path = "/Users/abiari/Desktop/test/"; // to be replaced with URI
+	char			*date = new char[20]();
 	std::ostringstream dirListHtml;
-	dirListHtml << "<html>\n<head><title>Index of " << path << "</title></head>\n<body>\n<h1>Index of " << path << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
+	dirListHtml << "<html>\n<head><title>Index of " << path << "</title></head>\n<body>\n<h1>Index of "\
+				<< path << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
 	if ((dir = opendir(path.c_str())) != NULL){
 		while ((ent = readdir(dir)) != NULL){
 			std::string	fileName(ent->d_name);
-			if(fileName == ".")
+			if(fileName == "." || fileName == "..")
 				continue;
+			if (stat((path + fileName).c_str(), status) < 0)
+				perror("stat: ");
+			if(S_ISDIR(status->st_mode))
+				fileName += "/";
 			dirListHtml << "<a href=\"" << fileName << "\">" << fileName << "</a>";
-			stat(fileName.c_str(), status);
-			strftime(date, 15, "%d-%b-%y %H:%M", gmtime(&(status->st_ctime)));
-			dirListHtml << std::setw(60) << std::right << date;
-			if((dirCheck = opendir(fileName.c_str())) == NULL && errno == ENOTDIR){
-				closedir(dirCheck);
-				dirListHtml << "-\n";
-			}
+			strftime(date, 17, "%d-%b-%y %H:%M", gmtime(&(status->st_mtimespec.tv_sec)));
+			dirListHtml << std::setw(62 - fileName.length()) << date;
+			if(S_ISDIR(status->st_mode))
+				dirListHtml << std::setw(21) << std::right << "-\n";
 			else{
-				dirListHtml << std::setw(20) << std::right << status->st_size << std::endl;
+				dirListHtml << std::setw(20) << status->st_size << std::endl;
 			}
 		}
 		dirListHtml << "</pre><hr></body>\n</html>";
