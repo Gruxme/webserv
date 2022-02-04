@@ -10,6 +10,8 @@
    "-fsanitize=address",
    "-g3",
    "main.cpp",
+   "sockets.cpp",
+   "socketsIO.cpp",
    "-o",
    "webserv"
   ],

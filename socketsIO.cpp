@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/01/31 12:45:39 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/04 11:58:33 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,25 +45,23 @@ void	socketsIO::setSock(const sockets& sock){
 	fds.events = POLLIN;
 	_pollfds.push_back(fds);
 	_nfds++;
-	// FD_SET(newSock->getMainSock(), &_readSocks);
 	while (it != ite){
 		fds.fd = *it;
 		fds.events = POLLIN | POLLOUT;
 		_pollfds.push_back(fds);
 		_nfds++;
-		// FD_SET(*it, &_readSocks);
-		// FD_SET(*it, &_writeSocks);
 		it++;
 	}
 }
 
 void	socketsIO::eventListener(){
-	std::vector<char>	buffer(1024);
+	char				buffer[1024];
 	std::string			req;
 	struct	pollfd	fds = {};
 	int				wasMainSock;
 	int		rc;
 	bool	endServer = false/* , closeConn = false */;
+	bool	connClosed = false;
 	while(!endServer) {
 		wasMainSock = 0;
 		std::cout << "Waiting on poll..." << std::endl;
@@ -99,17 +97,31 @@ void	socketsIO::eventListener(){
 				}
 			}
 			if(!wasMainSock){
-				recv(_pollfds[i].fd, &buffer[0], buffer.size(), 0);
-				req.append(&buffer[0]);
-				std::cout << "===============REQUEST BEGIN===================\n";
-				std::cout << req << std::endl;
-				std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 304\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n</body>\n</html>");
-				send(_pollfds[i].fd, res.c_str(), res.length(), 0);
-				close(_pollfds[i].fd);
-				_pollfds.erase(_pollfds.begin() + i);
-				_nfds--;
-				//need request object to append buffer into
-				//need a map with fd as key and body of request as value (check mouad if you forgot details)
+				bzero(buffer, 1024);
+				do
+				{
+					rc = recv(_pollfds[i].fd, &buffer, sizeof(buffer), 0);
+					req.append(buffer);
+					if (rc == -1)
+						break ;
+					if(rc == 0)
+						connClosed = true;
+					std::cout << "received: " << rc << "bytes" << std::endl;
+					std::cout << "===============REQUEST BEGIN===================\n";
+					std::cout << req << std::endl;
+					std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 304\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n</body>\n</html>");
+					send(_pollfds[i].fd, res.c_str(), res.length(), 0);
+					connClosed = true;
+				} while (!connClosed);
+				if (connClosed) {
+					close(_pollfds[i].fd);
+					_pollfds.erase(_pollfds.begin() + i);
+					_nfds--;
+					connClosed = false;
+				}
+				
+				// _requests[_pollfds[i].fd].append(&buffer[0]);
+				
 			}
 		}
 	}

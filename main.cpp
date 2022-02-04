@@ -6,6 +6,7 @@ int	main()
 {
 	sockets		sock(4242);
 	socketsIO	server;
+	// sock.setNonBlock();
 	sock.bindSock();
 	sock.listener(10);
 	server.setSock(sock);

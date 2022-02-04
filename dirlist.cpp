@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/01 16:32:45 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/03 14:33:19 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/03 16:22:02 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,10 @@ int main(void)
 	}
 	else{
 		/* could not open directory */
-		perror("");
+		if(errno == ENOENT)
+			//send not found response
+		else
+			//send forbidden response
 		return EXIT_FAILURE;
 	}
 }
