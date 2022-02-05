@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ConfigFileParser.hpp                         :+:      :+:    :+:   */
+/*   ConfigFile.hpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,8 +12,9 @@
 
 #pragma once
 # include "ServerConfig.hpp"
+
 namespace ft {
-    class ConfigFileParser {
+    class ConfigFile {
         /* ----- PRIVATE ----- */
         public:
             std::string     __configFile;
@@ -22,11 +23,11 @@ namespace ft {
 
         public:
             /* ----- Constructors & Destructor respectively ----- */
-            ConfigFileParser() : __configFile("./conf.d/default.conf"), __serverCount(0), __serverConf() {}
-            ConfigFileParser( std::string const & configFile ) { this->__configFile = configFile; }
-            ConfigFileParser( ConfigFileParser const &rhs ) { *this = rhs; }
-            ConfigFileParser & operator =( ConfigFileParser const & rhs) { this->__configFile = rhs.__configFile; return *this; }
-            ~ConfigFileParser() {}
+            ConfigFile() : __configFile("./conf.d/default.conf"), __serverCount(0), __serverConf() {}
+            ConfigFile( std::string const & configFile ) { this->__configFile = configFile; }
+            ConfigFile( ConfigFile const &rhs ) { *this = rhs; }
+            ConfigFile & operator =( ConfigFile const & rhs) { this->__configFile = rhs.__configFile; return *this; }
+            ~ConfigFile() {}
 
             /* ----- Getters ---- */
             std::string     getConfigFile() const { return this->__configFile; }
@@ -68,6 +69,7 @@ namespace ft {
             }
 
             /* ----- Main Parser ----- */
+            /* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
             void    parseConfigFile( void ) {
                 std::ifstream   file(this->__configFile);
                 std::string     buffer;
@@ -80,6 +82,8 @@ namespace ft {
                         while (getline(file, buffer)) {
                             if (buffer.find("}") != std::string::npos)
                                 break ;
+                            if (buffer.find("#") != std::string::npos) 
+                                continue ;
                             else if (buffer.find("listen = ") != std::string::npos)
                                 this->__serverConf[n_serv].__port = std::stoi(buffer.substr(buffer.find("listen = ") + strlen("listen = ")));
                             else if (buffer.find("server_name = ") != std::string::npos)
@@ -92,6 +96,8 @@ namespace ft {
                                 this->__serverConf[n_serv].__accessLog= buffer.substr(buffer.find("access_log = ") + strlen("access_log = "));
                             else if (buffer.find("error_page = ") != std::string::npos)
                                 this->__serverConf[n_serv].__errorPage= buffer.substr(buffer.find("error_page = ") + strlen("error_page = "));
+                            else if (buffer.find("autoindex = on") != std::string::npos)
+                                this->__serverConf[n_serv].__autoindex = __AUTOINDEX_ON__;
                             else if (buffer.find("location = [") != std::string::npos) {
                                 while (getline(file, buffer)) {
                                     if (buffer.find("]") != std::string::npos)

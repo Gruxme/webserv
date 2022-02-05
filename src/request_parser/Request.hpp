@@ -10,18 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 # include "../TempHeader.hpp"
 
 # define PY 1
 # define PHP 2
-
 # define __CONTENT_LENGTH_FOUND__ 0
 # define __CONTENT_LENGTH_NOT_FOUND__ 1
-
 # define __BODY_COMPLETE__ 1
 # define __BODY_INCOMPLETE__ 2
-
-
 
 namespace ft {
     class Request {
