@@ -1,6 +1,4 @@
 <?php
-    $color = "red";
-    echo "My car is " . $color . "<br>";
-    echo "My house is " . $COLOR . "<br>";
-    echo "My boat is " . $coLOR . "<br>";
+    $txt = "W3Schools.com";
+    echo "I love $txt!";
 ?>

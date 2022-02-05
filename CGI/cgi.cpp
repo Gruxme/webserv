@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/02 12:52:15 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/02/04 18:01:38 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/02/05 20:05:25 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ int main()
 {
 	int fd[2];
 	pid_t pid;
+	int *status;
 	int ret;
 	char **tmp;
 	
@@ -97,8 +98,9 @@ int main()
 	}
 	else
 	{
+		wait(status);
 		// waiting the output of the child
-		std::cout << "Iam in the parent process" << std::endl;
+		std::cout << std::endl << "Iam in the parent process" << std::endl;
 		// close(fd[0]);
 		// close(fd[1]);
 	}
