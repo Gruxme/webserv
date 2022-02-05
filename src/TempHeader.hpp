@@ -35,7 +35,7 @@
 # include "main_parser/ConfigFileParser.hpp"
 # include "main_parser/ServerConfig.hpp"
 # include "main_parser/LocationClass.hpp"
-# include "request_parser/RequestParser.hpp"
+# include "request_parser/Request.hpp"
 
 # define PORT 8080
 # define SERVER 1

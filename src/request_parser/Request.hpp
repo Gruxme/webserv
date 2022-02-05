@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   RequestParser.hpp                                  :+:      :+:    :+:   */
+/*   Request.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,27 +12,34 @@
 
 # include "../TempHeader.hpp"
 
+# define PY 1
+# define PHP 2
+
 namespace ft {
-    class RequestParser {
+    class Request {
         /* ----- PRIVATE ----- */
         public:
-            std::string __content;
-
+            std::string __dataGatherer;
             std::string __method;
             std::string __uri;
             std::string __protocol;
-
-            std::string __body;
-            
+            short       __uriExtension;
             std::map<std::string, std::string>  __headers;
+            std::string __bodyFilename;
             
         public:
             /* ----- Constructors & Destructor respectively ----- */
-            RequestParser() : __content(""), __method(""), __uri(""), __protocol(""), __body("") {}
-            ~RequestParser() {}
+            Request() :
+                __dataGatherer(""),
+                __method(""),
+                __uri(""),
+                __protocol(""),
+                __uriExtension(0),
+                __bodyFilename("") {}
+            ~Request() {}
 
             void    append( std::string x ) {
-                __content.append(x);
+                __dataGatherer.append(x);
                 return ;
             }
 
@@ -45,9 +52,13 @@ namespace ft {
                 std::vector<std::string> myvec = __split(line, ' ');
                 
                 /* --- THROW EXCEPTIONS --- */
-                myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw UnsupportedMethod();
+                myvec[0] == "GET3" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw UnsupportedMethod();
                 this->__uri = myvec[1];
                 myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw UnsupportedTransferProtocol();
+
+                // /* -- SETUP SHORT FOR CGI */
+                if (__hasEnding(this->__uri, ".py")) { this->__uriExtension = PY; }
+                else if (__hasEnding(this->__uri, ".php")) { this->__uriExtension = PHP; }
             }
 
             /* PVT -- -- */
@@ -69,44 +80,39 @@ namespace ft {
             void    __extractContent( std::istringstream & iss ) {
 
                 /* -- THIS IS FOR RAW DATA */
-                // std::string line;
-                // std::cout << std::endl;
-                // while (std::getline(iss, line)) {
-                //     /* -- TO RECALL LATER */
-                //     this->__body.append(line + "\r\n");
-                // }
+                std::string line;
+                std::cout << std::endl;
+                this->__bodyFilename = "./src/request_parser/bodyX.txt";
+                std::ofstream f;
+                f.open(this->__bodyFilename);
+                while (std::getline(iss, line)) {
+                    /* -- TO RECALL LATER */
+                    f << line;
+                }
+                f.close();
 
                 /* -- PARSE CHUNKED REQUESTS */
-                // std::string line;
-                
+                /* std::string line;
                 const char *s;
                 std::string line;
                 std::getline(iss, line);
                 s = line.c_str();
                 iss.readsome(const_cast<char *>(s), std::stoi(line));
                 std::cout << s << std::endl;
-                
-                std::cout << std::endl;
+                std::cout << std::endl; */
             }
-
-                /*
-                    Wikipedia in 
-    
-                    chunks.
-                */
             
             /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
             void    parseRequest( void ) {
-
                 /* -- THIS IS FOR TEST AND SHOULD BE DELETED LATER */
                 std::ifstream   file("./src/request_parser/post_request.example");
                 std::string     buffer;
                 while (getline(file, buffer)) {
                     this->append(buffer + "\r\n");
                 }
-
+                file.close();
                 /* -- REFACTOR {PHASE 1} */
-                std::istringstream  iss(this->__content);
+                std::istringstream  iss(this->__dataGatherer);
                 this->__extractRequestLine(iss);
                 this->__extractHeaders(iss);
                 this->__extractContent(iss);
@@ -148,6 +154,10 @@ namespace ft {
                 return (start == std::string::npos) ? "" : s.substr(start);
             }
 
+            bool    __hasEnding ( std::string const &fullString, std::string const &ending ) {
+                if (fullString.length() >= ending.length()) { return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending)); }
+                else { return false; }
+            }
             /* ----- Getters ----- */
 
 
