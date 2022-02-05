@@ -15,6 +15,14 @@
 # define PY 1
 # define PHP 2
 
+# define __CONTENT_LENGTH_FOUND__ 0
+# define __CONTENT_LENGTH_NOT_FOUND__ 1
+
+# define __BODY_COMPLETE__ 1
+# define __BODY_INCOMPLETE__ 2
+
+
+
 namespace ft {
     class Request {
         /* ----- PRIVATE ----- */
@@ -51,8 +59,7 @@ namespace ft {
                     line.erase(line.size() - 1);
                 std::vector<std::string> myvec = __split(line, ' ');
                 
-                /* --- THROW EXCEPTIONS --- */
-                myvec[0] == "GET3" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw UnsupportedMethod();
+                myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw UnsupportedMethod();
                 this->__uri = myvec[1];
                 myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw UnsupportedTransferProtocol();
 
@@ -74,32 +81,52 @@ namespace ft {
                     myvec[1] = this->ltrim(myvec[1], " :");
                     this->__headers[myvec[0]] = myvec[1];
                 }
+                /* -- TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST -- */
+                if (this->__headers.find("host") != this->__headers.end()) { throw HostHeaderUnavailable(); }
             }
 
             /* PVT -- -- */
             void    __extractContent( std::istringstream & iss ) {
+                /* -- WE'RE SURE THAT WE HAVE A POST METHOD */
+                if (this->__method == "POST") {
+                    std::ofstream f;
+                    /* -- NOT A CHUNKED REQUEST -- */
+                    if (this->__headers.find("Content-Type") != this->__headers.end()) {
+                        if (!(this->__headers.find("Content-Type")->second.empty())) {
+                            /* -- ACCORDING TO RFC 2616 SEC4.4 || IN THIS CASE WE SHOULD HAVE A VALID "Content-Length: header" -- */
+                            if (__checkContentLength() == __CONTENT_LENGTH_NOT_FOUND__) { throw BadRequest(); }
+                            std::string line;
+                            this->__bodyFilename = "./src/request_parser/bodyX.txt";
+                            f.open(this->__bodyFilename);
+                            while (std::getline(iss, line))
+                                f << line;
+                            /* -- IN THIS CASE IF BODY SIZE AND CL DON'T MATCH A BAD REQUEST SHOULD BE THROW -- */
+                            if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) { f.close(); throw BadRequest(); }
+                            f.close(); return ;
+                        }
+                        else { throw BadRequest(); }
+                    }
 
-                /* -- THIS IS FOR RAW DATA */
-                std::string line;
-                std::cout << std::endl;
-                this->__bodyFilename = "./src/request_parser/bodyX.txt";
-                std::ofstream f;
-                f.open(this->__bodyFilename);
-                while (std::getline(iss, line)) {
-                    /* -- TO RECALL LATER */
-                    f << line;
+                    /* -- PARSE CHUNKED REQUESTS */
+                    // if (this->__headers.find("Transfer-Encoding") != this->__headers.end()) {
+                    //     if (this->__headers.find("Transfer-Encoding")->second == "chunked") {
+                    //         std::cout << "I have a chunked request" << std::endl;
+                    //     } else {
+                    //         std::cout << "Its not chunked" << std::endl;
+                    //     }
+                    // }
+
+                    // f.close();
+
+                    /* std::string line;
+                    const char *s;
+                    std::string line;
+                    std::getline(iss, line);
+                    s = line.c_str();
+                    iss.readsome(const_cast<char *>(s), std::stoi(line));
+                    std::cout << s << std::endl;
+                    std::cout << std::endl; */
                 }
-                f.close();
-
-                /* -- PARSE CHUNKED REQUESTS */
-                /* std::string line;
-                const char *s;
-                std::string line;
-                std::getline(iss, line);
-                s = line.c_str();
-                iss.readsome(const_cast<char *>(s), std::stoi(line));
-                std::cout << s << std::endl;
-                std::cout << std::endl; */
             }
             
             /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
@@ -111,13 +138,19 @@ namespace ft {
                     this->append(buffer + "\r\n");
                 }
                 file.close();
-                /* -- REFACTOR {PHASE 1} */
+
+                /* -- - */
                 std::istringstream  iss(this->__dataGatherer);
                 this->__extractRequestLine(iss);
                 this->__extractHeaders(iss);
-                this->__extractContent(iss);
+                /* -- CHECK FOR FURTHER STANDARDS */
+                if (this->__method == "POST")
+                    this->__extractContent(iss);
             }
 
+            
+            /* ----- Utils ------ */
+            /* -- PVT METHODS */
             std::vector<std::string> __split( std::string str, char separator ) {
                 std::vector<std::string>  myvec;
                 __SIZE_TYPE__ currentIndex = 0, i = 0, startIndex = 0, endIndex = 0;
@@ -134,9 +167,6 @@ namespace ft {
                 }
                 return myvec;
             }
-            
-            /* ----- Utils ------ */
-            /* PVT -- Private methods for removing a substring (Made for "\r\n") -- */
             void    __eraseSubstr( std::string &str, const std::string &substr ) {
                 __SIZE_TYPE__ pos = str.find(substr);
                 if (pos != std::string::npos)
@@ -147,17 +177,32 @@ namespace ft {
                 while ((pos = str.find(substr)) != std::string::npos)
                     str.erase(pos, substr.length());
             }
-
-            std::string ltrim( const std::string &s, const std::string &delim )
-            {
-                size_t start = s.find_first_not_of(delim);
+            std::string ltrim( const std::string &s, const std::string &delim ) {
+                __SIZE_TYPE__ start = s.find_first_not_of(delim);
                 return (start == std::string::npos) ? "" : s.substr(start);
             }
-
             bool    __hasEnding ( std::string const &fullString, std::string const &ending ) {
                 if (fullString.length() >= ending.length()) { return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending)); }
-                else { return false; }
+                return false;
             }
+            int     __findFileSize( std::ofstream &file ) {
+                file.seekp(0, std::ios::end);
+                int size = file.tellp();
+                return size;
+            }
+
+            /* PVT -- -- */
+            bool    __checkContentLength( void ) {
+                if (this->__headers.find("Content-Length") != this->__headers.end()) { return __CONTENT_LENGTH_FOUND__; }
+                return __CONTENT_LENGTH_NOT_FOUND__;
+            }
+
+            /* PVT -- -- */
+            short   __compareContentLengthWithBody( std::ofstream &f ) {
+                if (std::stoi(this->__headers.find("Content-Length")->second) == __findFileSize(f)) { return __BODY_COMPLETE__; }
+                return __BODY_INCOMPLETE__;
+            }
+
             /* ----- Getters ----- */
 
 
@@ -165,14 +210,25 @@ namespace ft {
             class UnsupportedTransferProtocol : public std::exception {
 			public:
 				virtual const char * what() const throw() {
-					return ("UnsupportedTransferProtocol");
+					return ("Unsupported Transfer Protocol");
 				}
 		    };
-
             class UnsupportedMethod : public std::exception {
 			public:
 				virtual const char * what() const throw() {
-					return ("UnsupportedMethod");
+					return ("Unsupported Method");
+				}
+		    };
+            class BadRequest : public std::exception {
+			public:
+				virtual const char * what() const throw() {
+					return ("Bad Request");
+				}
+		    };
+            class HostHeaderUnavailable : public std::exception {
+			public:
+				virtual const char * what() const throw() {
+					return ("Host Header Unavailable");
 				}
 		    };
     };

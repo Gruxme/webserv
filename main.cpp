@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/05 10:05:59 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/05 15:59:02 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ int main( int ac, char **av ) {
     ft::Request s = ft::Request();
     s.parseRequest();
     
-    std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
+    /* std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
     std::cout << s.__dataGatherer << std::endl;
     std::cout << "------ request line extraction ------" << std::endl << std::endl;
     std::cout << s.__method << std::endl;
@@ -90,6 +90,6 @@ int main( int ac, char **av ) {
         std::cout << it->first << " : " << it->second << std::endl;
     }
     std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
-    std::cout << "Body --> " << s.__bodyFilename << std::endl << std::endl;
+    std::cout << "Body --> " << s.__bodyFilename << std::endl << std::endl; */
     return EXIT_SUCCESS;
 }
