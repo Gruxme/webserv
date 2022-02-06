@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/05 18:24:11 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/05 18:28:16 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@
 
 
 /* CONFIGURATION FILE MAIN -- DO NOT TOUCH */
-int main( int ac, char **av ) {
+/* int main( int ac, char **av ) {
 
     (void)ac;
     (void)av;
@@ -70,7 +70,7 @@ int main( int ac, char **av ) {
     std::cout << s.__serverConf[1].__location[1].__root << std::endl;
 
     return EXIT_SUCCESS;
-}
+} */
 
 /* REQUEST MAIN -- DO NOT TOUCH */
 /* int main( int ac, char **av ) {

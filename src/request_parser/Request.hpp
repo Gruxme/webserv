@@ -86,10 +86,39 @@ namespace ft {
             void    __extractContent( std::istringstream & iss ) {
                 /* -- WE'RE SURE THAT WE HAVE A POST METHOD */
                 if (this->__method == "POST") {
-                    std::ofstream f;
-                    /* -- NOT A CHUNKED REQUEST -- */
                     if (this->__headers.find("Content-Type") != this->__headers.end()) {
                         if (!(this->__headers.find("Content-Type")->second.empty())) {
+
+                            std::ofstream f;
+
+                            if (this->__headers.find("Transfer-Encoding") != this->__headers.end()) {
+                                /* -- CHUNKED REQUEST */
+                                if (!this->__headers.find("Transfer-Encoding")->second.empty() && this->__headers.find("Transfer-Encoding")->second == "chunked") {
+                                    std::string line;
+                                    this->__bodyFilename = "./src/request_parser/bodyChunked.txt";
+                                    f.open(this->__bodyFilename);
+                                    while (std::getline(iss, line)) {
+
+                                        /* CHECK IF END OF FILE */
+                                        if (line[0] == '0' line[1] == '\r' and line[2] == '\n') {
+                                            /* -- COMEBACK LATER */
+                                            exit(EOF);
+                                        }
+
+                                        /* -- MAKE SURE I APPEND ONLY THE DATA */
+                                        
+                                    }
+                                    f.close();
+                                    return ;
+
+                                }
+                                /* -- EMPTY TRANSFER-ENCODING {EXPECTED CHUNKED} */
+                                else {
+                                    throw BadRequest();
+                                }
+                            }
+
+                            /* -- REQUEST IS NOT CHUNKED -- */
                             /* -- ACCORDING TO RFC 2616 SEC4.4 || IN THIS CASE WE SHOULD HAVE A VALID "Content-Length: header" -- */
                             if (__checkContentLength() == __CONTENT_LENGTH_NOT_FOUND__) { throw BadRequest(); }
                             std::string line;
@@ -97,23 +126,16 @@ namespace ft {
                             f.open(this->__bodyFilename);
                             while (std::getline(iss, line))
                                 f << line;
-                            /* -- IN THIS CASE IF BODY SIZE AND CL DON'T MATCH A BAD REQUEST SHOULD BE THROW -- */
+                            /* -- IN THIS CASE IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW -- */
                             if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) { f.close(); throw BadRequest(); }
                             f.close(); return ;
+
                         }
-                        else { throw BadRequest(); }
+                        /* -- EMPTY CONTENT-TYPE HEADER VALUE */
+                        else {
+                            throw BadRequest();
+                        }
                     }
-
-                    /* -- PARSE CHUNKED REQUESTS */
-                    // if (this->__headers.find("Transfer-Encoding") != this->__headers.end()) {
-                    //     if (this->__headers.find("Transfer-Encoding")->second == "chunked") {
-                    //         std::cout << "I have a chunked request" << std::endl;
-                    //     } else {
-                    //         std::cout << "Its not chunked" << std::endl;
-                    //     }
-                    // }
-
-                    // f.close();
 
                     /* std::string line;
                     const char *s;
@@ -219,7 +241,7 @@ namespace ft {
             class BadRequest : public std::exception {
 			public:
 				virtual const char * what() const throw() {
-					return ("Bad Request");
+					return ("400 Bad Request");
 				}
 		    };
             class HostHeaderUnavailable : public std::exception {
