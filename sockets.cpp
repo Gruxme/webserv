@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/01/13 19:06:53 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/04 11:51:40 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ sockets::sockets(unsigned short port): _mainSd(-1), _clients(), _port(port), _ad
 		throw socketErr("socket: ");
 	if(setsockopt(_mainSd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 		throw socketErr("setsockopt: ");
+	if (fcntl(_mainSd, F_SETFL, O_NONBLOCK) < 0)
+		throw socketErr("fcntl: ");
 	_nsds = 1;
 }
 
@@ -72,3 +74,8 @@ int					sockets::getNumSds() const { return _nsds; }
 int					sockets::getMainSock() const { return _mainSd; }
 unsigned short		sockets::getPort() const { return _port; }
 struct sockaddr_in	sockets::getAddr() const { return _address; }
+
+void	sockets::setNonBlock(){
+	if (fcntl(_mainSd, F_SETFL, O_NONBLOCK) < 0)
+		throw socketErr("fcntl: ");
+}
