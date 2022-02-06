@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/05 18:28:16 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/06 16:19:45 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@
 } */
 
 /* REQUEST MAIN -- DO NOT TOUCH */
-/* int main( int ac, char **av ) {
+int main( int ac, char **av ) {
 
     (void)ac;
     (void)av;
@@ -81,20 +81,40 @@
     ft::Request s = ft::Request();
     s.parseRequest();
     
-    std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
-    std::cout << s.__dataGatherer << std::endl;
-    std::cout << "------ request line extraction ------" << std::endl << std::endl;
-    std::cout << s.__method << std::endl;
-    std::cout << s.__uri << std::endl;
-    std::cout << s.__protocol << std::endl;
-    std::cout << s.__uriExtension << std::endl;
-    std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
-    std::map<std::string, std::string>::iterator it;
-    for (it = s.__headers.begin(); it != s.__headers.end(); it++) {
-        std::cout << it->first << " : " << it->second << std::endl;
-    }
+    // std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
+    // std::cout << s.__dataGatherer << std::endl;
+    // std::cout << "------ request line extraction ------" << std::endl << std::endl;
+    // std::cout << s.__method << std::endl;
+    // std::cout << s.__uri << std::endl;
+    // std::cout << s.__protocol << std::endl;
+    // std::cout << s.__uriExtension << std::endl;
+    // std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
+    // std::map<std::string, std::string>::iterator it;
+    // for (it = s.__headers.begin(); it != s.__headers.end(); it++) {
+    //     std::cout << it->first << " : " << it->second << std::endl;
+    // }
     std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
     std::cout << "Body --> " << s.__bodyFilename << std::endl << std::endl;
     return EXIT_SUCCESS;
 }
- */
+
+
+/* REGEX MAIN -- HEX TEST MAIN -- DO NOT TOUCH */
+
+/* bool is_hex_notation( std::string const& s )
+{
+    return s.compare(0, 2, "0x") == 0
+      && s.size() > 2
+      && s.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos;
+}
+
+int main( void )
+{
+    std::string s = "0x7DDD\r\n";
+
+    s.erase(s.find("\r\n"));
+    if (is_hex_notation(s))
+        std::cout << s << std::endl;
+    else
+        std::cout << "WTF" << std::endl;
+} */

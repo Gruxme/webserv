@@ -44,7 +44,8 @@ namespace ft {
             ~Request() {}
 
             void    append( std::string x ) {
-                __dataGatherer.append(x);
+                x.erase(std::remove(x.begin(), x.end(), '\r'), x.end());
+                __dataGatherer.append(x + "\n");
                 return ;
             }
 
@@ -52,14 +53,10 @@ namespace ft {
             void    __extractRequestLine( std::istringstream & iss ) {
                 std::string line;
                 std::getline(iss, line);
-                if (!line.empty() && line[line.size() - 1] == '\r')
-                    line.erase(line.size() - 1);
                 std::vector<std::string> myvec = __split(line, ' ');
-                
                 myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw UnsupportedMethod();
                 this->__uri = myvec[1];
                 myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw UnsupportedTransferProtocol();
-
                 // /* -- SETUP SHORT FOR CGI */
                 if (__hasEnding(this->__uri, ".py")) { this->__uriExtension = PY; }
                 else if (__hasEnding(this->__uri, ".php")) { this->__uriExtension = PHP; }
@@ -69,94 +66,129 @@ namespace ft {
             void    __extractHeaders( std::istringstream & iss ) {
                 std::string line;
                 std::vector<std::string> myvec;
+
+                /* -- DO ERROR TREATMENTS ON STANDARDS IN HERE */
                 while (std::getline(iss, line)) {
-                    if (line.size() == 1)
+                    if (line.size() == 0)
                         break ;
-                    if (!line.empty() && line[line.size() - 1] == '\r')
-                        line.erase(line.size() - 1);
                     myvec = __split(line, ':');
-                    myvec[1] = this->ltrim(myvec[1], " :");
+                    myvec[1] = this->ltrim(myvec[1], " ");
                     this->__headers[myvec[0]] = myvec[1];
                 }
                 /* -- TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST -- */
                 if (this->__headers.find("host") != this->__headers.end()) { throw HostHeaderUnavailable(); }
             }
 
+            bool    __isNumber( const std::string& str ) {
+                if (str.empty())
+                    return 0;
+                return str.find_first_not_of("0123456789") == std::string::npos;
+            }
+
+
+            int     __hexadecimalToDecimal(std::string hexVal)
+            {
+                int len = hexVal.size();
+                int base = 1;
+                int dec_val = 0;
+                for (int i = len - 1; i >= 0; i--) {
+                    if (hexVal[i] >= '0' && hexVal[i] <= '9') {
+                        dec_val += (int(hexVal[i]) - 48) * base;
+                        base = base * 16;
+                    }
+                    else if (hexVal[i] >= 'A' && hexVal[i] <= 'F') {
+                        dec_val += (int(hexVal[i]) - 55) * base;
+                        base = base * 16;
+                    }
+                }
+                return dec_val;
+            }
+ 
+
             /* PVT -- -- */
             void    __extractContent( std::istringstream & iss ) {
                 /* -- WE'RE SURE THAT WE HAVE A POST METHOD */
                 if (this->__method == "POST") {
-                    if (this->__headers.find("Content-Type") != this->__headers.end()) {
-                        if (!(this->__headers.find("Content-Type")->second.empty())) {
-
-                            std::ofstream f;
-
-                            if (this->__headers.find("Transfer-Encoding") != this->__headers.end()) {
-                                /* -- CHUNKED REQUEST */
-                                if (!this->__headers.find("Transfer-Encoding")->second.empty() && this->__headers.find("Transfer-Encoding")->second == "chunked") {
-                                    std::string line;
-                                    this->__bodyFilename = "./src/request_parser/bodyChunked.txt";
-                                    f.open(this->__bodyFilename);
-                                    while (std::getline(iss, line)) {
-
-                                        /* CHECK IF END OF FILE */
-                                        if (line[0] == '0' line[1] == '\r' and line[2] == '\n') {
-                                            /* -- COMEBACK LATER */
-                                            exit(EOF);
-                                        }
-
-                                        /* -- MAKE SURE I APPEND ONLY THE DATA */
-                                        
-                                    }
-                                    f.close();
-                                    return ;
-
-                                }
-                                /* -- EMPTY TRANSFER-ENCODING {EXPECTED CHUNKED} */
-                                else {
-                                    throw BadRequest();
-                                }
-                            }
-
-                            /* -- REQUEST IS NOT CHUNKED -- */
-                            /* -- ACCORDING TO RFC 2616 SEC4.4 || IN THIS CASE WE SHOULD HAVE A VALID "Content-Length: header" -- */
-                            if (__checkContentLength() == __CONTENT_LENGTH_NOT_FOUND__) { throw BadRequest(); }
+                    std::ofstream f;
+                    if (this->__headers.find("Transfer-Encoding") != this->__headers.end()) {
+                        /* -- CHUNKED REQUEST */
+                        if (this->__headers.find("Transfer-Encoding")->second == "chunked") {
                             std::string line;
-                            this->__bodyFilename = "./src/request_parser/bodyX.txt";
+                            this->__bodyFilename = "./src/request_parser/bodyChunked.txt";
                             f.open(this->__bodyFilename);
-                            while (std::getline(iss, line))
-                                f << line;
-                            /* -- IN THIS CASE IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW -- */
-                            if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) { f.close(); throw BadRequest(); }
-                            f.close(); return ;
-
-                        }
-                        /* -- EMPTY CONTENT-TYPE HEADER VALUE */
-                        else {
-                            throw BadRequest();
+                            uint16_t    n = 0;
+                            while (std::getline(iss, line)) {
+                                if (__isNumber(line) || __isHexNotation(line)) {
+                                    if (__isHexNotation(line)) n = __hexadecimalToDecimal(line);
+                                    else n = stoi(line);
+                                }
+                                else {
+                                    if (n > line.length()) {
+                                        int x = line.length();
+                                        line += '\n';
+                                        while (x < n) {
+                                            std::string buffer;
+                                            std::getline(iss, buffer);
+                                            x += buffer.length() + 2;
+                                            line += buffer + "\n";
+                                        }
+                                        line.erase(line.end() - 1);
+                                        f << line;
+                                    }
+                                    else
+                                        f << line;
+                                }  
+                            }
+                            f.close();
+                            return ;
                         }
                     }
 
-                    /* std::string line;
-                    const char *s;
+                    /* -- REQUEST IS NOT CHUNKED -- */
+                    /* -- ACCORDING TO RFC 2616 SEC4.4 || IN THIS CASE WE SHOULD HAVE A VALID "Content-Length: header" -- */
+                    if (__checkContentLength() == __CONTENT_LENGTH_NOT_FOUND__) {
+                        throw BadRequest();
+                    }
                     std::string line;
-                    std::getline(iss, line);
-                    s = line.c_str();
-                    iss.readsome(const_cast<char *>(s), std::stoi(line));
-                    std::cout << s << std::endl;
-                    std::cout << std::endl; */
+                    this->__bodyFilename = "./src/request_parser/bodyX.txt";
+                    f.open(this->__bodyFilename);
+                    while (std::getline(iss, line))
+                        f << line;
+                    /* -- IN THIS CASE IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW -- */
+                    if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) {
+                        f.close();
+                        throw BadRequest();
+                    }
+                    f.close();
+                    return ;
                 }
             }
             
             /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
             void    parseRequest( void ) {
-                /* -- THIS IS FOR TEST AND SHOULD BE DELETED LATER */
-                std::ifstream   file("./src/request_parser/post_request.example");
-                std::string     buffer;
-                while (getline(file, buffer)) {
-                    this->append(buffer + "\r\n");
+
+                std::string s = "POST /cgi-bin/process.cgi HTTP/1.1\n\
+User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\n\
+Host: www.google.com\nContent-Type: application/x-www-form-urlencoded\n\
+Content-Length: 205\nAccept-Language: en-us\n\
+Accept-Encoding: gzip, deflate\n\
+Connection: Keep-Alive\nTransfer-Encoding: chunked\n\n\
+4\r\n\
+Wiki\r\n\
+6\r\n\
+pedia \r\n\
+0xE\r\n\
+in \r\n\
+\r\n\
+chunks.\r\n\
+0\r\n\
+\r\n";
+
+                std::istringstream ss(s);
+                std::string buffer;
+                while (getline(ss, buffer)) {
+                    this->append(buffer);
                 }
-                file.close();
 
                 /* -- - */
                 std::istringstream  iss(this->__dataGatherer);
@@ -208,6 +240,11 @@ namespace ft {
                 file.seekp(0, std::ios::end);
                 int size = file.tellp();
                 return size;
+            }
+            bool    __isHexNotation( std::string const& s ) {
+                return s.compare(0, 2, "0x") == 0
+                && s.size() > 2
+                && s.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos;
             }
 
             /* PVT -- -- */
