@@ -5,11 +5,11 @@ DFLAGS := -fsanitize=address -g3
 SRC := main.cpp sockets.cpp socketsIO.cpp
 all: $(NAME)
 
-$(NAME): $(SRC) $(HPP)
-	$(CC) $(CFLAGS) $< -o $@
+$(NAME): $(SRC)
+	$(CC) $(CFLAGS) $(SRC) -o $@
 
-debug: $(SRC) $(HPP)
-	$(CC) $(CFLAGS) $(DFLAGS) $< -o $(NAME)
+debug: $(SRC)
+	$(CC) $(CFLAGS) $(DFLAGS) $(SRC) -o $(NAME)
 
 clean:
 	/bin/rm -f $(OBJS)

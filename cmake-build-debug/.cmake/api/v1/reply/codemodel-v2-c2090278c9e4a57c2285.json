@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "webserv::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-webserv-Debug-a9c1803d1bf0564ee947.json",
+					"jsonFile" : "target-webserv-Debug-891e2dc442e2d2ecd3d2.json",
 					"name" : "webserv",
 					"projectIndex" : 0
 				}
@@ -49,8 +49,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/Users/abiari/Desktop/webserv/cmake-build-debug",
-		"source" : "/Users/abiari/Desktop/webserv"
+		"build" : "/Users/abiari/Developer/webserv/cmake-build-debug",
+		"source" : "/Users/abiari/Developer/webserv"
 	},
 	"version" : 
 	{
