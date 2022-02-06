@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/04 10:55:11 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/06 19:02:37 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
+#include <cstring>
 #include <vector>
 #define	SA	struct sockaddr
 

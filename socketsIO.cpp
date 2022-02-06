@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/04 11:58:33 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/06 19:23:47 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ void	socketsIO::eventListener(){
 	struct	pollfd	fds = {};
 	int				wasMainSock;
 	int		rc;
+	unsigned long	sentBytes = 0;
 	bool	endServer = false/* , closeConn = false */;
 	bool	connClosed = false;
 	while(!endServer) {
@@ -97,29 +98,41 @@ void	socketsIO::eventListener(){
 				}
 			}
 			if(!wasMainSock){
+				//to be refactored -> split recv and send, recv then check if request is complete before forging and sending a response
+				std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 741\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n</body>\n</html>");
 				bzero(buffer, 1024);
 				do
 				{
 					rc = recv(_pollfds[i].fd, &buffer, sizeof(buffer), 0);
 					req.append(buffer);
-					if (rc == -1)
-						break ;
-					if(rc == 0)
+					if(rc == 0 or (rc == -1 and errno == EWOULDBLOCK))
 						connClosed = true;
+					if (rc == -1){	
+						break ;
+					}
+					//if (req.isComplete)
+					//	connClosed = true
 					std::cout << "received: " << rc << "bytes" << std::endl;
 					std::cout << "===============REQUEST BEGIN===================\n";
 					std::cout << req << std::endl;
-					std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 304\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n</body>\n</html>");
-					send(_pollfds[i].fd, res.c_str(), res.length(), 0);
-					connClosed = true;
 				} while (!connClosed);
+				connClosed = false;
+				do
+				{
+					rc = send(_pollfds[i].fd, res.c_str() + sentBytes, res.length() - sentBytes, 0);
+					sentBytes += rc;
+					std::cout << "sent: " << rc << "bytes" << "for a total of " << sentBytes << "bytes"<< std::endl;
+					if(sentBytes == res.length())
+						connClosed = true;
+				} while (!connClosed);
+				
 				if (connClosed) {
 					close(_pollfds[i].fd);
 					_pollfds.erase(_pollfds.begin() + i);
 					_nfds--;
 					connClosed = false;
 				}
-				
+				// make sure to have the exact Content lenght filled in header
 				// _requests[_pollfds[i].fd].append(&buffer[0]);
 				
 			}

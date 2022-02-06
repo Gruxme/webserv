@@ -1,7 +1,7 @@
 NAME := webserv
 CC := clang++
 CFLAGS := -Wall -Werror -Wextra --std=c++98
-DFLAGS := -fsanitize=address -g3
+DFLAGS := -g3
 SRC := main.cpp sockets.cpp socketsIO.cpp
 all: $(NAME)
 
