@@ -1,7 +1,11 @@
 NAME = webserv
 CC = clang++
 CFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address
-SRC = main.cpp
+SRC = main.cpp \
+./src/config_parser/ConfigFile.cpp \
+./src/config_parser/ServerConfig.cpp \
+./src/config_parser/LocationClass.cpp \
+./src/request_parser/Request.cpp \
 
 all: $(NAME)
 
