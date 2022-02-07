@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/06 16:19:45 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/07 13:18:00 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,8 +93,8 @@ int main( int ac, char **av ) {
     // for (it = s.__headers.begin(); it != s.__headers.end(); it++) {
     //     std::cout << it->first << " : " << it->second << std::endl;
     // }
-    std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
-    std::cout << "Body --> " << s.__bodyFilename << std::endl << std::endl;
+    // std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
+    // std::cout << "Body --> " << s.__bodyFilename << std::endl << std::endl;
     return EXIT_SUCCESS;
 }
 

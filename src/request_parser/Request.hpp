@@ -72,38 +72,14 @@ namespace ft {
                     if (line.size() == 0)
                         break ;
                     myvec = __split(line, ':');
+                    if (myvec[0].empty() || myvec[1].empty())
+                        throw BadRequest();
                     myvec[1] = this->ltrim(myvec[1], " ");
                     this->__headers[myvec[0]] = myvec[1];
                 }
                 /* -- TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST -- */
                 if (this->__headers.find("host") != this->__headers.end()) { throw HostHeaderUnavailable(); }
             }
-
-            bool    __isNumber( const std::string& str ) {
-                if (str.empty())
-                    return 0;
-                return str.find_first_not_of("0123456789") == std::string::npos;
-            }
-
-
-            int     __hexadecimalToDecimal(std::string hexVal)
-            {
-                int len = hexVal.size();
-                int base = 1;
-                int dec_val = 0;
-                for (int i = len - 1; i >= 0; i--) {
-                    if (hexVal[i] >= '0' && hexVal[i] <= '9') {
-                        dec_val += (int(hexVal[i]) - 48) * base;
-                        base = base * 16;
-                    }
-                    else if (hexVal[i] >= 'A' && hexVal[i] <= 'F') {
-                        dec_val += (int(hexVal[i]) - 55) * base;
-                        base = base * 16;
-                    }
-                }
-                return dec_val;
-            }
- 
 
             /* PVT -- -- */
             void    __extractContent( std::istringstream & iss ) {
@@ -169,10 +145,13 @@ namespace ft {
 
                 std::string s = "POST /cgi-bin/process.cgi HTTP/1.1\n\
 User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\n\
-Host: www.google.com\nContent-Type: application/x-www-form-urlencoded\n\
-Content-Length: 205\nAccept-Language: en-us\n\
+Host: www.google.com\n\
+Content-Type: application/x-www-form-urlencoded\n\
+Content-Length: 205\n\
+Accept-Language: en-us\n\
 Accept-Encoding: gzip, deflate\n\
-Connection: Keep-Alive\nTransfer-Encoding: chunked\n\n\
+Connection: Keep-Alive\n\
+Transfer-Encoding: chunked\n\n\
 4\r\n\
 Wiki\r\n\
 6\r\n\
@@ -195,8 +174,8 @@ chunks.\r\n\
                 this->__extractRequestLine(iss);
                 this->__extractHeaders(iss);
                 /* -- CHECK FOR FURTHER STANDARDS */
-                if (this->__method == "POST")
-                    this->__extractContent(iss);
+                // if (this->__method == "POST")
+                //     this->__extractContent(iss);
             }
 
             
@@ -232,7 +211,7 @@ chunks.\r\n\
                 __SIZE_TYPE__ start = s.find_first_not_of(delim);
                 return (start == std::string::npos) ? "" : s.substr(start);
             }
-            bool    __hasEnding ( std::string const &fullString, std::string const &ending ) {
+            bool    __hasEnding( std::string const &fullString, std::string const &ending ) {
                 if (fullString.length() >= ending.length()) { return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending)); }
                 return false;
             }
@@ -246,6 +225,29 @@ chunks.\r\n\
                 && s.size() > 2
                 && s.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos;
             }
+            bool    __isNumber( const std::string& str ) {
+                if (str.empty())
+                    return 0;
+                return str.find_first_not_of("0123456789") == std::string::npos;
+            }
+            int     __hexadecimalToDecimal(std::string hexVal)
+            {
+                int len = hexVal.size();
+                int base = 1;
+                int dec_val = 0;
+                for (int i = len - 1; i >= 0; i--) {
+                    if (hexVal[i] >= '0' && hexVal[i] <= '9') {
+                        dec_val += (int(hexVal[i]) - 48) * base;
+                        base = base * 16;
+                    }
+                    else if (hexVal[i] >= 'A' && hexVal[i] <= 'F') {
+                        dec_val += (int(hexVal[i]) - 55) * base;
+                        base = base * 16;
+                    }
+                }
+                return dec_val;
+            }
+ 
 
             /* PVT -- -- */
             bool    __checkContentLength( void ) {
