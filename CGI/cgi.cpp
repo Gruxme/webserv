@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/02 12:52:15 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/02/05 20:05:25 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/02/07 19:02:26 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,6 @@
 #include <map>
 #include <cstdlib>
 #include <vector>
-
-
-const std::string ENV[4] = {
-	"QUERY_STRING", "REQUEST_METHOD", "SCRIPT_FILENAME", "SCRIPT_NAME"
-};
 
 char *const*setEnv(std::vector<std::string> my_env)
 {
@@ -49,6 +44,7 @@ std::vector<std::string> setEnvInVector()
 	my_env.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	my_env.push_back("SERVER_SOFTWARE=webserv");
 	my_env.push_back("REDIRECT_STATUS=200");
+
 	my_env[0].append("74");
 	my_env[1].append("Lorem Ipsum is simply dummy text of the printing and typesetting industry.");
 	my_env[3].append("http://localhost/Users/sel-fadi/Desktop/webserv/cgi/test.php");
@@ -59,7 +55,6 @@ std::vector<std::string> setEnvInVector()
 	my_env[8].append("/test.php");
 	my_env[9].append("--");
 	my_env[10].append("--");
-	// std::cout << my_env[3] <<  std::endl;
 	return my_env;
 }
 
@@ -75,7 +70,7 @@ int main()
 	char *const*env;
 	tmp = new char*[3];
 	std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.php";
-	std::string scriptType = "/usr/bin/php";
+	std::string scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
 
 	tmp[0] = strdup(scriptType.c_str());
 	tmp[1] = strdup(arg.c_str());
@@ -88,26 +83,17 @@ int main()
 	else if (pid == 0)
 	{
 		// I should exec cgi
-		std::cout << "Iam in the child process." << std::endl;
+		// std::cout << "Iam in the child process." << std::endl;
 		ret = execve(tmp[0], tmp, env);
 		if (ret == -1)
 			std::cout << "Execve failed." << std::endl;
 		else
 			std::cout << "Execve Success." << std::endl;
-		std::cout << "Ana hna." << std::endl;
 	}
 	else
 	{
 		wait(status);
 		// waiting the output of the child
 		std::cout << std::endl << "Iam in the parent process" << std::endl;
-		// close(fd[0]);
-		// close(fd[1]);
 	}
 }
-
-// int main()
-// {
-//     setEnv();
-//     return 0;
-// }
