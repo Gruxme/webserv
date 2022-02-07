@@ -2,7 +2,7 @@ NAME := webserv
 CC := clang++
 CFLAGS := -Wall -Werror -Wextra --std=c++98
 DFLAGS := -g3
-SRC := main.cpp sockets.cpp socketsIO.cpp
+SRC := main.cpp sockets.cpp socketsIO.cpp Request.hpp
 all: $(NAME)
 
 $(NAME): $(SRC)

@@ -6,11 +6,12 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/04 10:54:17 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/07 13:26:47 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "sockets.hpp"
+#include "Request.hpp"
 #include <poll.h>
 #include <memory>
 #include <map>
@@ -41,5 +42,5 @@ class socketsIO
 		std::allocator<sockets>		_socksAlloc;
 		std::vector<sockets *>		_socks;
 		std::vector<struct pollfd>	_pollfds;
-		std::map<int,std::string>	_requests;
+		std::map<int,Request>	_requests;
 };

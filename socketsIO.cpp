@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/06 19:23:47 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/07 14:43:37 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,14 +55,14 @@ void	socketsIO::setSock(const sockets& sock){
 }
 
 void	socketsIO::eventListener(){
-	char				buffer[1024];
-	std::string			req;
 	struct	pollfd	fds = {};
-	int				wasMainSock;
-	int		rc;
-	unsigned long	sentBytes = 0;
-	bool	endServer = false/* , closeConn = false */;
-	bool	connClosed = false;
+	char				buffer[1024];
+	Request				req;
+	int					wasMainSock;
+	int					rc;
+	unsigned long		sentBytes = 0;
+	bool				endServer = false/* , closeConn = false */;
+	bool				connClosed = false;
 	while(!endServer) {
 		wasMainSock = 0;
 		std::cout << "Waiting on poll..." << std::endl;
@@ -113,9 +113,10 @@ void	socketsIO::eventListener(){
 					//if (req.isComplete)
 					//	connClosed = true
 					std::cout << "received: " << rc << "bytes" << std::endl;
-					std::cout << "===============REQUEST BEGIN===================\n";
-					std::cout << req << std::endl;
 				} while (!connClosed);
+				req.parseRequest();
+				std::cout << "===============REQUEST BEGIN===================\n";
+				std::cout << req << std::endl;
 				connClosed = false;
 				do
 				{
@@ -134,7 +135,6 @@ void	socketsIO::eventListener(){
 				}
 				// make sure to have the exact Content lenght filled in header
 				// _requests[_pollfds[i].fd].append(&buffer[0]);
-				
 			}
 		}
 	}
