@@ -48,10 +48,10 @@ namespace ft {
             std::string getProtocol(void ) const { return this->__protocol; }
             short       getUriExtension( void ) const { return this->__uriExtension; }
             std::map<std::string, std::string>  getHeaders( void ) const { return this->__headers; }
-            std::String getBodyFilename( void ) const { return this->__bodyFilename; }
+            std::string getBodyFilename( void ) const { return this->__bodyFilename; }
 
-            void    append( char * rcvBuffer ) {
-                std::string x(rvcBuffer);
+            void    append( char * recvBuffer ) {
+                std::string x(recvBuffer);
                 x.erase(std::remove(x.begin(), x.end(), '\r'), x.end());
                 __dataGatherer.append(x + "\n");
                 return ;    
@@ -63,9 +63,9 @@ namespace ft {
                 std::string line;
                 std::getline(iss, line);
                 std::vector<std::string> myvec = __split(line, ' ');
-                myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw UnsupportedMethod();
+                myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw parseErr("Unsupported Method");
                 this->__uri = myvec[1];
-                myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw UnsupportedTransferProtocol();
+                myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw parseErr("Unsupported Transfer Protocol");
                 // /* -- SETUP SHORT FOR CGI */
                 if (__hasEnding(this->__uri, ".py")) { this->__uriExtension = PY; }
                 else if (__hasEnding(this->__uri, ".php")) { this->__uriExtension = PHP; }
@@ -82,12 +82,12 @@ namespace ft {
                         break ;
                     myvec = __split(line, ':');
                     if (myvec[0].empty() || myvec[1].empty())
-                        throw BadRequest();
+                        throw parseErr("Bad Request");
                     myvec[1] = this->__ltrim(myvec[1], " ");
                     this->__headers[myvec[0]] = myvec[1];
                 }
                 /* -- TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST -- */
-                if (this->__headers.find("host") != this->__headers.end()) { throw HostHeaderUnavailable(); }
+                if (this->__headers.find("host") != this->__headers.end()) { throw parseErr("Host Header Unavailable"); }
             }
 
             /* PVT -- -- */
@@ -103,7 +103,7 @@ namespace ft {
                             f.open(this->__bodyFilename);
                             uint16_t    n = 0;
                             while (std::getline(iss, line)) {
-                                if (__isNumber(line) || __isHexNotation(line)) {
+                                if (__isHexNotation(line)) {
                                     if (__isHexNotation(line)) n = __hexadecimalToDecimal(line);
                                     else n = stoi(line);
                                 }
@@ -132,7 +132,7 @@ namespace ft {
                     /* -- REQUEST IS NOT CHUNKED -- */
                     /* -- ACCORDING TO RFC 2616 SEC4.4 || IN THIS CASE WE SHOULD HAVE A VALID "Content-Length: header" -- */
                     if (__checkContentLength() == __CONTENT_LENGTH_NOT_FOUND__) {
-                        throw BadRequest();
+                        throw parseErr("Bad Request");
                     }
                     std::string line;
                     this->__bodyFilename = "./src/request_parser/bodyX.txt";
@@ -142,7 +142,7 @@ namespace ft {
                     /* -- IN THIS CASE IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW -- */
                     if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) {
                         f.close();
-                        throw BadRequest();
+                        throw parseErr("Bad Request");
                     }
                     f.close();
                     return ;
@@ -232,14 +232,7 @@ chunks.\r\n\
                 return size;
             }
             bool    __isHexNotation( std::string const& s ) {
-                return s.compare(0, 2, "0x") == 0
-                && s.size() > 2
-                && s.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos;
-            }
-            bool    __isNumber( const std::string& str ) {
-                if (str.empty())
-                    return 0;
-                return str.find_first_not_of("0123456789") == std::string::npos;
+                return s.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos;
             }
             int     __hexadecimalToDecimal(std::string hexVal)
             {
@@ -276,29 +269,14 @@ chunks.\r\n\
 
 
             /* ----- Exceptions ----- */
-            class UnsupportedTransferProtocol : public std::exception {
+			class parseErr : public std::exception {
 			public:
+				explicit parseErr(const std::string &errStr) throw() : _errStr(errStr) {}
 				virtual const char * what() const throw() {
-					return ("Unsupported Transfer Protocol");
+					return (_errStr.c_str());
 				}
-		    };
-            class UnsupportedMethod : public std::exception {
-			public:
-				virtual const char * what() const throw() {
-					return ("Unsupported Method");
-				}
-		    };
-            class BadRequest : public std::exception {
-			public:
-				virtual const char * what() const throw() {
-					return ("400 Bad Request");
-				}
-		    };
-            class HostHeaderUnavailable : public std::exception {
-			public:
-				virtual const char * what() const throw() {
-					return ("Host Header Unavailable");
-				}
+			private:
+				std::string _errStr;
 		    };
 
     };
