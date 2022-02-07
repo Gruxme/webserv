@@ -23,7 +23,7 @@
 namespace ft {
     class Request {
         /* ----- PRIVATE ----- */
-        public:
+        private:
             std::string __dataGatherer;
             std::string __method;
             std::string __uri;
@@ -43,12 +43,21 @@ namespace ft {
                 __bodyFilename("") {}
             ~Request() {}
 
-            void    append( std::string x ) {
+            std::string getMethod( void ) const { return this->__method; }
+            std::string getUri( void ) const { return this->__uri; }
+            std::string getProtocol(void ) const { return this->__protocol; }
+            short       getUriExtension( void ) const { return this->__uriExtension; }
+            std::map<std::string, std::string>  getHeaders( void ) const { return this->__headers; }
+            std::String getBodyFilename( void ) const { return this->__bodyFilename; }
+
+            void    append( char * rcvBuffer ) {
+                std::string x(rvcBuffer);
                 x.erase(std::remove(x.begin(), x.end(), '\r'), x.end());
                 __dataGatherer.append(x + "\n");
-                return ;
+                return ;    
             }
 
+        private:
             /* PVT -- THIS METHOD SHOULD CHECK FOR STANDARDS LATER -- */
             void    __extractRequestLine( std::istringstream & iss ) {
                 std::string line;
@@ -74,7 +83,7 @@ namespace ft {
                     myvec = __split(line, ':');
                     if (myvec[0].empty() || myvec[1].empty())
                         throw BadRequest();
-                    myvec[1] = this->ltrim(myvec[1], " ");
+                    myvec[1] = this->__ltrim(myvec[1], " ");
                     this->__headers[myvec[0]] = myvec[1];
                 }
                 /* -- TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST -- */
@@ -139,7 +148,8 @@ namespace ft {
                     return ;
                 }
             }
-            
+
+        public:
             /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
             void    parseRequest( void ) {
 
@@ -180,6 +190,7 @@ chunks.\r\n\
 
             
             /* ----- Utils ------ */
+        private:
             /* -- PVT METHODS */
             std::vector<std::string> __split( std::string str, char separator ) {
                 std::vector<std::string>  myvec;
@@ -207,7 +218,7 @@ chunks.\r\n\
                 while ((pos = str.find(substr)) != std::string::npos)
                     str.erase(pos, substr.length());
             }
-            std::string ltrim( const std::string &s, const std::string &delim ) {
+            std::string __ltrim( const std::string &s, const std::string &delim ) {
                 __SIZE_TYPE__ start = s.find_first_not_of(delim);
                 return (start == std::string::npos) ? "" : s.substr(start);
             }
@@ -289,5 +300,6 @@ chunks.\r\n\
 					return ("Host Header Unavailable");
 				}
 		    };
+
     };
 }
