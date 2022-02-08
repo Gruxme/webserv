@@ -1,4 +1,5 @@
 <?php
-    $txt = "W3Schools.com";
-    echo "I love $txt!\n";
+    // $txt = "W3Schools.com";
+    // echo "I love $txt!\n";
+    phpinfo();
 ?>

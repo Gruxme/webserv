@@ -1,1 +1,2 @@
-print "Hello from script"
+import sys
+print(sys.prefix)
