@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/02 12:52:15 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/02/08 16:40:38 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/02/09 19:37:07 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,23 @@
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include "../request/Request.hpp"
 
+// This Work
+// REQUEST_METHOD=post
+// REDIRECT_STATUS=TRUE
+// QUERY_STRING=fname=hey
+// CONTENT_LENGTH=9
+// SCRIPT_FILENAME=/Users/sel-fadi/Desktop/webserv/cgi/test.php
+
+// REQUEST_METHOD=POST
+// REDIRECT_STATUS=true
+// SCRIPT_FILENAME=/Users/sel-fadi/Desktop/webserv/cgi/test.php
+// CONTENT_LENGTH=7
+// QUERY_STRING=fname=a
+// CONTENT_TYPE=text/html
+// GATEWAY_INTERFACE=CGI/1.1
+// SERVER_PROTOCOL=HTTP/1.1
 
 char *const*setEnv(std::vector<std::string> my_env)
 {
@@ -32,7 +48,22 @@ char *const*setEnv(std::vector<std::string> my_env)
 	return (env);
 }
 
-std::vector<std::string> setEnvInVector()
+std::vector<std::string> setEnvInVectorPost(Request my_request)
+{
+	std::vector<std::string> my_env;
+	my_env.push_back("CONTENT_LENGTH=");
+	my_env.push_back("QUERY_STRING=");
+	my_env.push_back("REQUEST_METHOD=post");
+	my_env.push_back("SCRIPT_FILENAME=");
+	my_env.push_back("REDIRECT_STATUS=TRUE");
+
+	my_env[0].append("9");
+	my_env[1].append("fname=hey");
+	my_env[3].append("/Users/sel-fadi/Desktop/webserv/cgi/test.php");
+	return my_env;
+}
+
+std::vector<std::string> setEnvInVector(Request my_request)
 {
 	std::vector<std::string> my_env;
 	my_env.push_back("CONTENT_LENGTH=");
@@ -50,12 +81,13 @@ std::vector<std::string> setEnvInVector()
 	my_env.push_back("SERVER_SOFTWARE=webserv");
 	my_env.push_back("REDIRECT_STATUS=200");
 
-	my_env[0].append("74");
+	// my_env[0].append(my_request.getHeaders().find("CONTENT_LENGTH")->second);
+	// std::cout << my_request.getHeaders() << std::endl;
 	my_env[1].append("Lorem Ipsum is simply dummy text of the printing and typesetting industry.");
 	my_env[3].append("http://localhost/Users/sel-fadi/Desktop/webserv/cgi/test.php");
 	my_env[4].append("--");
 	my_env[5].append("--");
-	my_env[6].append("POST");
+	my_env[6].append("GET");
 	my_env[7].append("--");
 	my_env[8].append("/test.php");
 	my_env[9].append("--");
@@ -65,27 +97,32 @@ std::vector<std::string> setEnvInVector()
 
 int main()
 {
+	Request my_request;
 	int rett;
 	int fd[2];
 	pid_t pid;
 	int status;
 	int ret;
 	char **tmp;
-	
-	if (pipe(fd) == -1)
-		exit(EXIT_FAILURE);
-	std::vector<std::string> my_headers = setEnvInVector();
 	char *const*env;
-	tmp = new char*[3];
+	bool getOrPost = 0;
+
 	std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.php";
 	std::string scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
-	// std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.py";
-	// std::string scriptType = "/usr/bin/python";
-
+	std::vector<std::string> my_headers = setEnvInVector(my_request);
+	std::vector<std::string> my_headerPost = setEnvInVectorPost(my_request);
+	if (getOrPost)
+		env = setEnv(my_headerPost);
+	else
+		env = setEnv(my_headers);
+	tmp = new char*[3];
 	tmp[0] = strdup(scriptType.c_str());
 	tmp[1] = strdup(arg.c_str());
 	tmp[2] = NULL;
-	env = setEnv(my_headers);
+	if (pipe(fd) == -1)
+		exit(EXIT_FAILURE);
+	// std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.py";
+	// std::string scriptType = "/usr/bin/python";
 	
 	pid = fork();
 	if (pid == -1)
