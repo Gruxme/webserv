@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/01/13 19:06:53 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/14 15:53:28 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 #ifndef WEBSERV_RESPONSE_HPP
 #define WEBSERV_RESPONSE_HPP
-
 
 class response {
 	public:

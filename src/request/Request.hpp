@@ -41,6 +41,7 @@ class Request {
         Request();
         ~Request();
 
+        std::string getDataGatherer( void ) const;
         std::string getMethod( void ) const;
         std::string getUri( void ) const;
         std::string getProtocol(void ) const;
@@ -60,6 +61,8 @@ class Request {
     public:
         /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
         void    parseRequest( void );
+		bool	headersComplete( void );
+		bool	isComplete( void );
         /* ----- Utils ------ */
     private:
         /* -- PVT METHODS */
@@ -89,16 +92,4 @@ class Request {
 
 };
 
-/* std::ostream & operator<<( std::ostream & o, Request const & req ) {
-	o << req.getMethod() + " ";
-	o << req.getUri() << " ";
-	o << req.getProtocol() << " \n";
-	for (std::map<std::string, std::string>::iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); it++){
-		o << it->first << ": " << it->second << std::endl;
-	}
-	std::ifstream	body(req.getBodyFilename());
-	std::cout << body;
-
-	return o;
-}
- */
+std::ostream & operator<<( std::ostream & o, Request const & req );

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
+/*   Updated: 2022/02/14 16:03:00 by aabounak         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 # include "Request.hpp"
 
 /* ----- Constructors & Destructor respectively ----- */
@@ -13,6 +25,8 @@ Request::~Request() {}
 
 
 /* ----- Getters ----- */
+
+/* TO BE DELETED */ std::string Request::getDataGatherer( void ) const { return this->__dataGatherer; }
 std::string Request::getMethod( void ) const { return this->__method; }
 std::string Request::getUri( void ) const { return this->__uri; }
 std::string Request::getProtocol(void ) const { return this->__protocol; }
@@ -25,10 +39,32 @@ std::string Request::getBodyFilename( void ) const { return this->__bodyFilename
 /* -- PUBLIC METHODS */
 void    Request::append( const char * recvBuffer ) {
     std::string x(recvBuffer);
-    x.erase(std::remove(x.begin(), x.end(), '\r'), x.end());
-    __dataGatherer.append(x + "\n");
+    // x.erase(std::remove(x.begin(), x.end(), '\r'), x.end());
+    // __dataGatherer.append(x + "\n");
     return ;
 }
+
+bool	Request::headersComplete( void ){
+	return __dataGatherer.find("\r\n\r\n") != std::string::npos;
+}
+
+// bool	Request::isComplete( void ){
+// 	int	contentLenght = 0;
+// 	if(headersComplete()){
+// 		if(__headers.empty()){
+// 			std::istringstream	iss(__dataGatherer);
+// 			__extractRequestLine(iss);
+// 			__extractHeaders(iss);
+// 		}
+// 		std::map<std::string, std::string>::iterator transferEncoding = __headers.find("Transfer-Encoding");
+// 		if(transferEncoding != __headers.end() && transferEncoding->second == "chunked")
+// 			//look for 0\r\n\r\n if found data is then complete
+// 		contentLenght = std::stoi(__headers.find("Content-Length")->second);
+// 		//check if content length can be neg and throw exception if it is
+// 		//when contentLenght == length of request body, then req is complete
+
+// 	}
+// }
 
 /* -- PVT PARSE METHODS */
 void    Request::__extractRequestLine( std::istringstream & iss ) {
@@ -121,15 +157,15 @@ void    Request::__extractContent( std::istringstream & iss ) {
 
 void    Request::parseRequest( void ) {
 
-    std::string s = "POST /cgi-bin/process.cgi HTTP/1.1\n\
-User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\n\
-Host: www.google.com\n\
-Content-Type: application/x-www-form-urlencoded\n\
-Content-Length: 205\n\
-Accept-Language: en-us\n\
-Accept-Encoding: gzip, deflate\n\
-Connection: Keep-Alive\n\
-Transfer-Encoding: chunked\n\n\
+    std::string s = "POST /cgi-bin/process.cgi HTTP/1.1\r\n\
+User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\n\
+Host: www.google.com\r\n\
+Content-Type: application/x-www-form-urlencoded\r\n\
+Content-Length: 205\r\n\
+Accept-Language: en-us\r\n\
+Accept-Encoding: gzip, deflate\r\n\
+Connection: Keep-Alive\r\n\
+Transfer-Encoding: chunked\r\n\r\n\
 4\r\n\
 Wiki\r\n\
 6\r\n\
@@ -146,7 +182,7 @@ chunks.\r\n\
     while (getline(ss, buffer)) {
         this->append(buffer.c_str());
     }
-
+    
     /* -- - */
     std::istringstream  iss(this->__dataGatherer);
     this->__extractRequestLine(iss);
@@ -237,15 +273,19 @@ short   Request::__compareContentLengthWithBody( std::ofstream &f ) {
 
 
 /* -- OPERATOR << */
-std::ostream & operator<<( std::ostream & o, Request const & req ) {
+/* std::ostream & operator<<( std::ostream & o, Request const & req ) {
 	o << req.getMethod() + " ";
 	o << req.getUri() << " ";
 	o << req.getProtocol() << " \n";
-	for (std::map<std::string, std::string>::iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); it++){
+    std::map<std::string, std::string>::iterator it = req.getHeaders().begin();
+	for (; it != req.getHeaders().end(); it++){
 		o << it->first << ": " << it->second << std::endl;
 	}
+	std::cout << std::endl;
 	std::ifstream	body(req.getBodyFilename());
-	std::cout << body;
-
+	std::string line;
+	while(getline(body, line))
+		std::cout << line << std::endl;
 	return o;
 }
+ */

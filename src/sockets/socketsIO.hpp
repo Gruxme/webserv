@@ -3,13 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/07 13:26:47 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/14 15:53:44 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 #include "sockets.hpp"
 #include "Request.hpp"
 #include <poll.h>
