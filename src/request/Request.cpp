@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/14 16:03:00 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/15 11:25:49 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ std::string Request::getMethod( void ) const { return this->__method; }
 std::string Request::getUri( void ) const { return this->__uri; }
 std::string Request::getProtocol(void ) const { return this->__protocol; }
 short       Request::getUriExtension( void ) const { return this->__uriExtension; }
-std::map<std::string, std::string>  Request::getHeaders( void ) const { return this->__headers; }
+std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->__headers; }
 std::string Request::getBodyFilename( void ) const { return this->__bodyFilename; }
 
 
@@ -40,7 +40,7 @@ std::string Request::getBodyFilename( void ) const { return this->__bodyFilename
 void    Request::append( const char * recvBuffer ) {
     std::string x(recvBuffer);
     // x.erase(std::remove(x.begin(), x.end(), '\r'), x.end());
-    // __dataGatherer.append(x + "\n");
+    __dataGatherer.append(x);
     return ;
 }
 
@@ -70,6 +70,7 @@ bool	Request::headersComplete( void ){
 void    Request::__extractRequestLine( std::istringstream & iss ) {
     std::string line;
     std::getline(iss, line);
+    line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     std::vector<std::string> myvec = __split(line, ' ');
     myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw parseErr("Unsupported Method");
     this->__uri = myvec[1];
@@ -81,20 +82,26 @@ void    Request::__extractRequestLine( std::istringstream & iss ) {
 
 void    Request::__extractHeaders( std::istringstream & iss ) {
     std::string line;
-    std::vector<std::string> myvec;
+    std::vector<std::string> myvec(0);
 
     /* -- DO ERROR TREATMENTS ON STANDARDS IN HERE */
     while (std::getline(iss, line)) {
+        line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
         if (line.size() == 0)
             break ;
         myvec = __split(line, ':');
-        if (myvec[0].empty() || myvec[1].empty())
+        if (myvec.at(0).empty() || myvec.at(1).empty())
             throw parseErr("Bad Request");
         myvec[1] = this->__ltrim(myvec[1], " ");
         this->__headers[myvec[0]] = myvec[1];
     }
     /* -- TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST -- */
     if (this->__headers.find("host") != this->__headers.end()) { throw parseErr("Host Header Unavailable"); }
+
+    // for (std::map<std::string, std::string>::iterator it = this->__headers.begin(); it != this->__headers.end(); ++it) {
+    //     std::cout << it->first << " : " << it->second << std::endl;
+    // }
+    // exit(0);
 }
 
 void    Request::__extractContent( std::istringstream & iss ) {
@@ -141,7 +148,7 @@ void    Request::__extractContent( std::istringstream & iss ) {
             throw parseErr("Bad Request");
         }
         std::string line;
-        this->__bodyFilename = "./src/request_parser/bodyX.txt";
+        this->__bodyFilename = "./src/request/bodyX.txt";
         f.open(this->__bodyFilename);
         while (std::getline(iss, line))
             f << line;
@@ -156,40 +163,13 @@ void    Request::__extractContent( std::istringstream & iss ) {
 }
 
 void    Request::parseRequest( void ) {
-
-    std::string s = "POST /cgi-bin/process.cgi HTTP/1.1\r\n\
-User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\n\
-Host: www.google.com\r\n\
-Content-Type: application/x-www-form-urlencoded\r\n\
-Content-Length: 205\r\n\
-Accept-Language: en-us\r\n\
-Accept-Encoding: gzip, deflate\r\n\
-Connection: Keep-Alive\r\n\
-Transfer-Encoding: chunked\r\n\r\n\
-4\r\n\
-Wiki\r\n\
-6\r\n\
-pedia \r\n\
-0xE\r\n\
-in \r\n\
-\r\n\
-chunks.\r\n\
-0\r\n\
-\r\n";
-
-    std::istringstream ss(s);
-    std::string buffer;
-    while (getline(ss, buffer)) {
-        this->append(buffer.c_str());
-    }
-    
     /* -- - */
     std::istringstream  iss(this->__dataGatherer);
     this->__extractRequestLine(iss);
     this->__extractHeaders(iss);
-    /* -- CHECK FOR FURTHER STANDARDS */
-    if (this->__method == "POST")
-        this->__extractContent(iss);
+    // /* -- CHECK FOR FURTHER STANDARDS */
+    // if (this->__method == "POST")
+    //     this->__extractContent(iss);
 }
 
 /* ----- Utils ------ */

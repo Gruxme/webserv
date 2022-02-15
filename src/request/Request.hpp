@@ -46,7 +46,7 @@ class Request {
         std::string getUri( void ) const;
         std::string getProtocol(void ) const;
         short       getUriExtension( void ) const;
-        std::map<std::string, std::string>  getHeaders( void ) const;
+        std::map<std::string, std::string> const &getHeaders( void ) const;
         std::string getBodyFilename( void ) const;
 
         /* -- PUBLIC METHODS */
