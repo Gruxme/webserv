@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/15 11:25:49 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/15 13:55:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ bool	Request::headersComplete( void ){
 // }
 
 /* -- PVT PARSE METHODS */
-void    Request::__extractRequestLine( std::istringstream & iss ) {
+void    Request::__extractRequestLine( std::stringstream & iss ) {
     std::string line;
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
@@ -80,7 +80,7 @@ void    Request::__extractRequestLine( std::istringstream & iss ) {
     else if (__hasEnding(this->__uri, ".php")) { this->__uriExtension = PHP; }
 }
 
-void    Request::__extractHeaders( std::istringstream & iss ) {
+void    Request::__extractHeaders( std::stringstream & iss ) {
     std::string line;
     std::vector<std::string> myvec(0);
 
@@ -104,7 +104,7 @@ void    Request::__extractHeaders( std::istringstream & iss ) {
     // exit(0);
 }
 
-void    Request::__extractContent( std::istringstream & iss ) {
+void    Request::__extractContent( std::stringstream & iss ) {
     /* -- WE'RE SURE THAT WE HAVE A POST METHOD */
     if (this->__method == "POST") {
         std::ofstream f;
@@ -148,13 +148,14 @@ void    Request::__extractContent( std::istringstream & iss ) {
             throw parseErr("Bad Request");
         }
         std::string line;
-        this->__bodyFilename = "./src/request/bodyX.txt";
+        this->__bodyFilename = "./src/request/bodyX.html";
         f.open(this->__bodyFilename);
-        while (std::getline(iss, line))
-            f << line;
+        f << iss.rdbuf();
+            
         /* -- IN THIS CASE IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW -- */
         if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) {
             f.close();
+            unlink("/src/request/bodyX.html");
             throw parseErr("Bad Request");
         }
         f.close();
@@ -164,12 +165,12 @@ void    Request::__extractContent( std::istringstream & iss ) {
 
 void    Request::parseRequest( void ) {
     /* -- - */
-    std::istringstream  iss(this->__dataGatherer);
+    std::stringstream  iss(this->__dataGatherer);
     this->__extractRequestLine(iss);
     this->__extractHeaders(iss);
     // /* -- CHECK FOR FURTHER STANDARDS */
-    // if (this->__method == "POST")
-    //     this->__extractContent(iss);
+    if (this->__method == "POST")
+        this->__extractContent(iss);
 }
 
 /* ----- Utils ------ */

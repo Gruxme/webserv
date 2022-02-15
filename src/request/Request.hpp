@@ -12,6 +12,7 @@
 
 #pragma once
 # include <iostream>
+# include <unistd.h>
 # include <sstream>
 # include <fstream>
 # include <string>
@@ -54,9 +55,9 @@ class Request {
 
     private:
         /* PVT -- THESE SHOULD CHECK FOR STANDARDS LATER -- */
-        void    __extractRequestLine( std::istringstream & iss );
-        void    __extractHeaders( std::istringstream & iss );
-        void    __extractContent( std::istringstream & iss );
+        void    __extractRequestLine( std::stringstream & iss );
+        void    __extractHeaders( std::stringstream & iss );
+        void    __extractContent( std::stringstream & iss );
 
     public:
         /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */

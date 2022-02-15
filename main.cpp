@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/15 11:24:44 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/15 13:50:53 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,6 +117,11 @@ int main( void ) {
             /* ------------------------------ */
             write(newSocket, str.c_str(), str.length());
             std::cout << "------------------ Message sent -------------------" << std::endl;
+            std::stringstream a(req.getDataGatherer());
+            std::string line;
+            while (std::getline(a, line)) {
+                std::cout << line ;
+            }
             close(newSocket);
         }
     } catch (std::exception &e) {
