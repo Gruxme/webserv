@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/15 13:55:43 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/15 18:53:25 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,11 +97,6 @@ void    Request::__extractHeaders( std::stringstream & iss ) {
     }
     /* -- TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST -- */
     if (this->__headers.find("host") != this->__headers.end()) { throw parseErr("Host Header Unavailable"); }
-
-    // for (std::map<std::string, std::string>::iterator it = this->__headers.begin(); it != this->__headers.end(); ++it) {
-    //     std::cout << it->first << " : " << it->second << std::endl;
-    // }
-    // exit(0);
 }
 
 void    Request::__extractContent( std::stringstream & iss ) {
@@ -112,29 +107,36 @@ void    Request::__extractContent( std::stringstream & iss ) {
             /* -- CHUNKED REQUEST */
             if (this->__headers.find("Transfer-Encoding")->second == "chunked") {
                 std::string line;
-                this->__bodyFilename = "./src/request_parser/bodyChunked.txt";
+                this->__bodyFilename = "./src/request/bodyChunked.txt";
                 f.open(this->__bodyFilename);
                 uint16_t    n = 0;
                 while (std::getline(iss, line)) {
+
+                    /* -- FIGHTING OVER WITH THE "\r\n" */
+
+                    // std::cout << line << std::endl;
+                    line.erase(line.find_last_of('\r'));
                     if (__isHexNotation(line)) {
                         if (__isHexNotation(line)) n = __hexadecimalToDecimal(line);
                         else n = stoi(line);
+                        std::cout << n << std::endl;
                     }
                     else {
                         if (n > line.length()) {
                             int x = line.length();
-                            line += '\n';
+                            // line += '\n';
                             while (x < n) {
                                 std::string buffer;
                                 std::getline(iss, buffer);
                                 x += buffer.length() + 2;
-                                line += buffer + "\n";
+                                // line += buffer + "\n";
+                                line += buffer;
                             }
-                            line.erase(line.end() - 1);
+                            // line.erase(line.end() - 1);
                             f << line;
                         }
                         else
-                            f << line;
+                            f << line + "\n";
                     }  
                 }
                 f.close();
@@ -148,14 +150,14 @@ void    Request::__extractContent( std::stringstream & iss ) {
             throw parseErr("Bad Request");
         }
         std::string line;
-        this->__bodyFilename = "./src/request/bodyX.html";
+        this->__bodyFilename = "./src/request/bodyX.txt";
         f.open(this->__bodyFilename);
         f << iss.rdbuf();
             
         /* -- IN THIS CASE IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW -- */
         if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) {
             f.close();
-            unlink("/src/request/bodyX.html");
+            unlink("/src/request/bodyX.txt");
             throw parseErr("Bad Request");
         }
         f.close();
@@ -222,7 +224,7 @@ int     Request::__findFileSize( std::ofstream &file ) {
 }
 
 bool    Request::__isHexNotation( std::string const& s ) {
-    return s.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos;
+    return s.find_first_not_of("0123456789abcdefABCDEF\r\n", 2) == std::string::npos;
 }
 
 int     Request::__hexadecimalToDecimal( std::string hexVal ) {

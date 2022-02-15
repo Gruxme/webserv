@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/15 13:50:53 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/15 18:26:16 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,29 +99,24 @@ int main( void ) {
             
             /* -- INVOKING PARSER ---------- */
             req.append(buffer);
-            std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
-            std::cout << req.getDataGatherer() << std::endl;
+            // std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
+            // std::cout << req.getDataGatherer() << std::endl;
             req.parseRequest();
-            std::cout << "------ request line extraction ------" << std::endl << std::endl;
-            std::cout << req.getMethod() << std::endl;
-            std::cout << req.getUri() << std::endl;
-            std::cout << req.getProtocol() << std::endl;
-            std::cout << req.getUriExtension() << std::endl;
-            std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
-            for (std::map<std::string, std::string>::const_iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); ++it) {
-                std::cout << it->first << " : " << it->second << std::endl;
-            }
-            std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
-            std::cout << "Body --> " << req.getBodyFilename() << std::endl << std::endl;
+            // std::cout << "------ request line extraction ------" << std::endl << std::endl;
+            // std::cout << req.getMethod() << std::endl;
+            // std::cout << req.getUri() << std::endl;
+            // std::cout << req.getProtocol() << std::endl;
+            // std::cout << req.getUriExtension() << std::endl;
+            // std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
+            // for (std::map<std::string, std::string>::const_iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); ++it) {
+            //     std::cout << it->first << " : " << it->second << std::endl;
+            // }
+            // std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
+            // std::cout << "Body --> " << req.getBodyFilename() << std::endl << std::endl;
 
             /* ------------------------------ */
+            // std::cout << "------------------ Message sent -------------------" << std::endl;
             write(newSocket, str.c_str(), str.length());
-            std::cout << "------------------ Message sent -------------------" << std::endl;
-            std::stringstream a(req.getDataGatherer());
-            std::string line;
-            while (std::getline(a, line)) {
-                std::cout << line ;
-            }
             close(newSocket);
         }
     } catch (std::exception &e) {

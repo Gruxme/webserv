@@ -10,7 +10,6 @@ SRC := main.cpp \
 all: $(NAME)
 
 $(NAME): $(SRC)
-	lsof -ti:1337 | xargs kill -9
 	$(CC) $(CFLAGS) $(SRC) -o $@
 
 debug: $(SRC)
@@ -25,5 +24,3 @@ fclean: clean
 re : fclean all
 
 .PHONY: clean fclean all re
-
-# lsof -ti:1337 | xargs kill -9

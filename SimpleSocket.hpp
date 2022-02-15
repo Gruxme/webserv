@@ -31,6 +31,9 @@ class SimpleSocket
             this->__address.sin_addr.s_addr = INADDR_ANY;
             this->__address.sin_port = htons( 1337 );
             memset(this->__address.sin_zero, '\0', sizeof(this->__address.sin_zero));
+            int flag = 1;
+            if (setsockopt(this->__socketFd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1)
+                std::cerr << "Setsockopt fail" << std::endl;
         }
 
         int     bind() {
