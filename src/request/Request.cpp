@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/15 18:53:25 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/16 10:41:51 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,36 +107,30 @@ void    Request::__extractContent( std::stringstream & iss ) {
             /* -- CHUNKED REQUEST */
             if (this->__headers.find("Transfer-Encoding")->second == "chunked") {
                 std::string line;
+                std::string kharya;
                 this->__bodyFilename = "./src/request/bodyChunked.txt";
                 f.open(this->__bodyFilename);
                 uint16_t    n = 0;
                 while (std::getline(iss, line)) {
-
-                    /* -- FIGHTING OVER WITH THE "\r\n" */
-
-                    // std::cout << line << std::endl;
                     line.erase(line.find_last_of('\r'));
-                    if (__isHexNotation(line)) {
-                        if (__isHexNotation(line)) n = __hexadecimalToDecimal(line);
-                        else n = stoi(line);
-                        std::cout << n << std::endl;
-                    }
+                    if (__isHexNotation(line))
+                        n = __hexadecimalToDecimal(line);
                     else {
                         if (n > line.length()) {
                             int x = line.length();
-                            // line += '\n';
-                            while (x < n) {
+                            line += "\n";
+                            while (x < (n)) {
                                 std::string buffer;
                                 std::getline(iss, buffer);
+                                buffer.erase(buffer.find_last_of('\r'));
                                 x += buffer.length() + 2;
-                                // line += buffer + "\n";
-                                line += buffer;
+                                line += buffer + "\n";
                             }
-                            // line.erase(line.end() - 1);
+                            line.erase(line.find_last_of('\n'));
                             f << line;
                         }
                         else
-                            f << line + "\n";
+                            f << line;
                     }  
                 }
                 f.close();
