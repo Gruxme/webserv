@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/15 18:26:16 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/16 11:50:00 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,23 +96,26 @@ int main( void ) {
             char buffer[BUFFER_SIZE] = {0};
             recv(newSocket, buffer, BUFFER_SIZE, 0);
 
-            
             /* -- INVOKING PARSER ---------- */
             req.append(buffer);
-            // std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
-            // std::cout << req.getDataGatherer() << std::endl;
-            req.parseRequest();
-            // std::cout << "------ request line extraction ------" << std::endl << std::endl;
-            // std::cout << req.getMethod() << std::endl;
-            // std::cout << req.getUri() << std::endl;
-            // std::cout << req.getProtocol() << std::endl;
-            // std::cout << req.getUriExtension() << std::endl;
-            // std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
-            // for (std::map<std::string, std::string>::const_iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); ++it) {
-            //     std::cout << it->first << " : " << it->second << std::endl;
-            // }
-            // std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
-            // std::cout << "Body --> " << req.getBodyFilename() << std::endl << std::endl;
+            std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
+            std::cout << req.getDataGatherer() << std::endl;
+            
+            /* TESTING isComplete -- LOOOKS OKEY TESTED WITH BURPSUITE ON DIFFERENT REQUESTS */
+            // req.parseRequest();
+            req.isComplete();
+            
+            std::cout << "------ request line extraction ------" << std::endl << std::endl;
+            std::cout << req.getMethod() << std::endl;
+            std::cout << req.getUri() << std::endl;
+            std::cout << req.getProtocol() << std::endl;
+            std::cout << req.getUriExtension() << std::endl;
+            std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
+            for (std::map<std::string, std::string>::const_iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); ++it) {
+                std::cout << it->first << " : " << it->second << std::endl;
+            }
+            std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
+            std::cout << "Body --> " << req.getBodyFilename() << std::endl << std::endl;
 
             /* ------------------------------ */
             // std::cout << "------------------ Message sent -------------------" << std::endl;

@@ -23,6 +23,7 @@
 # define PHP 2
 # define __CONTENT_LENGTH_FOUND__ 0
 # define __CONTENT_LENGTH_NOT_FOUND__ 1
+# define __CONTENT_LENGTH_NEGATIVE__ 1
 # define __BODY_COMPLETE__ 1
 # define __BODY_INCOMPLETE__ 2
 
@@ -57,16 +58,19 @@ class Request {
         /* PVT -- THESE SHOULD CHECK FOR STANDARDS LATER -- */
         void    __extractRequestLine( std::stringstream & iss );
         void    __extractHeaders( std::stringstream & iss );
-        void    __extractContent( std::stringstream & iss );
+        void    __handleChunkedRequest( std::stringstream & iss );
+        void    __handleBasicRequest( std::stringstream & iss );
+        // void    __extractContent( std::stringstream & iss );
+		bool	__headersComplete( void );
+        bool    __bodyComplete( void );
+
 
     public:
-        /* --- THIS PIECE OF CODE SHOULD BE CHANGED --- */
-        void    parseRequest( void );
-		bool	headersComplete( void );
+        // void    parseRequest( void );
 		bool	isComplete( void );
-        /* ----- Utils ------ */
+
     private:
-        /* -- PVT METHODS */
+        /* ----- Utils ------ */
         std::vector<std::string> __split( std::string str, char separator );
         void    __eraseSubstr( std::string &str, const std::string &substr );
         void    __eraseAllSubstr( std::string &str, const std::string &substr );
