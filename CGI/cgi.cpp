@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/02 12:52:15 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/02/09 19:37:07 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/02/16 12:27:03 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,17 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include "../request/Request.hpp"
+
+// Status codes
+// 200 - OK
+// 201 - OK created
+// 301 - Moved to new URL
+// 304 - Not Modified (Cached version)
+// 400 - Bad request
+// 401 - Unauthorized
+// 404 - Not found
+// 500 - Internal server error
+
 
 // This Work
 // REQUEST_METHOD=post
@@ -59,7 +70,7 @@ std::vector<std::string> setEnvInVectorPost(Request my_request)
 
 	my_env[0].append("9");
 	my_env[1].append("fname=hey");
-	my_env[3].append("/Users/sel-fadi/Desktop/webserv/cgi/test.php");
+	my_env[3].append("/Users/sel-fadi/Desktop/webserv/cgi/test1.php");
 	return my_env;
 }
 
@@ -84,7 +95,7 @@ std::vector<std::string> setEnvInVector(Request my_request)
 	// my_env[0].append(my_request.getHeaders().find("CONTENT_LENGTH")->second);
 	// std::cout << my_request.getHeaders() << std::endl;
 	my_env[1].append("Lorem Ipsum is simply dummy text of the printing and typesetting industry.");
-	my_env[3].append("http://localhost/Users/sel-fadi/Desktop/webserv/cgi/test.php");
+	my_env[3].append("http://localhost/Users/sel-fadi/Desktop/webserv/cgi/test1.php");
 	my_env[4].append("--");
 	my_env[5].append("--");
 	my_env[6].append("GET");
@@ -100,13 +111,15 @@ int main()
 	Request my_request;
 	int rett;
 	int fd[2];
+	int fd1[2];
 	pid_t pid;
 	int status;
 	int ret;
 	char **tmp;
 	char *const*env;
-	bool getOrPost = 0;
-
+	bool getOrPost = 1;
+	char *queryString = "fname=hey";
+	
 	std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.php";
 	std::string scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
 	std::vector<std::string> my_headers = setEnvInVector(my_request);
@@ -121,6 +134,8 @@ int main()
 	tmp[2] = NULL;
 	if (pipe(fd) == -1)
 		exit(EXIT_FAILURE);
+	if (pipe(fd1) == -1)
+		exit(EXIT_FAILURE);
 	// std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.py";
 	// std::string scriptType = "/usr/bin/python";
 	
@@ -130,9 +145,19 @@ int main()
 	else if (pid == 0)
 	{
 		// I should exec cgi
-		fd[1] = open("aliResponse.txt", O_WRONLY | O_CREAT, 0777);
-		dup2(fd[1], STDOUT_FILENO);
+		if (getOrPost)
+		{
+			fd1[1] = open("PostResponse.txt", O_WRONLY | O_CREAT, 0777);
+			dup2(fd1[1], STDOUT_FILENO);
+			write(fd1[1], queryString, strlen(queryString));
+		}
+		else
+		{
+			fd[1] = open("aliResponse.txt", O_WRONLY | O_CREAT, 0777);
+			dup2(fd[1], STDOUT_FILENO);
+		}
 		close(fd[0]);
+		close(fd1[0]);
 		ret = execve(tmp[0], tmp, env);
 		if (ret == -1)
 			exit(EXIT_FAILURE);
@@ -146,6 +171,8 @@ int main()
 		close(fd[1]);
 		ssize_t count = read(fd[0], &buffer, sizeof(buffer));
 		close(fd[0]);
+		close(fd1[0]);
+		close(fd1[1]);
 		wait(&status);
 		if (!WEXITSTATUS(status))
 			exit(EXIT_SUCCESS);
