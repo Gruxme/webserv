@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:06 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/14 15:45:06 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/21 17:36:49 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,11 +45,11 @@ ServerConfig& ServerConfig::operator= ( const ServerConfig& rhs ) {
 ServerConfig::~ServerConfig() {}
 
 /* ----- Getters ----- */
-__SIZE_TYPE__   ServerConfig::getPort() const { return this->__port; }
+size_t   ServerConfig::getPort() const { return this->__port; }
 std::string     ServerConfig::getServerName() const { return this->__serverName; }
 std::string     ServerConfig::getHost() const { return this->__host; }
-__SIZE_TYPE__   ServerConfig::getBodySizeLimit() const { return this->__bodySizeLimit; }
+size_t   ServerConfig::getBodySizeLimit() const { return this->__bodySizeLimit; }
 std::string     ServerConfig::getAccessLog() const { return this->__accessLog; }
 std::string     ServerConfig::getErrorPage() const { return this->__errorPage; }
 bool            ServerConfig::getAutoIndex() const { return this->__autoindex; }
-__SIZE_TYPE__   ServerConfig::getLocationCount() const { return this->__locationCount; }
+size_t   ServerConfig::getLocationCount() const { return this->__locationCount; }

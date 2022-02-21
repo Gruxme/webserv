@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigFile.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/14 16:03:02 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/21 19:02:43 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ std::string ConfigFile::getConfigFile( void ) const { return this->__configFile;
 void    ConfigFile::__setServers( void ) {
     std::ifstream   file(this->__configFile);
     std::string     buffer;
-    __SIZE_TYPE__   n = 0;
+    size_t   n = 0;
     while (getline(file, buffer)) {
         if (buffer.find("server {") != std::string::npos)
             n++;
@@ -38,8 +38,8 @@ void    ConfigFile::__setServers( void ) {
 void    ConfigFile::__setLocations( void ) {
     std::ifstream   file(this->__configFile);
     std::string     buffer;
-    __SIZE_TYPE__   n_serv = 0;
-    __SIZE_TYPE__   n_loc = 0;
+    size_t   n_serv = 0;
+    size_t   n_loc = 0;
     while (getline(file, buffer)) {
         if (buffer.find("server {") != std::string::npos) {
             while (getline(file, buffer)) {
@@ -60,14 +60,14 @@ void    ConfigFile::__setLocations( void ) {
 /* ----- Main Parser ----- */
 /* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
 void    ConfigFile::parseConfigFile( void ) {
-    std::ifstream   file(this->__configFile);
-    std::string     buffer;
-    __SIZE_TYPE__   n_serv = 0;
+    std::ifstream	file(this->__configFile);
+    std::string		buffer;
+    size_t			n_serv = 0;
     this->__setServers();
     this->__setLocations();
     while (getline(file, buffer)) {
         if (buffer.find("server {") != std::string::npos) {
-            __SIZE_TYPE__ n_loc = 0;
+            size_t n_loc = 0;
             while (getline(file, buffer)) {
                 if (buffer.find("}") != std::string::npos)
                     break ;
@@ -99,5 +99,6 @@ void    ConfigFile::parseConfigFile( void ) {
             n_serv++;
         }
     }
+	/* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
     /* Write final check Method */
 }

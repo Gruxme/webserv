@@ -18,36 +18,36 @@
 # include "ServerConfig.hpp"
 
 class ConfigFile {
-    /* ----- PRIVATE ----- */
-    public:
-        std::string     __configFile;
-        __SIZE_TYPE__   __serverCount;
-        ServerConfig *  __serverConf;
+	/* ----- PRIVATE ----- */
+	public:
+		std::string		__configFile;
+		size_t			__serverCount;
+		ServerConfig *	__serverConf;
 
-    public:
-        /* ----- Constructors & Destructor respectively ----- */
-        ConfigFile();
-        ConfigFile( std::string const & configFile );
-        ConfigFile( ConfigFile const &rhs );
-        ConfigFile & operator =( ConfigFile const & rhs);
-        ~ConfigFile();
+	public:
+		/* ----- Constructors & Destructor respectively ----- */
+		ConfigFile();
+		ConfigFile( std::string const & configFile );
+		ConfigFile( ConfigFile const &rhs );
+		ConfigFile & operator =( ConfigFile const & rhs);
+		~ConfigFile();
 
-        /* ----- Getters ---- */
-        std::string     getConfigFile( void ) const;
+		/* ----- Getters ---- */
+		std::string	getConfigFile( void ) const;
 
-        /* ----- SETTERS ----- */
-        void    __setServers( void );
-        void    __setLocations( void );
+		/* ----- SETTERS ----- */
+		void	__setServers( void );
+		void	__setLocations( void );
 
-        /* ----- Main Parser ----- */
-        /* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
-        void    parseConfigFile( void );
+		/* ----- Main Parser ----- */
+		/* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
+		void	parseConfigFile( void );
 
-        /* ----- Exceptions ----- */
-        class ParsingError : public std::exception {
-        public:
-            virtual const char * what() const throw() {
-                return ("ParsingError");
-            }
-    };
+		/* ----- Exceptions ----- */
+		class ParsingError : public std::exception {
+		public:
+			virtual const char * what() const throw() {
+				return ("ParsingError");
+			}
+	};
 };

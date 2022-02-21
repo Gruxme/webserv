@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationClass.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/14 15:45:18 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/21 17:36:49 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ void    LocationClass::parseLocation( std::string buffer ) {
 /* -- PUBLIC METHODS */
 std::vector<std::string> LocationClass::split( std::string str, char separator ) {
     std::vector<std::string>  myvec;
-    __SIZE_TYPE__ currentIndex = 0, i = 0, startIndex = 0, endIndex = 0;
+    size_t currentIndex = 0, i = 0, startIndex = 0, endIndex = 0;
     while (i <= str.length()) {
         if (str[i] == separator || i == str.length()) {
             endIndex = i;

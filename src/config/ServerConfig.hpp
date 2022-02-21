@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 14:53:26 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/07 16:07:49 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/21 17:28:17 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,14 @@
 class ServerConfig {
     /* ----- PRIVATE ----- */
     public:
-        __SIZE_TYPE__   __port;
+        size_t			__port;
         std::string     __serverName;
         std::string     __host;
-        __SIZE_TYPE__   __bodySizeLimit;
+        size_t			__bodySizeLimit;
         std::string     __accessLog;
         std::string     __errorPage;
         bool            __autoindex;
-        __SIZE_TYPE__   __locationCount;
+        size_t			__locationCount;
         LocationClass * __location;
         
     public:
@@ -37,14 +37,14 @@ class ServerConfig {
         ~ServerConfig() ;
 
         /* ----- Getters ----- */
-        __SIZE_TYPE__   getPort() const;
+        size_t			getPort() const;
         std::string     getServerName() const;
         std::string     getHost() const;
-        __SIZE_TYPE__   getBodySizeLimit() const;
+        size_t			getBodySizeLimit() const;
         std::string     getAccessLog() const;
         std::string     getErrorPage() const;
         bool            getAutoIndex() const;
-        __SIZE_TYPE__   getLocationCount() const;
+        size_t			getLocationCount() const;
 
         
 };

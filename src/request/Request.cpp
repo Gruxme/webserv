@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/21 15:39:08 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/21 17:36:49 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,7 +182,7 @@ void    Request::__handleBasicRequest( std::stringstream & iss ) {
 
 std::vector<std::string> Request::__split( std::string str, char separator ) {
     std::vector<std::string>  myvec;
-    __SIZE_TYPE__ currentIndex = 0, i = 0, startIndex = 0, endIndex = 0;
+    size_t currentIndex = 0, i = 0, startIndex = 0, endIndex = 0;
     while (i <= str.length()) {
         if (str[i] == separator || i == str.length()) {
             endIndex = i;
@@ -198,19 +198,19 @@ std::vector<std::string> Request::__split( std::string str, char separator ) {
 }
 
 void    Request::__eraseSubstr( std::string &str, const std::string &substr ) {
-    __SIZE_TYPE__ pos = str.find(substr);
+    size_t pos = str.find(substr);
     if (pos != std::string::npos)
         str.erase(pos, substr.length());
 }
 
 void    Request::__eraseAllSubstr( std::string &str, const std::string &substr ) {
-    __SIZE_TYPE__ pos = std::string::npos;
+    size_t pos = std::string::npos;
     while ((pos = str.find(substr)) != std::string::npos)
         str.erase(pos, substr.length());
 }
 
 std::string Request::__ltrim( const std::string &s, const std::string &delim ) {
-    __SIZE_TYPE__ start = s.find_first_not_of(delim);
+    size_t start = s.find_first_not_of(delim);
     return (start == std::string::npos) ? "" : s.substr(start);
 }
 
