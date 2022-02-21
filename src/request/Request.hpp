@@ -18,6 +18,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <algorithm>
 
 # define PY 1
 # define PHP 2

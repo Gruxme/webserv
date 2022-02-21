@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/21 13:55:56 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/21 15:37:08 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,8 +54,30 @@ void	socketsIO::setSock(const sockets& sock){
 	}
 }
 
-void	socketsIO::eventListener(){
+bool	socketsIO::_tryConnect( int fd ){
 	struct	pollfd	fds = {};
+	for (size_t j = 0; j < _socks.size(); j++)
+	{
+		if (fd != _socks[j]->getMainSock())
+			continue;
+		std::cout << "socket listening on port: " << _socks[j]->getPort() << " is readable" << std::endl;
+		try
+		{
+			fds.fd = _socks[j]->acceptClient();
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << e.what() << '\n';
+			break ;
+		}
+		fds.events = POLLIN;
+		_nfds++;
+		_pollfds.push_back(fds);
+	}
+	return true;
+}
+
+void	socketsIO::eventListener(){
 	char				buffer[1024];
 	Request				req;
 	int					wasMainSock;
@@ -63,7 +85,7 @@ void	socketsIO::eventListener(){
 	unsigned long		sentBytes = 0;
 	bool				connClosed = false;
 	while(1) {
-		wasMainSock = 0;
+		wasMainSock = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
 		if (rc < 0)
@@ -78,22 +100,7 @@ void	socketsIO::eventListener(){
 				//close only the fd and not the server loop
 				std::cout << "Error: revents = " << std::hex <<_pollfds[i].revents << std::endl;
 			}
-			for(size_t j = 0; j < _socks.size(); j++){
-				if(_pollfds[i].fd != _socks[j]->getMainSock())
-					continue ;
-				wasMainSock = 1;
-				std::cout << "socket listening on port: " << _socks[j]->getPort() << " is readable" << std::endl;
-				try {
-					fds.fd = _socks[j]->acceptClient();
-				}
-				catch(const std::exception& e) {
-					std::cerr << e.what() << '\n';
-					continue ;
-				}
-				fds.events = POLLIN;
-				_nfds++;
-				_pollfds.push_back(fds);
-			}
+			wasMainSock = _tryConnect(_pollfds[i].fd);
 			std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 741\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n</body>\n</html>");
 			if(!wasMainSock){
 				//to be refactored -> split recv and send, recv then check if request is complete before forging and sending a response
@@ -106,10 +113,16 @@ void	socketsIO::eventListener(){
 						connClosed = true;
 					_requests[_pollfds[i].fd].append(&buffer[0]);
 					std::cout << "received: " << rc << "bytes" << std::endl;
-					req.parse();// try catch block-> if bad req forge bad req response for next poll to send
+					try{
+						req.parse();
+					}
+					catch(const std::exception& e){
+						std::cerr << e.what() << '\n'; //if caught exception forge appropriate err res and send it
+					}
+					
+					//check if req complete and set event to pollout
 					if(req.isComplete())
 						_pollfds[i].events = POLLOUT;
-					//check if req complete and set event to pollout
 					std::cout << "===============REQUEST BEGIN===================\n";
 					std::cout << req << std::endl;
 				}

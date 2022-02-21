@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/21 12:52:47 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/21 15:39:08 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,14 @@ Request::~Request() {}
 
 /* ----- Getters ----- */
 
-/* TO BE DELETED */ std::string Request::getDataGatherer( void ) const { return this->__dataGatherer; }
 std::string Request::getMethod( void ) const { return this->__method; }
 std::string Request::getUri( void ) const { return this->__uri; }
 std::string Request::getProtocol(void ) const { return this->__protocol; }
 short       Request::getUriExtension( void ) const { return this->__uriExtension; }
-std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->__headers; }
 std::string Request::getBodyFilename( void ) const { return this->__bodyFilename; }
 bool		Request::isComplete( void ) const { return __status; }
+std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->__headers; }
+/* TO BE DELETED */ std::string Request::getDataGatherer( void ) const { return this->__dataGatherer; }
 
 /* -- PUBLIC METHODS */
 void    Request::append( const char * recvBuffer ) {
@@ -88,9 +88,9 @@ void    Request::__extractRequestLine( std::stringstream & iss ) {
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     std::vector<std::string> myvec = __split(line, ' ');
-    myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw parseErr("Unsupported Method");
+    myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw parseErr("405 Method Not Allowed"); //generate a Allow header in response
     this->__uri = myvec[1];
-    myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw parseErr("Unsupported Transfer Protocol");
+    myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw parseErr("505 HTTP Version Not Supported");
     // /* -- SETUP SHORT FOR CGI */
     if (__hasEnding(this->__uri, ".py")) { this->__uriExtension = PY; }
     else if (__hasEnding(this->__uri, ".php")) { this->__uriExtension = PHP; }
@@ -113,7 +113,7 @@ void    Request::__extractHeaders( std::stringstream & iss ) {
     /* ------
         TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST
     ------ */
-    if (this->__headers.find("host") != this->__headers.end()) { throw parseErr("Host Header Unavailable"); }
+    if (this->__headers.find("host") != this->__headers.end()) { throw parseErr("400 Bad Request"); } // ==?
 }
 
 void Request::__handleChunkedRequest( std::stringstream & iss ) {

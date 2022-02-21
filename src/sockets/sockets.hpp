@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/06 19:02:37 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/21 15:15:34 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ class sockets
 		void					bindSock();
 		void					listener(int maxLoad) const;
 		int						acceptClient();
-		void					setNonBlock();
 		std::vector<int>&		getClientsVec();
 		int						getNumSds() const ;
 		int						getMainSock() const ;

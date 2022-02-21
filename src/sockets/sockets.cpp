@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/04 11:51:40 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/21 15:15:45 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,3 @@ int					sockets::getNumSds() const { return _nsds; }
 int					sockets::getMainSock() const { return _mainSd; }
 unsigned short		sockets::getPort() const { return _port; }
 struct sockaddr_in	sockets::getAddr() const { return _address; }
-
-void	sockets::setNonBlock(){
-	if (fcntl(_mainSd, F_SETFL, O_NONBLOCK) < 0)
-		throw socketErr("fcntl: ");
-}

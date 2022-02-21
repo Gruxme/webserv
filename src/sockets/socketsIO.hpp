@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/15 10:21:22 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/21 15:23:37 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class socketsIO
 		~socketsIO();
 		socketsIO&	operator=(const socketsIO& x);
 		void	setSock(const sockets& sock);
-		void	eventListener();
+		void	eventListener( void );
 
 		class socketIOErr: public std::exception{
 			public:
@@ -39,9 +39,11 @@ class socketsIO
 				std::string	_errStr;
 		};
 	private:
+			bool	_tryConnect( int fd );
+	private:
 		int							_nfds;
 		std::allocator<sockets>		_socksAlloc;
 		std::vector<sockets *>		_socks;
 		std::vector<struct pollfd>	_pollfds;
-		std::map<int,Request>	_requests;
+		std::map<int,Request>		_requests;
 };
