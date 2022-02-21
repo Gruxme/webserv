@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/15 10:21:28 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/21 13:55:56 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void	socketsIO::setSock(const sockets& sock){
 	_nfds++;
 	while (it != ite){
 		fds.fd = *it;
-		fds.events = POLLIN | POLLOUT;
+		fds.events = POLLIN;
 		_pollfds.push_back(fds);
 		_nfds++;
 		it++;
@@ -61,9 +61,8 @@ void	socketsIO::eventListener(){
 	int					wasMainSock;
 	int					rc;
 	unsigned long		sentBytes = 0;
-	bool				endServer = false/* , closeConn = false */;
 	bool				connClosed = false;
-	while(!endServer) {
+	while(1) {
 		wasMainSock = 0;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
@@ -73,12 +72,11 @@ void	socketsIO::eventListener(){
 			throw socketIOErr("poll: ");
 		for (int i = 0; i < _nfds; i++) {
 			if (_pollfds[i].revents == 0)
-				continue;
-			if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT && _pollfds[i].revents != (POLLIN | POLLOUT))
+				continue ;
+			if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT)
 			{
+				//close only the fd and not the server loop
 				std::cout << "Error: revents = " << std::hex <<_pollfds[i].revents << std::endl;
-				endServer = true;
-				break;
 			}
 			for(size_t j = 0; j < _socks.size(); j++){
 				if(_pollfds[i].fd != _socks[j]->getMainSock())
@@ -87,48 +85,56 @@ void	socketsIO::eventListener(){
 				std::cout << "socket listening on port: " << _socks[j]->getPort() << " is readable" << std::endl;
 				try {
 					fds.fd = _socks[j]->acceptClient();
-					fds.events = POLLIN | POLLOUT;
-					_nfds++;
-					_pollfds.push_back(fds);
 				}
 				catch(const std::exception& e) {
 					std::cerr << e.what() << '\n';
-					endServer = true;
-					break ;
+					continue ;
 				}
+				fds.events = POLLIN;
+				_nfds++;
+				_pollfds.push_back(fds);
 			}
+			std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 741\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n</body>\n</html>");
 			if(!wasMainSock){
 				//to be refactored -> split recv and send, recv then check if request is complete before forging and sending a response
-				std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 741\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n</body>\n</html>");
-				bzero(buffer, 1024);
-				rc = recv(_pollfds[i].fd, &buffer, sizeof(buffer), 0);
-				if(rc == -1)
-					continue ;
-				_requests[_pollfds[i].fd].append(&buffer[0]);
-				// req.append(buffer);
-				if (rc == 0)
-					connClosed = true;
-				if (req.isComplete())
-					// unchunk body if chunked, make request and send it
-					//then check if connection to be closed or kept alive before closing fd
-				std::cout << "received: " << rc << "bytes" << std::endl;
-				std::cout << "===============REQUEST BEGIN===================\n";
-				std::cout << req << std::endl;
-				connClosed = false;
-				rc = send(_pollfds[i].fd, res.c_str() + sentBytes, res.length() - sentBytes, 0);
-				sentBytes += rc;
-				std::cout << "sent: " << rc << "bytes"
-						  << "for a total of " << sentBytes << "bytes" << std::endl;
-				if (sentBytes == res.length())
-					connClosed = true;
-
-				if (connClosed) {
-					close(_pollfds[i].fd);
-					_pollfds.erase(_pollfds.begin() + i);
-					_nfds--;
-					connClosed = false;
+				if(!req.isComplete() && _pollfds[i].revents == POLLIN){
+					bzero(buffer, 1024);
+					rc = recv(_pollfds[i].fd, &buffer, sizeof(buffer), 0);
+					if (rc == -1)
+						continue;
+					if (rc == 0)
+						connClosed = true;
+					_requests[_pollfds[i].fd].append(&buffer[0]);
+					std::cout << "received: " << rc << "bytes" << std::endl;
+					req.parse();// try catch block-> if bad req forge bad req response for next poll to send
+					if(req.isComplete())
+						_pollfds[i].events = POLLOUT;
+					//check if req complete and set event to pollout
+					std::cout << "===============REQUEST BEGIN===================\n";
+					std::cout << req << std::endl;
 				}
-				// make sure to have the exact Content lenght filled in header
+				if(req.isComplete() && _pollfds[i].revents == POLLOUT){
+					// forge res and send
+					connClosed = false;
+					// check route to take, CGI or basic res
+					rc = send(_pollfds[i].fd, res.c_str() + sentBytes, res.length() - sentBytes, 0);
+					sentBytes += rc;
+					std::cout << "sent: " << rc << "bytes"
+							  << "for a total of " << sentBytes << "bytes" << std::endl;
+					if (sentBytes == res.length())
+						connClosed = true;
+
+					if (connClosed && req.getHeaders().find("Connection")->second == "close")
+					{
+						//check if rc == 0 should close connection regardless
+						close(_pollfds[i].fd);
+						_pollfds.erase(_pollfds.begin() + i);
+						_nfds--;
+						connClosed = false;
+					}
+					// make sure to have the exact Content lenght filled in header
+				}
+				
 			}
 		}
 	}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/16 12:03:08 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/21 12:52:47 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@ Request::Request() :
     __uri(""),
     __protocol(""),
     __uriExtension(0),
-    __bodyFilename("") {}
+    __bodyFilename(""),
+	__status(false) {}
 
 Request::~Request() {}
 
@@ -32,6 +33,7 @@ std::string Request::getProtocol(void ) const { return this->__protocol; }
 short       Request::getUriExtension( void ) const { return this->__uriExtension; }
 std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->__headers; }
 std::string Request::getBodyFilename( void ) const { return this->__bodyFilename; }
+bool		Request::isComplete( void ) const { return __status; }
 
 /* -- PUBLIC METHODS */
 void    Request::append( const char * recvBuffer ) {
@@ -48,7 +50,7 @@ bool    Request::__bodyComplete( void ) {
     return __dataGatherer.find("0\r\n\r\n") != std::string::npos;
 }
 
-bool	Request::isComplete( void ) {
+void	Request::parse( void ) {
 	// int	contentLength = 0;
 	if (__headersComplete() == true) {
 		if (__headers.empty() == true) {
@@ -61,7 +63,7 @@ bool	Request::isComplete( void ) {
                     if (__bodyComplete() == true) {
                         /* -- CHECK THAT WE DONT HAVE A DUPLICATE FILE */
                         __handleChunkedRequest(iss);
-                        return true;
+						__status = true;
                     }
                 }
                 /* ------
@@ -70,13 +72,14 @@ bool	Request::isComplete( void ) {
                     OR AN EXCEPTION WILL BE THROWN
                 ------ */
                 __handleBasicRequest(iss);
-                return true;
+				__status = true;
             }
-            else
-                return true;
+            else{
+				__status = true;
+			}
 		}
 	}
-    return false;
+    __status  = false;
 }
 
 /* -- PVT PARSE METHODS */
@@ -166,39 +169,13 @@ void    Request::__handleBasicRequest( std::stringstream & iss ) {
         IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW
     ------ */
     if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) {
+		//test if precedency works only
         f.close();
         unlink("/src/request/bodyX.txt");
         throw parseErr("400 Bad Request");
     }
     f.close();
 }
-
-// void    Request::__extractContent( std::stringstream & iss ) {
-//     if ((this->__headers.find("Transfer-Encoding") != this->__headers.end())
-//         && (this->__headers.find("Transfer-Encoding")->second == "chunked")) {
-//         /* ------
-//             "Messages MUST NOT include both a Content-Length header field and a non-identity transfer-coding.
-//             If the message does include a non-identity transfer-coding, the Content-Length MUST be ignored."
-//             (RFC 2616, Section 4.4)
-//         ------ */
-//             __handleChunkedRequest(iss);
-//             return ;
-//         }
-//     /* ------
-//         IN THIS CASE WE SHOULD HAVE A VALID "Content-Length: header"
-//         ACCORDING TO RFC 2616 SEC4.4
-//     ------ */
-//     __handleBasicRequest(iss);
-//     return ;
-// }
-
-/* void    Request::parseRequest( void ) {
-    std::stringstream  iss(this->__dataGatherer);
-    this->__extractRequestLine(iss);
-    this->__extractHeaders(iss);
-    if (this->__method == "POST")
-        this->__extractContent(iss);
-} */
 
 /* ----- Utils ------ */
 /* -- PVT METHODS */
@@ -289,11 +266,11 @@ short   Request::__compareContentLengthWithBody( std::ofstream &f ) {
 
 
 /* -- OPERATOR << */
-/* std::ostream & operator<<( std::ostream & o, Request const & req ) {
+std::ostream & operator<<( std::ostream & o, Request const & req ) {
 	o << req.getMethod() + " ";
 	o << req.getUri() << " ";
 	o << req.getProtocol() << " \n";
-    std::map<std::string, std::string>::iterator it = req.getHeaders().begin();
+    std::map<std::string, std::string>::const_iterator it = req.getHeaders().begin();
 	for (; it != req.getHeaders().end(); it++){
 		o << it->first << ": " << it->second << std::endl;
 	}
@@ -304,4 +281,3 @@ short   Request::__compareContentLengthWithBody( std::ofstream &f ) {
 		std::cout << line << std::endl;
 	return o;
 }
- */

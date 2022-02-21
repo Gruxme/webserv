@@ -37,6 +37,7 @@ class Request {
         short       __uriExtension;
         std::map<std::string, std::string>  __headers;
         std::string __bodyFilename;
+		bool		__status;
         
     public:
         /* ----- Constructors & Destructor respectively ----- */
@@ -50,6 +51,7 @@ class Request {
         short       getUriExtension( void ) const;
         std::map<std::string, std::string> const &getHeaders( void ) const;
         std::string getBodyFilename( void ) const;
+		bool		isComplete( void ) const;
 
         /* -- PUBLIC METHODS */
         void    append( const char * recvBuffer );
@@ -66,8 +68,7 @@ class Request {
 
 
     public:
-        // void    parseRequest( void );
-		bool	isComplete( void );
+		void	parse( void );
 
     private:
         /* ----- Utils ------ */
