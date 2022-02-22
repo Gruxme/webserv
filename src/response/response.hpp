@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 14:03:15 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/22 15:40:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class response {
 		void	__autoindexModule( void );
 		
 	public:
-		void	serveRequest( Request req );
+		void	serveRequest( ServerConfig config, Request req );
 		
 	private:
 		std::string	res;

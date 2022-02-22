@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:06 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 14:15:54 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/22 15:36:21 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,3 +53,4 @@ std::string     ServerConfig::getAccessLog() const { return this->__accessLog; }
 std::string     ServerConfig::getErrorPage() const { return this->__errorPage; }
 bool            ServerConfig::getAutoIndex() const { return this->__autoindex; }
 size_t   ServerConfig::getLocationCount() const { return this->__locationCount; }
+LocationClass * ServerConfig::getLocationClass() const { return this->__location; }

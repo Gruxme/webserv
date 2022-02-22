@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 14:53:26 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 14:21:00 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/22 15:35:46 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class ServerConfig {
         std::string     getErrorPage() const;
         bool            getAutoIndex() const;
         size_t			getLocationCount() const;
+        LocationClass * getLocationClass() const;
 
         
 };

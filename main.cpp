@@ -6,16 +6,16 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 14:04:05 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/22 14:58:20 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "config/ConfigFile.hpp"
-#include "config/ServerConfig.hpp"
-#include "config/LocationClass.hpp"
-#include "request/Request.hpp"
-#include "sockets/sockets.hpp"
-#include "sockets/socketsIO.hpp"
+#include "./src/config/ConfigFile.hpp"
+#include "./src/config/ServerConfig.hpp"
+#include "./src/config/LocationClass.hpp"
+#include "./src/request/Request.hpp"
+#include "./src/sockets/sockets.hpp"
+#include "./src/sockets/socketsIO.hpp"
 
 int	main(int argc, char **argv)
 {
