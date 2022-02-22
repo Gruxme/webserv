@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigFile.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 12:03:38 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 14:03:51 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,8 @@ void    ConfigFile::parseConfigFile( void ) {
                     this->__serverConf[n_serv].__port = std::stoi(buffer.substr(buffer.find("listen = ") + strlen("listen = ")));
                 else if (buffer.find("server_name = ") != std::string::npos)
                     this->__serverConf[n_serv].__serverName = buffer.substr(buffer.find("server_name = ") + strlen("server_name = "));
+                else if (buffer.find("root = ") != std::string::npos)
+                    this->__serverConf[n_serv].__root = buffer.substr(buffer.find("root = ") + strlen("root = "));
                 else if (buffer.find("body_size_limit = ") != std::string::npos)
                     this->__serverConf[n_serv].__bodySizeLimit = std::stoi(buffer.substr(buffer.find("body_size_limit = ") + strlen("body_size_limit = ")));
                 else if (buffer.find("access_log = ") != std::string::npos)

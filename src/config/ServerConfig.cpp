@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:06 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/21 17:36:49 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 14:03:13 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 ServerConfig::ServerConfig() :
     __port(8080),
     __serverName(""),
-    __host(""),
+    __root(""),
     __bodySizeLimit(0),
     __accessLog(""),
     __errorPage(""),
@@ -31,7 +31,7 @@ ServerConfig& ServerConfig::operator= ( const ServerConfig& rhs ) {
     if (this != &rhs) {
         this->__port = rhs.__port;
         this->__serverName = rhs.__serverName;
-        this->__host = rhs.__host;
+        this->__root = rhs.__root;
         this->__bodySizeLimit = rhs.__bodySizeLimit;
         this->__accessLog = rhs.__accessLog;
         this->__errorPage = rhs.__errorPage;
@@ -47,7 +47,7 @@ ServerConfig::~ServerConfig() {}
 /* ----- Getters ----- */
 size_t   ServerConfig::getPort() const { return this->__port; }
 std::string     ServerConfig::getServerName() const { return this->__serverName; }
-std::string     ServerConfig::getHost() const { return this->__host; }
+std::string     ServerConfig::getRoot() const { return this->__root; }
 size_t   ServerConfig::getBodySizeLimit() const { return this->__bodySizeLimit; }
 std::string     ServerConfig::getAccessLog() const { return this->__accessLog; }
 std::string     ServerConfig::getErrorPage() const { return this->__errorPage; }

@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 01:50:10 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/07 16:06:29 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/22 13:59:55 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ class LocationClass {
     /* ----- PRIVATE ----- */
     public:
         std::string __path;
-        std::string __root;
         std::string __cgi_ext;
         
     public:
@@ -35,6 +34,5 @@ class LocationClass {
 
         /* ----- Getters----- */
         std::string getPath( void ) const;
-        std::string getRoot( void ) const;
         std::string getCgiExt( void ) const;
 };
