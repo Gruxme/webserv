@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/21 17:36:49 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 16:05:10 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ Request::Request() :
     __uri(""),
     __protocol(""),
     __uriExtension(0),
+	__port(8080),
     __bodyFilename(""),
 	__status(false) {}
 
@@ -33,6 +34,7 @@ short       Request::getUriExtension( void ) const { return this->__uriExtension
 std::string Request::getBodyFilename( void ) const { return this->__bodyFilename; }
 bool		Request::isComplete( void ) const { return __status; }
 std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->__headers; }
+int 		Request::getPort( void ) const { return this->__port; }
 /* TO BE DELETED */ std::string Request::getDataGatherer( void ) const { return this->__dataGatherer; }
 
 /* -- PUBLIC METHODS */
@@ -109,6 +111,7 @@ void    Request::__extractHeaders( std::stringstream & iss ) {
             throw parseErr("400 Bad Request");
         myvec[1] = this->__ltrim(myvec[1], " ");
         this->__headers[myvec[0]] = myvec[1];
+		if (myvec[0] == "host") { this->__port = std::stoi(__split(myvec[1], ':')[1]); }
     }
     /* ------
         TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST

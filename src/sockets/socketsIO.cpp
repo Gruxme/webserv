@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 13:20:28 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 16:12:18 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ void socketsIO::eventListener()
 	bool connClosed = false;
 	while (1)
 	{
+		connClosed = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
 		if (rc < 0)
@@ -130,8 +131,12 @@ void socketsIO::eventListener()
 				}
 				if (req.isComplete() && _pollfds[i].revents == POLLOUT)
 				{
+					response	res;
+					
+					for (int i = 0; i < _socks.size(); i++)
+						if (_socks[i]->getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
+							res.serveRequest(_socks[i]->getConfig(), _requests.find(_pollfds[i].fd)->second);
 					// forge res and send
-					connClosed = false;
 					// check route to take, CGI or basic res
 					rc = send(_pollfds[i].fd, res.c_str() + sentBytes, res.length() - sentBytes, 0);
 					sentBytes += rc;

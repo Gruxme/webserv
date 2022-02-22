@@ -37,6 +37,7 @@ class Request {
         std::string __protocol;
         short       __uriExtension;
         std::map<std::string, std::string>  __headers;
+		int			__port;
         std::string __bodyFilename;
 		bool		__status;
         
@@ -51,6 +52,7 @@ class Request {
         std::string getProtocol(void ) const;
         short       getUriExtension( void ) const;
         std::map<std::string, std::string> const &getHeaders( void ) const;
+		int 		getPort( void ) const;
         std::string getBodyFilename( void ) const;
 		bool		isComplete( void ) const;
 
