@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 09:57:55 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 13:13:35 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,10 @@ int	main(int argc, char **argv)
 	}
 
 	for (size_t i = 0; i < confFile.getServerCount(); i++) {
-		sockets	sock(confFile.getServerConfig().getPort());
+		sockets	sock(confFile.getServerConfig()[i].getPort());
 		sock.bindSock();
 		sock.listener(10);
+		//setter in socket to bind appropriate server config
 		server.setSock(sock);
 	}
 	server.eventListener();

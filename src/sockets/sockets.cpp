@@ -6,13 +6,13 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/21 15:15:45 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 13:22:37 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "sockets.hpp"
 
-sockets::sockets(unsigned short port): _mainSd(-1), _clients(), _port(port), _address(){
+sockets::sockets(ServerConfig conf): _mainSd(-1), _clients(), _config(conf), _address(){
 	int	opt = 1;
 	if((_mainSd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw socketErr("socket: ");
@@ -23,7 +23,7 @@ sockets::sockets(unsigned short port): _mainSd(-1), _clients(), _port(port), _ad
 	_nsds = 1;
 }
 
-sockets::sockets(const sockets& x) : _mainSd(x._mainSd), _nsds(x._nsds), _port(x._port), _address(x._address){}
+sockets::sockets(const sockets& x) : _mainSd(x._mainSd), _nsds(x._nsds), _config(x._config), _address(x._address){}
 
 sockets::~sockets(){
 	std::vector<int>::iterator it = _clients.begin(), ite = _clients.end();
@@ -38,7 +38,7 @@ sockets&	sockets::operator=(const sockets& x){
 	_mainSd = x._mainSd;
 	_nsds = x._nsds;
 	_clients = x._clients;
-	_port = x._port;
+	_config = x._config;
 	_address = x._address;
 	return *this;
 }
@@ -46,7 +46,7 @@ sockets&	sockets::operator=(const sockets& x){
 void	sockets::bindSock(){
 	//check port if already bound
 	_address.sin_addr.s_addr = INADDR_ANY;
-	_address.sin_port = htons(_port);
+	_address.sin_port = htons(_config.getPort());
 	_address.sin_family = AF_INET;
 	if(bind(_mainSd, (SA *)&_address, sizeof(_address)) < 0)
 		throw socketErr("bind: ");
@@ -55,7 +55,7 @@ void	sockets::bindSock(){
 void	sockets::listener(int maxLoad) const{
 	if(listen(_mainSd, maxLoad) < 0)
 		throw socketErr("Listen: ");
-	std::cout << "Socket listening on port " << _port << std::endl;
+	std::cout << "Socket listening on port " << _config.getPort() << std::endl;
 }
 
 int		sockets::acceptClient(){
@@ -63,7 +63,7 @@ int		sockets::acceptClient(){
 	//can loop over accept and check errno if != EWOULDBLOCK
 	if((newClient = accept(_mainSd, (SA *)&_address, (socklen_t *)&addrlen)) < 0)
 		throw socketErr("accept: ");
-	std::cout << "new connection on port " << _port << std::endl;
+	std::cout << "new connection on port " << _config.getPort() << std::endl;
 	_nsds++;
 	_clients.push_back(newClient);
 	return newClient;
@@ -72,5 +72,5 @@ int		sockets::acceptClient(){
 std::vector<int>&	sockets::getClientsVec() { return _clients; }
 int					sockets::getNumSds() const { return _nsds; }
 int					sockets::getMainSock() const { return _mainSd; }
-unsigned short		sockets::getPort() const { return _port; }
+ServerConfig		sockets::getConfig() const { return _config; }
 struct sockaddr_in	sockets::getAddr() const { return _address; }

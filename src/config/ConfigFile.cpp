@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 09:50:36 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 12:03:38 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@ ConfigFile::~ConfigFile() {}
 
 /* ----- Getters ---- */
 std::string 	ConfigFile::getConfigFile( void ) const { return this->__configFile; }
-size_t			ConfigFile::serverCount( void ) const { return this->__serverCount; }
-ServerConfig	&ConfigFile::getServerConfig( void ) const { return __serverConf; }
+size_t			ConfigFile::getServerCount( void ) const { return this->__serverCount; }
+ServerConfig	*ConfigFile::getServerConfig( void ) const { return __serverConf; }
 
 /* ----- Setters ---- */
 void    ConfigFile::__setServers( void ) {

@@ -12,6 +12,7 @@
 
 #pragma once
 # include <string>
+# include <cstring>
 # include <iostream>
 # include <fstream>
 # include <algorithm>
@@ -40,7 +41,7 @@ class ConfigFile {
 		/* ----- Getters ---- */
 		std::string			getConfigFile( void ) const;
 		size_t				getServerCount( void ) const;
-		ServerConfig		getServerConfig( void ) const;
+		ServerConfig		*getServerConfig( void ) const;
 
 		/* ----- Main Parser ----- */
 		/* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */

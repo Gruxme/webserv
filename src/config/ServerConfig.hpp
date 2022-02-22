@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 14:53:26 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 09:50:22 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 12:03:58 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 class ServerConfig {
     /* ----- PRIVATE ----- */
-    private:
+    public:
         size_t			__port;
         std::string     __serverName;
         size_t			__bodySizeLimit;

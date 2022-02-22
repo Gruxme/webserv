@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/21 15:15:34 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 13:22:55 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,13 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
+#include "../config/ServerConfig.hpp"
 #define	SA	struct sockaddr
 
 class sockets
 {
 	public:
-		explicit sockets(unsigned short port);
+		explicit sockets(ServerConfig conf);
 		sockets(const sockets& x);
 		virtual ~sockets();
 		sockets&	operator=(const sockets& x);
@@ -35,7 +36,7 @@ class sockets
 		std::vector<int>&		getClientsVec();
 		int						getNumSds() const ;
 		int						getMainSock() const ;
-		unsigned short			getPort() const ;
+		ServerConfig			getConfig() const ;
 		struct sockaddr_in		getAddr() const;
 
 		class socketErr: public std::exception{
@@ -53,6 +54,6 @@ class sockets
 	private:
 		int					_mainSd, _nsds;
 		std::vector<int>	_clients;
-		unsigned short		_port;
+		ServerConfig		_config;
 		struct sockaddr_in	_address;
 };

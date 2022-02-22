@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 10:08:03 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 13:20:28 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 socketsIO::socketsIO(): _nfds(0), _socksAlloc(), _socks(), _pollfds() {}
 
-socketsIO::socketsIO(const socketsIO& x): _nfds(0) { this->operator=(x); }
+socketsIO::socketsIO(const socketsIO& x) { this->operator=(x); }
 
 socketsIO::~socketsIO(){
 	std::vector<sockets *>::iterator it = _socks.begin();
@@ -54,7 +54,7 @@ bool	socketsIO::_tryConnect( int fd ){
 		if (fd != _socks[j]->getMainSock())
 			continue;
 		wasMainSock = true;
-		std::cout << "socket listening on port: " << _socks[j]->getPort() << " is readable" << std::endl;
+		std::cout << "socket listening on port: " << _socks[j]->getConfig().getPort() << " is readable" << std::endl;
 		try
 		{
 			fds.fd = _socks[j]->acceptClient();
