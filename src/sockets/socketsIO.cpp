@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 16:12:18 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 18:32:02 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,11 +138,12 @@ void socketsIO::eventListener()
 							res.serveRequest(_socks[i]->getConfig(), _requests.find(_pollfds[i].fd)->second);
 					// forge res and send
 					// check route to take, CGI or basic res
-					rc = send(_pollfds[i].fd, res.c_str() + sentBytes, res.length() - sentBytes, 0);
+					rc = send(_pollfds[i].fd, res.getMsg().c_str() + sentBytes, res.getMsg().length() - sentBytes, 0);
+					//remove request and response from maps
 					sentBytes += rc;
 					std::cout << "sent: " << rc << "bytes"
 							  << "for a total of " << sentBytes << "bytes" << std::endl;
-					if (sentBytes == res.length())
+					if (sentBytes == res.getMsg().length())
 						connClosed = true;
 					if (connClosed && req.getHeaders().find("Connection")->second == "close")
 					{
