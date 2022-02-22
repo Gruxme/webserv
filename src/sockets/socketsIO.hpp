@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/21 15:23:37 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 10:02:00 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,5 +45,5 @@ class socketsIO
 		std::allocator<sockets>		_socksAlloc;
 		std::vector<sockets *>		_socks;
 		std::vector<struct pollfd>	_pollfds;
-		std::map<int,Request>		_requests;
+		std::map<int,Request>		_requests; // make a werbserv class with configfile, request and response objs, and a corresponding fd instead of this line
 };

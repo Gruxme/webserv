@@ -19,10 +19,15 @@
 
 class ConfigFile {
 	/* ----- PRIVATE ----- */
-	public:
+	private:
 		std::string		__configFile;
 		size_t			__serverCount;
 		ServerConfig *	__serverConf;
+
+	private:
+		/* ----- SETTERS ----- */
+		void	__setServers( void );
+		void	__setLocations( void );
 
 	public:
 		/* ----- Constructors & Destructor respectively ----- */
@@ -33,11 +38,9 @@ class ConfigFile {
 		~ConfigFile();
 
 		/* ----- Getters ---- */
-		std::string	getConfigFile( void ) const;
-
-		/* ----- SETTERS ----- */
-		void	__setServers( void );
-		void	__setLocations( void );
+		std::string			getConfigFile( void ) const;
+		size_t				getServerCount( void ) const;
+		ServerConfig		getServerConfig( void ) const;
 
 		/* ----- Main Parser ----- */
 		/* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */

@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/21 19:02:59 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 09:57:55 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,27 @@
 int	main(int argc, char **argv)
 {
 	ConfigFile	confFile;
-	if(argc > 2)
+	socketsIO	server;
+	if (argc > 2) {
 		std::cout << "Usage: ./webserv path_to_config" << std::endl;
-	if(argc == 2)
+		return (EXIT_FAILURE);
+	}
+	if (argc == 2)
 		confFile = ConfigFile(std::string(argv[1]));
-	try{
+	try {
 		confFile.parseConfigFile();
 	}
-	catch(const std::exception& e){
-		std::cerr << e.what() << '\n';
+	catch (const std::exception& e)  {
+		std::cerr << "Config syntax error: " << e.what() << '\n';
+		return (EXIT_FAILURE);
 	}
-	
-	
+
+	for (size_t i = 0; i < confFile.getServerCount(); i++) {
+		sockets	sock(confFile.getServerConfig().getPort());
+		sock.bindSock();
+		sock.listener(10);
+		server.setSock(sock);
+	}
+	server.eventListener();
+	return (EXIT_SUCCESS);
 }

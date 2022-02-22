@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/21 17:24:35 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 10:08:03 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,28 +38,22 @@ void	socketsIO::setSock(const sockets& sock){
 	struct	pollfd	fds = {};
 	sockets *newSock = _socksAlloc.allocate(1);
 	_socksAlloc.construct(newSock, sock);
-	// std::vector<int>::iterator it = newSock->getClientsVec().begin();
-	// std::vector<int>::iterator ite = newSock->getClientsVec().end();
 	_socks.push_back(newSock);
 	fds.fd = newSock->getMainSock();
 	fds.events = POLLIN;
 	_pollfds.push_back(fds);
 	_nfds++;
-	// while (it != ite){
-	// 	fds.fd = *it;
-	// 	fds.events = POLLIN;
-	// 	_pollfds.push_back(fds);
-	// 	_nfds++;
-	// 	it++;
-	// }
 }
 
 bool	socketsIO::_tryConnect( int fd ){
+	bool	wasMainSock = false;
 	struct	pollfd	fds = {};
+
 	for (size_t j = 0; j < _socks.size(); j++)
 	{
 		if (fd != _socks[j]->getMainSock())
 			continue;
+		wasMainSock = true;
 		std::cout << "socket listening on port: " << _socks[j]->getPort() << " is readable" << std::endl;
 		try
 		{
@@ -74,20 +68,18 @@ bool	socketsIO::_tryConnect( int fd ){
 		_nfds++;
 		_pollfds.push_back(fds);
 	}
-	return true;
+	return wasMainSock;
 }
 
 void socketsIO::eventListener()
 {
 	char buffer[1024];
 	Request req;
-	int wasMainSock;
 	int rc;
 	unsigned long sentBytes = 0;
 	bool connClosed = false;
 	while (1)
 	{
-		wasMainSock = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
 		if (rc < 0)
@@ -105,9 +97,8 @@ void socketsIO::eventListener()
 				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl;
 				continue;
 			}
-			wasMainSock = _tryConnect(_pollfds[i].fd);
 			std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 741\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n</body>\n</html>");
-			if (!wasMainSock)
+			if (!_tryConnect(_pollfds[i].fd))
 			{
 				// to be refactored -> split recv and send, recv then check if request is complete before forging and sending a response
 				if (!req.isComplete() && _pollfds[i].revents == POLLIN)
@@ -128,9 +119,9 @@ void socketsIO::eventListener()
 						req.parse();
 					}
 					catch (const std::exception &e){
+						//make method in response class that makes generic error responses
 						std::cerr << e.what() << '\n'; // if caught exception forge appropriate err res and continue poll loop to send it
 					}
-
 					// check if req complete and set event to pollout
 					if (req.isComplete())
 						_pollfds[i].events = POLLOUT;
@@ -148,7 +139,6 @@ void socketsIO::eventListener()
 							  << "for a total of " << sentBytes << "bytes" << std::endl;
 					if (sentBytes == res.length())
 						connClosed = true;
-
 					if (connClosed && req.getHeaders().find("Connection")->second == "close")
 					{
 						// check if rc == 0 should close connection regardless
@@ -163,3 +153,4 @@ void socketsIO::eventListener()
 		}
 	}
 }
+//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks

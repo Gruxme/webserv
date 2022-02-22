@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/21 19:02:43 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 09:50:36 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ ConfigFile & ConfigFile::operator =( ConfigFile const & rhs) { this->__configFil
 ConfigFile::~ConfigFile() {}
 
 /* ----- Getters ---- */
-std::string ConfigFile::getConfigFile( void ) const { return this->__configFile; }
+std::string 	ConfigFile::getConfigFile( void ) const { return this->__configFile; }
+size_t			ConfigFile::serverCount( void ) const { return this->__serverCount; }
+ServerConfig	&ConfigFile::getServerConfig( void ) const { return __serverConf; }
 
 /* ----- Setters ---- */
 void    ConfigFile::__setServers( void ) {
@@ -77,8 +79,6 @@ void    ConfigFile::parseConfigFile( void ) {
                     this->__serverConf[n_serv].__port = std::stoi(buffer.substr(buffer.find("listen = ") + strlen("listen = ")));
                 else if (buffer.find("server_name = ") != std::string::npos)
                     this->__serverConf[n_serv].__serverName = buffer.substr(buffer.find("server_name = ") + strlen("server_name = "));
-                else if (buffer.find("host = ") != std::string::npos)
-                    this->__serverConf[n_serv].__host = buffer.substr(buffer.find("host = ") + strlen("host = "));
                 else if (buffer.find("body_size_limit = ") != std::string::npos)
                     this->__serverConf[n_serv].__bodySizeLimit = std::stoi(buffer.substr(buffer.find("body_size_limit = ") + strlen("body_size_limit = ")));
                 else if (buffer.find("access_log = ") != std::string::npos)

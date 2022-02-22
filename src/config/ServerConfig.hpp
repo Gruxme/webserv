@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 14:53:26 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/21 17:28:17 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/22 09:50:22 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,9 @@
 
 class ServerConfig {
     /* ----- PRIVATE ----- */
-    public:
+    private:
         size_t			__port;
         std::string     __serverName;
-        std::string     __host;
         size_t			__bodySizeLimit;
         std::string     __accessLog;
         std::string     __errorPage;
@@ -39,7 +38,6 @@ class ServerConfig {
         /* ----- Getters ----- */
         size_t			getPort() const;
         std::string     getServerName() const;
-        std::string     getHost() const;
         size_t			getBodySizeLimit() const;
         std::string     getAccessLog() const;
         std::string     getErrorPage() const;
