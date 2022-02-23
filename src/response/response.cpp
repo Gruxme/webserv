@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 17:40:30 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 17:56:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ response::response() {}
 response::~response() {}
 
 void response::_getResrc( std::string path ) {
-    // (void)path;
+    (void)path;
 	// if ()
     return ;
 }
@@ -39,7 +39,7 @@ void response::serveRequest( void ) {
     return ; 
 }
 
-void		response::setData(ServerConfigClass config, Request req){
+void		response::setData(ServerConfigClass const &config, Request const &req){
 	_config = config;
 	_req = req;
 }

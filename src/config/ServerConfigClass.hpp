@@ -29,7 +29,7 @@ class ServerConfigClass {
         std::string     _errorPage;
         bool            _autoindex;
         size_t			_locationCount;
-        LocationClass * _location;
+        std::vector<LocationClass> _location;
 
     public:
         ServerConfigClass();
@@ -45,5 +45,5 @@ class ServerConfigClass {
         std::string     getErrorPage() const;
         bool            getAutoIndex() const;
         size_t			getLocationCount() const;
-        LocationClass * getLocationClass() const;
+        std::vector<LocationClass>  getLocationClass() const;
 };
