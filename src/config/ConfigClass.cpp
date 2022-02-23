@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 14:02:16 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 14:35:29 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ void    ConfigClass::_allocateLocations( void ) {
 void    ConfigClass::parseConfigFile( void ) {
     std::ifstream	file(this->_configFile);
     std::string		buffer;
-    size_t			n_serv = 0;
+    size_t			n_serv = 0; 
     this->_allocateServers();
     this->_allocateLocations();
     while (getline(file, buffer)) {
