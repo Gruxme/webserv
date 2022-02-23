@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 01:50:10 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 11:15:25 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:31:36 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,15 @@
 # include <string>
 # include <vector>
 
-# define __AUTOINDEX_OFF__ 0
-# define __AUTOINDEX_ON__ 1
+# define _AUTOINDEX_OFF_ 0
+# define _AUTOINDEX_ON_ 1
 
 class LocationClass {
     private:
-        std::string __path;
-        std::string __root;
-        std::string __cgiExt;
-        bool        __autoindex;
+        std::string _path;
+        std::string _root;
+        std::string _cgiExt;
+        bool        _autoindex;
         
     public:
         /* ----- Constructors & Destructor respectively ----- */

@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 11:13:48 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:31:36 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ int main( int ac, char **av ) {
 
 //             /* -- INVOKING PARSER ---------- */
 //             req.append(buffer);
-//             // std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
+//             // std::cout << std::endl << "------ basic request _dataGatherer -----" << std::endl << std::endl;
 //             // std::cout << req.getDataGatherer() << std::endl;
             
 //             /* TESTING isComplete -- LOOOKS OKEY TESTED WITH BURPSUITE ON DIFFERENT REQUESTS */
@@ -156,7 +156,7 @@ int main( int ac, char **av ) {
 
     Request s = Request();
     s.parseRequest();
-    std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
+    std::cout << std::endl << "------ basic request _dataGatherer -----" << std::endl << std::endl;
     std::cout << s.getDataGatherer() << std::endl;
     std::cout << "------ request line extraction ------" << std::endl << std::endl;
     std::cout << s.getMethod() << std::endl;
@@ -185,9 +185,9 @@ int main( int ac, char **av ) {
 // };
 
 // int main( void ) {
-//     std::vector<m> __vec;
+//     std::vector<m> _vec;
 //     for (int i = 0; i < 4; i++) {
-//         __vec.push_back(m());
+//         _vec.push_back(m());
 //     }
 // }
 

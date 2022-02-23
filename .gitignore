@@ -1,4 +1,4 @@
 *.out
 *dSYM
 .vscode
-__TEMP__
+_TEMP_

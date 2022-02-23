@@ -13,23 +13,23 @@
 #pragma once
 # include "LocationClass.hpp"
 
-# define __AUTOINDEX_OFF__ 0
-# define __AUTOINDEX_ON__ 1
+# define _AUTOINDEX_OFF_ 0
+# define _AUTOINDEX_ON_ 1
 
 class ServerConfigClass {
 
     friend class ConfigClass;
 
     private:
-        size_t			__port;
-        std::string     __serverName;
-        std::string     __root;
-        size_t			__bodySizeLimit;
-        std::string     __accessLog;
-        std::string     __errorPage;
-        bool            __autoindex;
-        size_t			__locationCount;
-        LocationClass * __location;
+        size_t			_port;
+        std::string     _serverName;
+        std::string     _root;
+        size_t			_bodySizeLimit;
+        std::string     _accessLog;
+        std::string     _errorPage;
+        bool            _autoindex;
+        size_t			_locationCount;
+        LocationClass * _location;
 
     public:
         ServerConfigClass();

@@ -22,24 +22,24 @@
 
 # define PY 1
 # define PHP 2
-# define __CONTENT_LENGTH_FOUND__ 0
-# define __CONTENT_LENGTH_NOT_FOUND__ 1
-# define __CONTENT_LENGTH_NEGATIVE__ 1
-# define __BODY_COMPLETE__ 1
-# define __BODY_INCOMPLETE__ 2
+# define _CONTENT_LENGTH_FOUND_ 0
+# define _CONTENT_LENGTH_NOT_FOUND_ 1
+# define _CONTENT_LENGTH_NEGATIVE_ 1
+# define _BODY_COMPLETE_ 1
+# define _BODY_INCOMPLETE_ 2
 
 class Request {
     /* ----- PRIVATE ----- */
     private:
-        std::string __dataGatherer;
-        std::string __method;
-        std::string __uri;
-        std::string __protocol;
-        short       __uriExtension;
-        std::map<std::string, std::string>  __headers;
-		int			__port;
-        std::string __bodyFilename;
-		bool		__status;
+        std::string _dataGatherer;
+        std::string _method;
+        std::string _uri;
+        std::string _protocol;
+        short       _uriExtension;
+        std::map<std::string, std::string>  _headers;
+		int			_port;
+        std::string _bodyFilename;
+		bool		_status;
         
     public:
         /* ----- Constructors & Destructor respectively ----- */
@@ -63,13 +63,13 @@ class Request {
 
     private:
         /* PVT -- THESE SHOULD CHECK FOR STANDARDS LATER -- */
-        void    __extractRequestLine( std::stringstream & iss );
-        void    __extractHeaders( std::stringstream & iss );
-        void    __handleChunkedRequest( std::stringstream & iss );
-        void    __handleBasicRequest( std::stringstream & iss );
-        // void    __extractContent( std::stringstream & iss );
-		bool	__headersComplete( void );
-        bool    __bodyComplete( void );
+        void    _extractRequestLine( std::stringstream & iss );
+        void    _extractHeaders( std::stringstream & iss );
+        void    _handleChunkedRequest( std::stringstream & iss );
+        void    _handleBasicRequest( std::stringstream & iss );
+        // void    _extractContent( std::stringstream & iss );
+		bool	_headersComplete( void );
+        bool    _bodyComplete( void );
 
 
     public:
@@ -77,16 +77,16 @@ class Request {
 
     private:
         /* ----- Utils ------ */
-        std::vector<std::string> __split( std::string str, char separator );
-        void    __eraseSubstr( std::string &str, const std::string &substr );
-        void    __eraseAllSubstr( std::string &str, const std::string &substr );
-        std::string __ltrim( const std::string &s, const std::string &delim );
-        bool    __hasEnding( std::string const &fullString, std::string const &ending );
-        int     __findFileSize( std::ofstream &file );
-        bool    __isHexNotation( std::string const& s );
-        int     __hexadecimalToDecimal( std::string hexVal );
-        bool    __checkContentLength( void );
-        short   __compareContentLengthWithBody( std::ofstream &f );
+        std::vector<std::string> _split( std::string str, char separator );
+        void    _eraseSubstr( std::string &str, const std::string &substr );
+        void    _eraseAllSubstr( std::string &str, const std::string &substr );
+        std::string _ltrim( const std::string &s, const std::string &delim );
+        bool    _hasEnding( std::string const &fullString, std::string const &ending );
+        int     _findFileSize( std::ofstream &file );
+        bool    _isHexNotation( std::string const& s );
+        int     _hexadecimalToDecimal( std::string hexVal );
+        bool    _checkContentLength( void );
+        short   _compareContentLengthWithBody( std::ofstream &f );
 
 
         /* ----- Exceptions ----- */

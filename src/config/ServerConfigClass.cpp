@@ -14,14 +14,14 @@
 
 /* ----- Constructors & Destructor respectively ----- */
 ServerConfigClass::ServerConfigClass() :
-    __port(8080),
-    __serverName(""),
-    __root(""),
-    __bodySizeLimit(0),
-    __accessLog(""),
-    __errorPage(""),
-    __autoindex(__AUTOINDEX_OFF__),
-    __locationCount(0) {}
+    _port(8080),
+    _serverName(""),
+    _root(""),
+    _bodySizeLimit(0),
+    _accessLog(""),
+    _errorPage(""),
+    _autoindex(_AUTOINDEX_OFF_),
+    _locationCount(0) {}
 
 ServerConfigClass::ServerConfigClass( ServerConfigClass const &x ) {
     *this = x;
@@ -29,15 +29,15 @@ ServerConfigClass::ServerConfigClass( ServerConfigClass const &x ) {
 
 ServerConfigClass& ServerConfigClass::operator= ( const ServerConfigClass& rhs ) {
     if (this != &rhs) {
-        this->__port = rhs.__port;
-        this->__serverName = rhs.__serverName;
-        this->__root = rhs.__root;
-        this->__bodySizeLimit = rhs.__bodySizeLimit;
-        this->__accessLog = rhs.__accessLog;
-        this->__errorPage = rhs.__errorPage;
-        this->__autoindex = rhs.__autoindex;
-        this->__locationCount = rhs.__locationCount;
-        /* -- {DEEP COPY} __serverConf */
+        this->_port = rhs._port;
+        this->_serverName = rhs._serverName;
+        this->_root = rhs._root;
+        this->_bodySizeLimit = rhs._bodySizeLimit;
+        this->_accessLog = rhs._accessLog;
+        this->_errorPage = rhs._errorPage;
+        this->_autoindex = rhs._autoindex;
+        this->_locationCount = rhs._locationCount;
+        /* -- {DEEP COPY} _serverConf */
     }
     return *this;
 }
@@ -45,12 +45,12 @@ ServerConfigClass& ServerConfigClass::operator= ( const ServerConfigClass& rhs )
 ServerConfigClass::~ServerConfigClass() {}
 
 /* ----- Getters ----- */
-size_t   ServerConfigClass::getPort() const { return this->__port; }
-std::string     ServerConfigClass::getServerName() const { return this->__serverName; }
-std::string     ServerConfigClass::getRoot() const { return this->__root; }
-size_t   ServerConfigClass::getBodySizeLimit() const { return this->__bodySizeLimit; }
-std::string     ServerConfigClass::getAccessLog() const { return this->__accessLog; }
-std::string     ServerConfigClass::getErrorPage() const { return this->__errorPage; }
-bool            ServerConfigClass::getAutoIndex() const { return this->__autoindex; }
-size_t   ServerConfigClass::getLocationCount() const { return this->__locationCount; }
-LocationClass * ServerConfigClass::getLocation() const { return this->__location; }
+size_t   ServerConfigClass::getPort() const { return this->_port; }
+std::string     ServerConfigClass::getServerName() const { return this->_serverName; }
+std::string     ServerConfigClass::getRoot() const { return this->_root; }
+size_t   ServerConfigClass::getBodySizeLimit() const { return this->_bodySizeLimit; }
+std::string     ServerConfigClass::getAccessLog() const { return this->_accessLog; }
+std::string     ServerConfigClass::getErrorPage() const { return this->_errorPage; }
+bool            ServerConfigClass::getAutoIndex() const { return this->_autoindex; }
+size_t   ServerConfigClass::getLocationCount() const { return this->_locationCount; }
+LocationClass * ServerConfigClass::getLocation() const { return this->_location; }

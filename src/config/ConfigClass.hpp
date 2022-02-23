@@ -21,13 +21,13 @@
 class ConfigClass {
 
 	private:
-		std::string		__configFile;
-		size_t			__serverCount;
-		ServerConfigClass *	__serverConf;
+		std::string		_configFile;
+		size_t			_serverCount;
+		ServerConfigClass *	_serverConf;
 
 	private:
-		void	__allocateServers( void );
-		void	__allocateLocations( void );
+		void	_allocateServers( void );
+		void	_allocateLocations( void );
 
 	public:
 		ConfigClass();

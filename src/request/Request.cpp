@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 10:45:22 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:31:36 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 
 /* ----- Constructors & Destructor respectively ----- */
 Request::Request() :
-    __dataGatherer(""),
-    __method(""),
-    __uri(""),
-    __protocol(""),
-    __uriExtension(0),
-	__port(8080),
-    __bodyFilename(""),
-	__status(false) {}
+    _dataGatherer(""),
+    _method(""),
+    _uri(""),
+    _protocol(""),
+    _uriExtension(0),
+	_port(8080),
+    _bodyFilename(""),
+	_status(false) {}
 
 Request::~Request() {}
 
@@ -29,60 +29,60 @@ Request::Request( Request const &x ) { *this = x; }
 
 Request& Request::operator=( Request const &rhs ) {
     if (this != &rhs) {
-        this->__dataGatherer = rhs.__dataGatherer;
-        this->__method = rhs.__method;
-        this->__uri = rhs.__uri;
-        this->__protocol = rhs.__protocol;
-        this->__uriExtension = rhs.__uriExtension;
-        this->__headers = rhs.__headers;
-        this->__port = rhs.__port;
-        this->__bodyFilename = rhs.__bodyFilename;
-        this->__status = rhs.__status;
+        this->_dataGatherer = rhs._dataGatherer;
+        this->_method = rhs._method;
+        this->_uri = rhs._uri;
+        this->_protocol = rhs._protocol;
+        this->_uriExtension = rhs._uriExtension;
+        this->_headers = rhs._headers;
+        this->_port = rhs._port;
+        this->_bodyFilename = rhs._bodyFilename;
+        this->_status = rhs._status;
     }
     return *this;
 }
 
 /* ----- Getters ----- */
 
-std::string Request::getMethod( void ) const { return this->__method; }
-std::string Request::getUri( void ) const { return this->__uri; }
-std::string Request::getProtocol(void ) const { return this->__protocol; }
-short       Request::getUriExtension( void ) const { return this->__uriExtension; }
-std::string Request::getBodyFilename( void ) const { return this->__bodyFilename; }
-bool		Request::isComplete( void ) const { return __status; }
-std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->__headers; }
-int 		Request::getPort( void ) const { return this->__port; }
-/* TO BE DELETED */ std::string Request::getDataGatherer( void ) const { return this->__dataGatherer; }
+std::string Request::getMethod( void ) const { return this->_method; }
+std::string Request::getUri( void ) const { return this->_uri; }
+std::string Request::getProtocol(void ) const { return this->_protocol; }
+short       Request::getUriExtension( void ) const { return this->_uriExtension; }
+std::string Request::getBodyFilename( void ) const { return this->_bodyFilename; }
+bool		Request::isComplete( void ) const { return _status; }
+std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->_headers; }
+int 		Request::getPort( void ) const { return this->_port; }
+/* TO BE DELETED */ std::string Request::getDataGatherer( void ) const { return this->_dataGatherer; }
 
 /* -- PUBLIC METHODS */
 void    Request::append( const char * recvBuffer ) {
     std::string x(recvBuffer);
-    __dataGatherer.append(x);
+    _dataGatherer.append(x);
     return ;
 }
 
-bool	Request::__headersComplete( void ) {
-	return __dataGatherer.find("\r\n\r\n") != std::string::npos;
+bool	Request::_headersComplete( void ) {
+	return _dataGatherer.find("\r\n\r\n") != std::string::npos;
 }
 
-bool    Request::__bodyComplete( void ) {
-    return __dataGatherer.find("0\r\n\r\n") != std::string::npos;
+bool    Request::_bodyComplete( void ) {
+    return _dataGatherer.find("0\r\n\r\n") != std::string::npos;
 }
 
 void	Request::parse( void ) {
 	// int	contentLength = 0;
-	if (__headersComplete() == true) {
-		if (__headers.empty() == true) {
-			std::stringstream	iss(__dataGatherer);
-			__extractRequestLine(iss);
-			__extractHeaders(iss);
-            if (this->__method == "POST") {
-                std::map<std::string, std::string>::iterator transferEncoding = __headers.find("Transfer-Encoding");
-                if (transferEncoding != __headers.end() && transferEncoding->second == "chunked") {
-                    if (__bodyComplete() == true) {
+	if (_headersComplete() == true) {
+		if (_headers.empty() == true) {
+			std::stringstream	iss(_dataGatherer);
+			_extractRequestLine(iss);
+			_extractHeaders(iss);
+            if (this->_method == "POST") {
+                std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
+                if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
+                    if (_bodyComplete() == true) {
                         /* -- CHECK THAT WE DONT HAVE A DUPLICATE FILE */
-                        __handleChunkedRequest(iss);
-						__status = true;
+                        _handleChunkedRequest(iss);
+						_status = true;
                     }
                 }
                 /* ------
@@ -90,32 +90,32 @@ void	Request::parse( void ) {
                     {{ THIS WOULD EITHER GET COMPLETED AND isComplete will return TRUE
                     OR AN EXCEPTION WILL BE THROWN
                 ------ */
-                __handleBasicRequest(iss);
-				__status = true;
+                _handleBasicRequest(iss);
+				_status = true;
             }
             else{
-				__status = true;
+				_status = true;
 			}
 		}
 	}
-    __status  = false;
+    _status  = false;
 }
 
 /* -- PVT PARSE METHODS */
-void    Request::__extractRequestLine( std::stringstream & iss ) {
+void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::string line;
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-    std::vector<std::string> myvec = __split(line, ' ');
-    myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->__method = myvec[0] : throw parseErr("405 Method Not Allowed"); //generate a Allow header in response
-    this->__uri = myvec[1];
-    myvec[2] == "HTTP/1.1" ? this->__protocol = myvec[2] : throw parseErr("505 HTTP Version Not Supported");
+    std::vector<std::string> myvec = _split(line, ' ');
+    myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->_method = myvec[0] : throw parseErr("405 Method Not Allowed"); //generate a Allow header in response
+    this->_uri = myvec[1];
+    myvec[2] == "HTTP/1.1" ? this->_protocol = myvec[2] : throw parseErr("505 HTTP Version Not Supported");
     // /* -- SETUP SHORT FOR CGI */
-    if (__hasEnding(this->__uri, ".py")) { this->__uriExtension = PY; }
-    else if (__hasEnding(this->__uri, ".php")) { this->__uriExtension = PHP; }
+    if (_hasEnding(this->_uri, ".py")) { this->_uriExtension = PY; }
+    else if (_hasEnding(this->_uri, ".php")) { this->_uriExtension = PHP; }
 }
 
-void    Request::__extractHeaders( std::stringstream & iss ) {
+void    Request::_extractHeaders( std::stringstream & iss ) {
     std::string line;
     std::vector<std::string> myvec(0);
     /* -- DO ERROR TREATMENTS ON STANDARDS IN HERE */
@@ -123,20 +123,20 @@ void    Request::__extractHeaders( std::stringstream & iss ) {
         line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
         if (line.size() == 0)
             break ;
-        myvec = __split(line, ':');
+        myvec = _split(line, ':');
         if (myvec.at(0).empty() || myvec.at(1).empty())
             throw parseErr("400 Bad Request");
-        myvec[1] = this->__ltrim(myvec[1], " ");
-        this->__headers[myvec[0]] = myvec[1];
-		if (myvec[0] == "host") { this->__port = std::stoi(__split(myvec[1], ':')[1]); }
+        myvec[1] = this->_ltrim(myvec[1], " ");
+        this->_headers[myvec[0]] = myvec[1];
+		if (myvec[0] == "host") { this->_port = std::stoi(_split(myvec[1], ':')[1]); }
     }
     /* ------
         TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST
     ------ */
-    if (this->__headers.find("host") != this->__headers.end()) { throw parseErr("400 Bad Request"); } // ==?
+    if (this->_headers.find("host") != this->_headers.end()) { throw parseErr("400 Bad Request"); } // ==?
 }
 
-void Request::__handleChunkedRequest( std::stringstream & iss ) {
+void Request::_handleChunkedRequest( std::stringstream & iss ) {
     /* ------
         "Messages MUST NOT include both a Content-Length header field and a non-identity transfer-coding.
         If the message does include a non-identity transfer-coding, the Content-Length MUST be ignored."
@@ -145,12 +145,12 @@ void Request::__handleChunkedRequest( std::stringstream & iss ) {
     std::ofstream f;
     std::string line;
     uint16_t n = 0;
-    this->__bodyFilename = "./src/request/bodyChunked.txt";
-    f.open(this->__bodyFilename);
+    this->_bodyFilename = "./src/request/bodyChunked.txt";
+    f.open(this->_bodyFilename);
     while (std::getline(iss, line)) {
         line.erase(line.find_last_of('\r'));
-        if (__isHexNotation(line))
-            n = __hexadecimalToDecimal(line);
+        if (_isHexNotation(line))
+            n = _hexadecimalToDecimal(line);
         else {
             if (n > line.length()) {
                 int x = line.length();
@@ -172,23 +172,23 @@ void Request::__handleChunkedRequest( std::stringstream & iss ) {
     f.close();
 }
 
-void    Request::__handleBasicRequest( std::stringstream & iss ) {
+void    Request::_handleBasicRequest( std::stringstream & iss ) {
     /* ------
         IN THIS CASE WE SHOULD HAVE A VALID "Content-Length: header"
         ACCORDING TO RFC 2616 SEC4.4
     ------ */
-    if (__checkContentLength() == __CONTENT_LENGTH_NOT_FOUND__ ||
-            __checkContentLength() == __CONTENT_LENGTH_NEGATIVE__)
+    if (_checkContentLength() == _CONTENT_LENGTH_NOT_FOUND_ ||
+            _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
     std::ofstream f;
     std::string line;
-    this->__bodyFilename = "./src/request/bodyX.txt";
-    f.open(this->__bodyFilename);
+    this->_bodyFilename = "./src/request/bodyX.txt";
+    f.open(this->_bodyFilename);
     f << iss.rdbuf();
     /* ------
         IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW
     ------ */
-    if (__compareContentLengthWithBody(f) != __BODY_COMPLETE__) {
+    if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
 		//test if precedency works only
         f.close();
         unlink("/src/request/bodyX.txt");
@@ -200,7 +200,7 @@ void    Request::__handleBasicRequest( std::stringstream & iss ) {
 /* ----- Utils ------ */
 /* -- PVT METHODS */
 
-std::vector<std::string> Request::__split( std::string str, char separator ) {
+std::vector<std::string> Request::_split( std::string str, char separator ) {
     std::vector<std::string>  myvec;
     size_t currentIndex = 0, i = 0, startIndex = 0, endIndex = 0;
     while (i <= str.length()) {
@@ -217,39 +217,39 @@ std::vector<std::string> Request::__split( std::string str, char separator ) {
     return myvec;
 }
 
-void    Request::__eraseSubstr( std::string &str, const std::string &substr ) {
+void    Request::_eraseSubstr( std::string &str, const std::string &substr ) {
     size_t pos = str.find(substr);
     if (pos != std::string::npos)
         str.erase(pos, substr.length());
 }
 
-void    Request::__eraseAllSubstr( std::string &str, const std::string &substr ) {
+void    Request::_eraseAllSubstr( std::string &str, const std::string &substr ) {
     size_t pos = std::string::npos;
     while ((pos = str.find(substr)) != std::string::npos)
         str.erase(pos, substr.length());
 }
 
-std::string Request::__ltrim( const std::string &s, const std::string &delim ) {
+std::string Request::_ltrim( const std::string &s, const std::string &delim ) {
     size_t start = s.find_first_not_of(delim);
     return (start == std::string::npos) ? "" : s.substr(start);
 }
 
-bool    Request::__hasEnding( std::string const &fullString, std::string const &ending ) {
+bool    Request::_hasEnding( std::string const &fullString, std::string const &ending ) {
     if (fullString.length() >= ending.length()) { return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending)); }
     return false;
 }
 
-int     Request::__findFileSize( std::ofstream &file ) {
+int     Request::_findFileSize( std::ofstream &file ) {
     file.seekp(0, std::ios::end);
     int size = file.tellp();
     return size;
 }
 
-bool    Request::__isHexNotation( std::string const& s ) {
+bool    Request::_isHexNotation( std::string const& s ) {
     return s.find_first_not_of("0123456789abcdefABCDEF\r\n", 2) == std::string::npos;
 }
 
-int     Request::__hexadecimalToDecimal( std::string hexVal ) {
+int     Request::_hexadecimalToDecimal( std::string hexVal ) {
     int len = hexVal.size();
     int base = 1;
     int dec_val = 0;
@@ -266,22 +266,22 @@ int     Request::__hexadecimalToDecimal( std::string hexVal ) {
     return dec_val;
 }
 
-bool    Request::__checkContentLength( void ) {
-    if (this->__headers.find("Content-Length") != this->__headers.end()) {
+bool    Request::_checkContentLength( void ) {
+    if (this->_headers.find("Content-Length") != this->_headers.end()) {
         int contentLength = 0;
         try {
-            contentLength = std::stoi(this->__headers.find("Content-Length")->second);
-            return (contentLength >= 0 ? __CONTENT_LENGTH_FOUND__ : __CONTENT_LENGTH_NEGATIVE__);
+            contentLength = std::stoi(this->_headers.find("Content-Length")->second);
+            return (contentLength >= 0 ? _CONTENT_LENGTH_FOUND_ : _CONTENT_LENGTH_NEGATIVE_);
         } catch ( std::exception const &e ) {
             std::cout << e.what() << std::endl;
         }
     }
-    return __CONTENT_LENGTH_NOT_FOUND__;
+    return _CONTENT_LENGTH_NOT_FOUND_;
 }
 
-short   Request::__compareContentLengthWithBody( std::ofstream &f ) {
-    if (std::stoi(this->__headers.find("Content-Length")->second) == __findFileSize(f)) { return __BODY_COMPLETE__; }
-    return __BODY_INCOMPLETE__;
+short   Request::_compareContentLengthWithBody( std::ofstream &f ) {
+    if (std::stoi(this->_headers.find("Content-Length")->second) == _findFileSize(f)) { return _BODY_COMPLETE_; }
+    return _BODY_INCOMPLETE_;
 }
 
 

@@ -12,32 +12,32 @@ class SimpleSocket
 {
     // Will become private in a minute
     private:
-        struct sockaddr_in  __address;
-        int __addressLen;
-        int __socketFd;
+        struct sockaddr_in  _address;
+        int _addressLen;
+        int _socketFd;
 
     protected:
         SimpleSocket() {}
         
     public:
         SimpleSocket( int domain, int type, int protocol ) {
-            this->__socketFd = ::socket(domain, type, protocol);
-            if (this->__socketFd < 0) {
+            this->_socketFd = ::socket(domain, type, protocol);
+            if (this->_socketFd < 0) {
                 std::cerr << "Opening socket error: " << strerror(errno) << std::endl;
                 exit(EXIT_FAILURE);
             }
-            this->__addressLen = sizeof(this->__address); 
-            this->__address.sin_family = domain;
-            this->__address.sin_addr.s_addr = INADDR_ANY;
-            this->__address.sin_port = htons( 1337 );
-            memset(this->__address.sin_zero, '\0', sizeof(this->__address.sin_zero));
+            this->_addressLen = sizeof(this->_address); 
+            this->_address.sin_family = domain;
+            this->_address.sin_addr.s_addr = INADDR_ANY;
+            this->_address.sin_port = htons( 1337 );
+            memset(this->_address.sin_zero, '\0', sizeof(this->_address.sin_zero));
             int flag = 1;
-            if (setsockopt(this->__socketFd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1)
+            if (setsockopt(this->_socketFd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1)
                 std::cerr << "Setsockopt fail" << std::endl;
         }
 
         int     bind() {
-            int status = ::bind(this->__socketFd, (struct sockaddr *)&this->__address, this->__addressLen);
+            int status = ::bind(this->_socketFd, (struct sockaddr *)&this->_address, this->_addressLen);
             if (status < 0) {
                 std::cerr << "bind error: " << strerror(errno) << std::endl;
                 exit(EXIT_FAILURE);
@@ -45,7 +45,7 @@ class SimpleSocket
             return status;
         }
         int     listen() { 
-            int status = ::listen(this->__socketFd, 10);
+            int status = ::listen(this->_socketFd, 10);
             if (status < 0) {
                 std::cerr << "listen error: " << strerror(errno) << std::endl;
                 exit(EXIT_FAILURE);
@@ -53,20 +53,20 @@ class SimpleSocket
             return status;
         }
         int     accept() {
-            int status = ::accept(this->__socketFd, (struct sockaddr *)&this->__address, (socklen_t *)&this->__addressLen);
+            int status = ::accept(this->_socketFd, (struct sockaddr *)&this->_address, (socklen_t *)&this->_addressLen);
             if (status < 0) {
                 std::cerr << "accept error: " << strerror(errno) << std::endl;
                 exit(EXIT_FAILURE);
             }
             return status;
         }
-        void    close() { ::close(this->__socketFd); }
+        void    close() { ::close(this->_socketFd); }
 
         ~SimpleSocket() {}
 
         
 
-/*         int getSocket( void ) const { return this->__socketFd; }
-        int getAddrLen( void ) const { return this->__addressLen; } */
+/*         int getSocket( void ) const { return this->_socketFd; }
+        int getAddrLen( void ) const { return this->_addressLen; } */
         
 };

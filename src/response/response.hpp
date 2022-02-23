@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 11:28:50 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:31:36 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,10 @@ class response {
 		response&	operator=( const response &x );
 
 	private:
-		void	__getResrc( std::string path );
-		void	__postResrc( std::string path );
-		void	__deleteResrc( std::string path );
-		void	__autoindexModule( void );
+		void	_getResrc( std::string path );
+		void	_postResrc( std::string path );
+		void	_deleteResrc( std::string path );
+		void	_autoindexModule( void );
 		
 	public:
 		void		serveRequest( ServerConfigClass config, Request req );
