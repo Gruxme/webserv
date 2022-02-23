@@ -6,42 +6,31 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 10:03:57 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 17:52:21 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "socketsIO.hpp"
 
-socketsIO::socketsIO(): _nfds(0), _socksAlloc(), _socks(), _pollfds() {}
+socketsIO::socketsIO(): _nfds(0), _socks(), _pollfds() {}
 
 socketsIO::socketsIO(const socketsIO& x) { this->operator=(x); }
 
-socketsIO::~socketsIO(){
-	std::vector<sockets *>::iterator it = _socks.begin();
-	std::vector<sockets *>::iterator ite = _socks.end();
-	while (it != ite){
-		_socksAlloc.destroy(*it);
-		_socksAlloc.deallocate(*it, 1);
-		it++;
-	}
-}
+socketsIO::~socketsIO() {}
 
 socketsIO&	socketsIO::operator=(const socketsIO& x){
 	_nfds = x._nfds;
-	_socksAlloc = x._socksAlloc;
 	_socks = x._socks;
 	_pollfds = x._pollfds;
 	return *this;
 }
 
-void	socketsIO::setSock(const sockets& sock){
+void	socketsIO::setSock(sockets sock){
 	struct	pollfd	fds = {};
-	sockets *newSock = _socksAlloc.allocate(1);
-	_socksAlloc.construct(newSock, sock);
-	_socks.push_back(newSock);
-	fds.fd = newSock->getMainSock();
+	fds.fd = sock.getMainSock();
 	fds.events = POLLIN;
 	_pollfds.push_back(fds);
+	_socks.push_back(sock);
 	_nfds++;
 }
 
@@ -51,13 +40,13 @@ bool	socketsIO::_tryConnect( int fd ){
 
 	for (size_t j = 0; j < _socks.size(); j++)
 	{
-		if (fd != _socks[j]->getMainSock())
+		if (fd != _socks[j].getMainSock())
 			continue;
 		wasMainSock = true;
-		std::cout << "socket listening on port: " << _socks[j]->getConfig().getPort() << " is readable" << std::endl;
+		std::cout << "socket listening on port: " << _socks[j].getConfig().getPort() << " is readable" << std::endl;
 		try
 		{
-			fds.fd = _socks[j]->acceptClient();
+			fds.fd = _socks[j].acceptClient();
 		}
 		catch (const std::exception &e)
 		{
@@ -92,7 +81,7 @@ void	socketsIO::eventListener()
 				continue;
 			if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT)
 			{
-				// close only the fd and not the server loop
+				// close only the fd and not the server loop and erase node from maps
 				close(_pollfds[i].fd);
 				_pollfds.erase(_pollfds.begin() + i);
 				_nfds--;
@@ -131,9 +120,9 @@ void	socketsIO::eventListener()
 				}
 				if (req.isComplete() && _pollfds[i].revents == POLLOUT)
 				{
-					for (int i = 0; i < _socks.size(); i++)
-						if (_socks[i]->getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
-							res.serveRequest(_socks[i]->getConfig(), _requests.find(_pollfds[i].fd)->second);
+					for (int j = 0; j < _socks.size(); j++)
+						if (_socks[j].getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
+							res.setData(_socks[j].getConfig(), _requests.find(_pollfds[i].fd)->second);
 					//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
 					rc = send(_pollfds[i].fd, res.getMsg().c_str() + sentBytes, res.getMsg().length() - sentBytes, 0);
 					sentBytes += rc;
