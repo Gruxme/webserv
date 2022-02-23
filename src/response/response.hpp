@@ -6,14 +6,14 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 11:11:41 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:28:50 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_RESPONSE_HPP
 #define WEBSERV_RESPONSE_HPP
 
-#include "../config/Config.hpp"
+#include "../config/ConfigClass.hpp"
 #include "../request/Request.hpp"
 
 class response {
