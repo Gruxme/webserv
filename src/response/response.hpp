@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 18:03:24 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 18:22:18 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ class response {
 		void	_postResrc( std::string path );
 		void	_deleteResrc( std::string path );
 		void	_autoindexModule( void );
+
+		std::string	_extractAbsolutePath( void );
 		
 	public:
 		void		serveRequest( void );
@@ -37,6 +39,7 @@ class response {
 		std::string			_res;
 		ServerConfigClass	_config;
 		Request				_req;
+		
 };
 
 #endif // WEBSERV_RESPONSE_HPP

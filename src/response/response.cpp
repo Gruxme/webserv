@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 18:03:22 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 18:23:28 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,12 @@ void response::_getResrc( std::string path ) {
     return ;
 }
 
-void response::serveRequest( void ) {
+std::string response::_extractAbsolutePath( void ) {
+    std::string s;
+    std::string newUri;
     for (size_t i = 0; i < _config.getLocationCount(); i++) {
-        std::string s = _req.getUri();
+        s = _req.getUri();
+        newUri = _req.getUri();
         for (int j = s.length(); j >= 0; j--) {
             if (s[j] == '/') {
                 s = s.substr(0, j + 1);
@@ -36,6 +39,11 @@ void response::serveRequest( void ) {
             }
         }
     }
+    return s;
+}
+
+void response::serveRequest( void ) {
+    std::string absolutePath = _extractAbsolutePath();
     return ; 
 }
 
