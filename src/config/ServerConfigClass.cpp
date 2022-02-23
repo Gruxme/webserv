@@ -53,4 +53,4 @@ std::string     ServerConfigClass::getAccessLog() const { return this->_accessLo
 std::string     ServerConfigClass::getErrorPage() const { return this->_errorPage; }
 bool            ServerConfigClass::getAutoIndex() const { return this->_autoindex; }
 size_t   ServerConfigClass::getLocationCount() const { return this->_locationCount; }
-LocationClass * ServerConfigClass::getLocation() const { return this->_location; }
+LocationClass * ServerConfigClass::getLocationClass() const { return this->_location; }

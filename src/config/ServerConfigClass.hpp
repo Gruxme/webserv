@@ -45,5 +45,5 @@ class ServerConfigClass {
         std::string     getErrorPage() const;
         bool            getAutoIndex() const;
         size_t			getLocationCount() const;
-        LocationClass * getLocation() const;
+        LocationClass * getLocationClass() const;
 };
