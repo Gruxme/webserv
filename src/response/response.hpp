@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 14:45:52 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 17:40:01 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,13 @@ class response {
 		void	_autoindexModule( void );
 		
 	public:
-		void		serveRequest( ServerConfigClass const &config, Request const &req );
-		std::string	getMsg( void );
+		void		serveRequest( void );
+		void		setData(ServerConfigClass config, Request req);
 		
 	private:
-		std::string	res;
+		std::string			_res;
+		ServerConfigClass	_config;
+		Request				_req;
 };
 
 #endif // WEBSERV_RESPONSE_HPP
