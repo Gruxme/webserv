@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 17:40:30 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 18:01:14 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,16 @@ response::~response() {}
 
 void response::_getResrc( std::string path ) {
     // (void)path;
-	// if ()
+	if (_req.getUriExtension() == PHP)
+	{
+
+	}
+	else if(_req.getUriExtension() == PY){
+		
+	}
+	else{
+		
+	}
     return ;
 }
 
