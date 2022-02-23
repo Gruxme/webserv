@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 17:56:43 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 18:03:22 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void response::serveRequest( void ) {
     return ; 
 }
 
-void		response::setData(ServerConfigClass const &config, Request const &req){
+void		response::setData( ServerConfigClass config, Request req ){
 	_config = config;
 	_req = req;
 }
