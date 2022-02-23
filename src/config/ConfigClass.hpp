@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ConfigFile.hpp                         :+:      :+:    :+:   */
+/*   Config.hpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -16,38 +16,32 @@
 # include <iostream>
 # include <fstream>
 # include <algorithm>
-# include "ServerConfig.hpp"
+# include "ServerConfigClass.hpp"
 
-class ConfigFile {
-	/* ----- PRIVATE ----- */
+class ConfigClass {
+
 	private:
 		std::string		__configFile;
 		size_t			__serverCount;
-		ServerConfig *	__serverConf;
+		ServerConfigClass *	__serverConf;
 
 	private:
-		/* ----- SETTERS ----- */
-		void	__setServers( void );
-		void	__setLocations( void );
+		void	__allocateServers( void );
+		void	__allocateLocations( void );
 
 	public:
-		/* ----- Constructors & Destructor respectively ----- */
-		ConfigFile();
-		ConfigFile( std::string const & configFile );
-		ConfigFile( ConfigFile const &rhs );
-		ConfigFile & operator =( ConfigFile const & rhs);
-		~ConfigFile();
+		ConfigClass();
+		ConfigClass( std::string const & ConfigClass );
+		ConfigClass( ConfigClass const &rhs );
+		ConfigClass & operator =( ConfigClass const & rhs);
+		~ConfigClass();
 
-		/* ----- Getters ---- */
 		std::string			getConfigFile( void ) const;
 		size_t				getServerCount( void ) const;
-		ServerConfig		*getServerConfig( void ) const;
+		ServerConfigClass	*getServerConfigClass( void ) const;
 
-		/* ----- Main Parser ----- */
-		/* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
 		void	parseConfigFile( void );
 
-		/* ----- Exceptions ----- */
 		class ParsingError : public std::exception {
 		public:
 			virtual const char * what() const throw() {

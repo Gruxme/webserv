@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 15:34:33 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:13:48 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,123 +31,121 @@ int	main()
 
 /* ---------------------------------------------------------------- */
 
-# include "./src/config/ConfigFile.hpp"
-# include "./src/config/ServerConfig.hpp"
+# include "./src/config/ConfigClass.hpp"
+# include "./src/config/ServerConfigClass.hpp"
 # include "./src/config/LocationClass.hpp"
 # include "./src/request/Request.hpp"
 
 /* CONFIGURATION FILE MAIN -- DO NOT TOUCH */
-/* int main( int ac, char **av ) {
+int main( int ac, char **av ) {
 
     (void)ac;
     (void)av;
 
-    ConfigFile s = ConfigFile();
+    ConfigClass s = ConfigClass();
     s.parseConfigFile();
     std::cout << "-------- server 1 --------" << std::endl;
-    std::cout << s.__serverConf[0].__port << std::endl;
-    std::cout << s.__serverConf[0].__serverName << std::endl;
-    std::cout << s.__serverConf[0].__host << std::endl;
-    std::cout << s.__serverConf[0].__bodySizeLimit << std::endl;
-    std::cout << s.__serverConf[0].__accessLog << std::endl;
-    std::cout << s.__serverConf[0].__errorPage << std::endl;
-    std::cout << s.__serverConf[0].__autoindex << std::endl;
+    std::cout << s.getServerConfigClass()[0].getPort() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getServerName() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getBodySizeLimit() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getAccessLog() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getErrorPage() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getAutoIndex() << std::endl;
     std::cout << "-------- server 1 | location 1 --------" << std::endl;
-    std::cout << s.__serverConf[0].__location[0].__path << std::endl;
-    std::cout << s.__serverConf[0].__location[0].__root << std::endl;
-    std::cout << s.__serverConf[0].__location[0].__cgi_ext << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocation()[0].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocation()[0].getRoot() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocation()[0].getCgiExt() << std::endl;
     std::cout << "-------- server 1 | location 2 --------" << std::endl;
-    std::cout << s.__serverConf[0].__location[1].__path << std::endl;
-    std::cout << s.__serverConf[0].__location[1].__root << std::endl;
-    std::cout << s.__serverConf[0].__location[1].__cgi_ext << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocation()[1].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocation()[1].getRoot() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocation()[1].getCgiExt() << std::endl;
     std::cout << std::endl;
     std::cout << "-------- server 2 --------" << std::endl;
-    std::cout << s.__serverConf[1].__port << std::endl;
-    std::cout << s.__serverConf[1].__serverName << std::endl;
-    std::cout << s.__serverConf[1].__host << std::endl;
-    std::cout << s.__serverConf[1].__bodySizeLimit << std::endl;
-    std::cout << s.__serverConf[1].__accessLog << std::endl;
-    std::cout << s.__serverConf[1].__errorPage << std::endl;
-    std::cout << s.__serverConf[1].__autoindex << std::endl;
+    std::cout << s.getServerConfigClass()[1].getPort() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getServerName() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getBodySizeLimit() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getAccessLog() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getErrorPage() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getAutoIndex() << std::endl;
     std::cout << "-------- server 2 | location 1 --------" << std::endl;
-    std::cout << s.__serverConf[1].__location[0].__path << std::endl;
-    std::cout << s.__serverConf[1].__location[0].__root << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocation()[0].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocation()[0].getRoot() << std::endl;
     std::cout << "-------- server 2 | location 2 --------" << std::endl;
-    std::cout << s.__serverConf[1].__location[1].__path << std::endl;
-    std::cout << s.__serverConf[1].__location[1].__root << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocation()[1].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocation()[1].getRoot() << std::endl;
 
     return EXIT_SUCCESS;
-} */
-
-# include "SimpleSocket.hpp"
-
-# define BUFFER_SIZE 1024
-
-int main( void ) {
-    SimpleSocket socket = SimpleSocket(AF_INET, SOCK_STREAM, 0);
-    std::string str = "Le serveur vous envoie un bonsoir!\n";
-    socket.bind();
-    socket.listen();
-    try {
-        while (420) {
-            Request req = Request();
-            std::cout << "\n+++++++ Waiting for new connection ++++++++\n\n";
-            int newSocket = socket.accept();
-            char buffer[BUFFER_SIZE] = {0};
-            recv(newSocket, buffer, BUFFER_SIZE, 0);
-
-            /* -- INVOKING PARSER ---------- */
-            req.append(buffer);
-            // std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
-            // std::cout << req.getDataGatherer() << std::endl;
-            
-            /* TESTING isComplete -- LOOOKS OKEY TESTED WITH BURPSUITE ON DIFFERENT REQUESTS */
-            // req.parseRequest();
-            // req.isComplete();
-            req.parse();
-            
-            // std::cout << "------ request line extraction ------" << std::endl << std::endl;
-            // std::cout << req.getMethod() << std::endl;
-            // std::cout << req.getUri() << std::endl;
-            // std::cout << req.getProtocol() << std::endl;
-            // std::cout << req.getUriExtension() << std::endl;
-            // std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
-            // for (std::map<std::string, std::string>::const_iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); ++it) {
-            //     std::cout << it->first << " : " << it->second << std::endl;
-            // }
-            // std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
-            // std::cout << "Body --> " << req.getBodyFilename() << std::endl << std::endl;
-
-            /* ------------------------------ */
-            std::string root = "/var/www/html";
-            std::string path = "/images/";
-            std::string pathroot = "/var/www/images/";
-            
-            std::string s = req.getUri();
-            std::cout << s << std::endl;
-            for (int i = s.length(); i >= 0; i--) {
-                if (s[i] == '/') {
-                    s = s.substr(0, i + 1);
-                    if (s == path) {
-                        std::cout << path << "   " << s << std::endl;
-                    }          
-                }
-            }
-            
-
-            /* ------------------------------ */
-            // std::cout << "------------------ Message sent -------------------" << std::endl;
-            write(newSocket, str.c_str(), str.length());
-            close(newSocket);
-        }
-    } catch (std::exception &e) {
-        std::cout << e.what() << std::endl;
-        socket.close();
-        exit(0);
-    }
-    
-    return (EXIT_SUCCESS);
 }
+
+// # include "SimpleSocket.hpp"
+
+// # define BUFFER_SIZE 1024
+
+// int main( void ) {
+//     SimpleSocket socket = SimpleSocket(AF_INET, SOCK_STREAM, 0);
+//     std::string str = "Le serveur vous envoie un bonsoir!\n";
+//     socket.bind();
+//     socket.listen();
+//     try {
+//         while (420) {
+//             Request req = Request();
+//             std::cout << "\n+++++++ Waiting for new connection ++++++++\n\n";
+//             int newSocket = socket.accept();
+//             char buffer[BUFFER_SIZE] = {0};
+//             recv(newSocket, buffer, BUFFER_SIZE, 0);
+
+//             /* -- INVOKING PARSER ---------- */
+//             req.append(buffer);
+//             // std::cout << std::endl << "------ basic request __dataGatherer -----" << std::endl << std::endl;
+//             // std::cout << req.getDataGatherer() << std::endl;
+            
+//             /* TESTING isComplete -- LOOOKS OKEY TESTED WITH BURPSUITE ON DIFFERENT REQUESTS */
+//             // req.parseRequest();
+//             // req.isComplete();
+//             req.parse();
+            
+//             // std::cout << "------ request line extraction ------" << std::endl << std::endl;
+//             // std::cout << req.getMethod() << std::endl;
+//             // std::cout << req.getUri() << std::endl;
+//             // std::cout << req.getProtocol() << std::endl;
+//             // std::cout << req.getUriExtension() << std::endl;
+//             // std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
+//             // for (std::map<std::string, std::string>::const_iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); ++it) {
+//             //     std::cout << it->first << " : " << it->second << std::endl;
+//             // }
+//             // std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
+//             // std::cout << "Body --> " << req.getBodyFilename() << std::endl << std::endl;
+
+//             /* ------------------------------ */
+//             std::string root = "/var/www/html";
+//             std::string path = "/images/";
+//             std::string pathroot = "/var/www/images/";
+            
+//             std::string s = req.getUri();
+//             std::cout << s << std::endl;
+//             for (int i = s.length(); i >= 0; i--) {
+//                 if (s[i] == '/') {
+//                     s = s.substr(0, i + 1);
+//                     if (s == path) {
+//                         std::cout << path << "   " << s << std::endl;
+//                     }          
+//                 }
+//             }
+            
+
+//             /* ------------------------------ */
+//             // std::cout << "------------------ Message sent -------------------" << std::endl;
+//             write(newSocket, str.c_str(), str.length());
+//             close(newSocket);
+//         }
+//     } catch (std::exception &e) {
+//         std::cout << e.what() << std::endl;
+//         socket.close();
+//         exit(0);
+//     }
+    
+//     return (EXIT_SUCCESS);
+// }
 
 
 /* REQUEST MAIN -- DO NOT TOUCH */

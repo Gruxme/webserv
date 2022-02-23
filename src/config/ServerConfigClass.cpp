@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerConfig.cpp                                   :+:      :+:    :+:   */
+/*   ServerConfigClass.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:06 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 15:36:21 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 10:57:12 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "ServerConfig.hpp"
+# include "ServerConfigClass.hpp"
 
 /* ----- Constructors & Destructor respectively ----- */
-ServerConfig::ServerConfig() :
+ServerConfigClass::ServerConfigClass() :
     __port(8080),
     __serverName(""),
     __root(""),
@@ -23,11 +23,11 @@ ServerConfig::ServerConfig() :
     __autoindex(__AUTOINDEX_OFF__),
     __locationCount(0) {}
 
-ServerConfig::ServerConfig( ServerConfig const &x ) {
+ServerConfigClass::ServerConfigClass( ServerConfigClass const &x ) {
     *this = x;
 }
 
-ServerConfig& ServerConfig::operator= ( const ServerConfig& rhs ) {
+ServerConfigClass& ServerConfigClass::operator= ( const ServerConfigClass& rhs ) {
     if (this != &rhs) {
         this->__port = rhs.__port;
         this->__serverName = rhs.__serverName;
@@ -37,20 +37,20 @@ ServerConfig& ServerConfig::operator= ( const ServerConfig& rhs ) {
         this->__errorPage = rhs.__errorPage;
         this->__autoindex = rhs.__autoindex;
         this->__locationCount = rhs.__locationCount;
-        // this->__location = rhs.__location;
+        /* -- {DEEP COPY} __serverConf */
     }
     return *this;
 }
 
-ServerConfig::~ServerConfig() {}
+ServerConfigClass::~ServerConfigClass() {}
 
 /* ----- Getters ----- */
-size_t   ServerConfig::getPort() const { return this->__port; }
-std::string     ServerConfig::getServerName() const { return this->__serverName; }
-std::string     ServerConfig::getRoot() const { return this->__root; }
-size_t   ServerConfig::getBodySizeLimit() const { return this->__bodySizeLimit; }
-std::string     ServerConfig::getAccessLog() const { return this->__accessLog; }
-std::string     ServerConfig::getErrorPage() const { return this->__errorPage; }
-bool            ServerConfig::getAutoIndex() const { return this->__autoindex; }
-size_t   ServerConfig::getLocationCount() const { return this->__locationCount; }
-LocationClass * ServerConfig::getLocationClass() const { return this->__location; }
+size_t   ServerConfigClass::getPort() const { return this->__port; }
+std::string     ServerConfigClass::getServerName() const { return this->__serverName; }
+std::string     ServerConfigClass::getRoot() const { return this->__root; }
+size_t   ServerConfigClass::getBodySizeLimit() const { return this->__bodySizeLimit; }
+std::string     ServerConfigClass::getAccessLog() const { return this->__accessLog; }
+std::string     ServerConfigClass::getErrorPage() const { return this->__errorPage; }
+bool            ServerConfigClass::getAutoIndex() const { return this->__autoindex; }
+size_t   ServerConfigClass::getLocationCount() const { return this->__locationCount; }
+LocationClass * ServerConfigClass::getLocation() const { return this->__location; }

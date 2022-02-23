@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   sockets.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 13:22:37 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 11:11:41 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "sockets.hpp"
 
-sockets::sockets(ServerConfig conf): _mainSd(-1), _clients(), _config(conf), _address(){
+sockets::sockets(ServerConfigClass conf): _mainSd(-1), _clients(), _config(conf), _address(){
 	int	opt = 1;
 	if((_mainSd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw socketErr("socket: ");
@@ -72,5 +72,5 @@ int		sockets::acceptClient(){
 std::vector<int>&	sockets::getClientsVec() { return _clients; }
 int					sockets::getNumSds() const { return _nsds; }
 int					sockets::getMainSock() const { return _mainSd; }
-ServerConfig		sockets::getConfig() const { return _config; }
+ServerConfigClass		sockets::getConfig() const { return _config; }
 struct sockaddr_in	sockets::getAddr() const { return _address; }

@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 18:05:10 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 11:11:41 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_RESPONSE_HPP
 #define WEBSERV_RESPONSE_HPP
 
-#include "../config/ConfigFile.hpp"
+#include "../config/Config.hpp"
 #include "../request/Request.hpp"
 
 class response {
@@ -30,7 +30,7 @@ class response {
 		void	__autoindexModule( void );
 		
 	public:
-		void		serveRequest( ServerConfig config, Request req );
+		void		serveRequest( ServerConfigClass config, Request req );
 		std::string	getMsg( void );
 		
 	private:

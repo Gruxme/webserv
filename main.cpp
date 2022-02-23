@@ -6,12 +6,12 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 09:45:09 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 11:26:34 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./src/config/ConfigFile.hpp"
-#include "./src/config/ServerConfig.hpp"
+#include "./src/config/ConfigClass.hpp"
+#include "./src/config/ServerConfigClass.hpp"
 #include "./src/config/LocationClass.hpp"
 #include "./src/request/Request.hpp"
 #include "./src/sockets/sockets.hpp"
@@ -19,16 +19,16 @@
 
 int	main(int argc, char **argv)
 {
-	ConfigFile	confFile;
+	ConfigClass	confFile;
 	socketsIO	server;
 	if (argc > 2) {
 		std::cout << "Usage: ./webserv path_to_config" << std::endl;
 		return (EXIT_FAILURE);
 	}
 	if (argc == 2)
-		confFile = ConfigFile(std::string(argv[1]));
+		confFile = ConfigClass(std::string(argv[1]));
 	try {
-		confFile.parseConfigFile();
+		confFile.parseConfig();
 	}
 	catch (const std::exception& e)  {
 		std::cerr << "Config syntax error: " << e.what() << '\n';

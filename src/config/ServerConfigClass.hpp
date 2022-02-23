@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerConfig.hpp                                   :+:      :+:    :+:   */
+/*   ServerConfigClass.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 14:53:26 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 15:35:46 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:05:02 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,11 @@
 # define __AUTOINDEX_OFF__ 0
 # define __AUTOINDEX_ON__ 1
 
-class ServerConfig {
-    /* ----- PRIVATE ----- */
-    public:
+class ServerConfigClass {
+
+    friend class ConfigClass;
+
+    private:
         size_t			__port;
         std::string     __serverName;
         std::string     __root;
@@ -28,15 +30,13 @@ class ServerConfig {
         bool            __autoindex;
         size_t			__locationCount;
         LocationClass * __location;
-        
-    public:
-        /* ----- Constructors & Destructor respectively ----- */
-        ServerConfig();
-        ServerConfig( ServerConfig const &x );
-        ServerConfig& operator= ( const ServerConfig& rhs );
-        ~ServerConfig() ;
 
-        /* ----- Getters ----- */
+    public:
+        ServerConfigClass();
+        ServerConfigClass( ServerConfigClass const &x );
+        ServerConfigClass& operator= ( ServerConfigClass const& rhs );
+        ~ServerConfigClass() ;
+        
         size_t			getPort() const;
         std::string     getServerName() const;
         std::string     getRoot() const;
@@ -45,7 +45,5 @@ class ServerConfig {
         std::string     getErrorPage() const;
         bool            getAutoIndex() const;
         size_t			getLocationCount() const;
-        LocationClass * getLocationClass() const;
-
-        
+        LocationClass * getLocation() const;
 };
