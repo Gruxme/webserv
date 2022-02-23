@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 14:58:20 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 09:45:09 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int	main(int argc, char **argv)
 	}
 
 	for (size_t i = 0; i < confFile.getServerCount(); i++) {
-		sockets	sock(confFile.getServerConfig()[i].getPort());
+		sockets	sock(confFile.getServerConfig()[i]);
 		sock.bindSock();
 		sock.listener(10);
 		//setter in socket to bind appropriate server config

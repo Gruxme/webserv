@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 18:33:19 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 09:54:51 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@ class socketsIO
 		~socketsIO();
 		socketsIO&	operator=(const socketsIO& x);
 		void	setSock(const sockets& sock);
-		void	recvData();
-		void	sendData();
 		void	eventListener( void );
 
 		class socketIOErr: public std::exception{
@@ -43,6 +41,8 @@ class socketsIO
 		};
 	private:
 			bool	_tryConnect( int fd );
+			// int		_recvData(int client);
+			// void	_sendData();
 	private:
 		int								_nfds;
 		std::allocator<sockets>			_socksAlloc;
