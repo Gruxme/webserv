@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 18:24:56 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 18:26:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,17 +16,8 @@ response::response() {}
 response::~response() {}
 
 void response::_getResrc( std::string path ) {
-    // (void)path;
-	if (_req.getUriExtension() == PHP)
-	{
-
-	}
-	else if(_req.getUriExtension() == PY){
-		
-	}
-	else{
-		
-	}
+    (void)path;
+	// if ()
     return ;
 }
 
