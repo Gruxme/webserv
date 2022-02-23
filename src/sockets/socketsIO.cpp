@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 18:32:02 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 10:03:57 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,10 +71,11 @@ bool	socketsIO::_tryConnect( int fd ){
 	return wasMainSock;
 }
 
-void socketsIO::eventListener()
+void	socketsIO::eventListener()
 {
 	char buffer[1024];
-	Request req;
+	Request		req;
+	response	res;
 	int rc;
 	unsigned long sentBytes = 0;
 	bool connClosed = false;
@@ -98,10 +99,9 @@ void socketsIO::eventListener()
 				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl;
 				continue;
 			}
-			std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 741\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n</body>\n</html>");
+			// std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 741\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n</body>\n</html>");
 			if (!_tryConnect(_pollfds[i].fd))
 			{
-				// to be refactored -> split recv and send, recv then check if request is complete before forging and sending a response
 				if (!req.isComplete() && _pollfds[i].revents == POLLIN)
 				{
 					bzero(buffer, 1024);
@@ -131,20 +131,20 @@ void socketsIO::eventListener()
 				}
 				if (req.isComplete() && _pollfds[i].revents == POLLOUT)
 				{
-					response	res;
-					
 					for (int i = 0; i < _socks.size(); i++)
 						if (_socks[i]->getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
 							res.serveRequest(_socks[i]->getConfig(), _requests.find(_pollfds[i].fd)->second);
-					// forge res and send
-					// check route to take, CGI or basic res
+					//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
 					rc = send(_pollfds[i].fd, res.getMsg().c_str() + sentBytes, res.getMsg().length() - sentBytes, 0);
-					//remove request and response from maps
 					sentBytes += rc;
 					std::cout << "sent: " << rc << "bytes"
 							  << "for a total of " << sentBytes << "bytes" << std::endl;
 					if (sentBytes == res.getMsg().length())
+					{
+						_requests.erase(_pollfds[i].fd);
+						_responses.erase(_pollfds[i].fd);
 						connClosed = true;
+					}
 					if (connClosed && req.getHeaders().find("Connection")->second == "close")
 					{
 						// check if rc == 0 should close connection regardless
@@ -159,4 +159,3 @@ void socketsIO::eventListener()
 		}
 	}
 }
-//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
