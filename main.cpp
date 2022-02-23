@@ -6,12 +6,12 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 14:58:20 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:15:34 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./src/config/ConfigFile.hpp"
-#include "./src/config/ServerConfig.hpp"
+#include "./src/config/ConfigClass.hpp"
+#include "./src/config/ServerConfigClass.hpp"
 #include "./src/config/LocationClass.hpp"
 #include "./src/request/Request.hpp"
 #include "./src/sockets/sockets.hpp"
@@ -19,16 +19,16 @@
 
 int	main(int argc, char **argv)
 {
-	ConfigFile	confFile;
+	ConfigClass	confFile;
 	socketsIO	server;
 	if (argc > 2) {
 		std::cout << "Usage: ./webserv path_to_config" << std::endl;
 		return (EXIT_FAILURE);
 	}
 	if (argc == 2)
-		confFile = ConfigFile(std::string(argv[1]));
+		confFile = ConfigClass(std::string(argv[1]));
 	try {
-		confFile.parseConfigFile();
+		confFile.parseConfig();
 	}
 	catch (const std::exception& e)  {
 		std::cerr << "Config syntax error: " << e.what() << '\n';
@@ -36,7 +36,7 @@ int	main(int argc, char **argv)
 	}
 
 	for (size_t i = 0; i < confFile.getServerCount(); i++) {
-		sockets	sock(confFile.getServerConfig()[i].getPort());
+		sockets	sock(confFile.getServerConfigClass()[i].getPort());
 		sock.bindSock();
 		sock.listener(10);
 		//setter in socket to bind appropriate server config

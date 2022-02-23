@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 15:45:24 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:11:41 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void response::__getResrc( std::string path ) {
     return ;
 }
 
-void response::serveRequest( ServerConfig config, Request req ) {
+void response::serveRequest( ServerConfigClass config, Request req ) {
     for (size_t i = 0; i < config.getLocationCount(); i++) {
         std::string s = req.getUri();
         for (int i = s.length(); i >= 0; i--) {

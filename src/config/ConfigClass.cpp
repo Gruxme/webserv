@@ -1,31 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ConfigFile.cpp                                     :+:      :+:    :+:   */
+/*   ConfigClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 14:22:39 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:13:12 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "ConfigFile.hpp"
+# include "ConfigClass.hpp"
 
 /* ----- Constructors & Destructor respectively ----- */
-ConfigFile::ConfigFile() : __configFile("./conf.d/default.conf"), __serverCount(0), __serverConf() {}
-ConfigFile::ConfigFile( std::string const & configFile ) { this->__configFile = configFile; }
-ConfigFile::ConfigFile( ConfigFile const &rhs ) { *this = rhs; }
-ConfigFile & ConfigFile::operator =( ConfigFile const & rhs) { this->__configFile = rhs.__configFile; return *this; }
-ConfigFile::~ConfigFile() {}
+ConfigClass::ConfigClass() : __configFile("./conf.d/default.conf"), __serverCount(0), __serverConf() {}
+ConfigClass::ConfigClass( std::string const & configFile ) { this->__configFile = configFile; }
+ConfigClass::ConfigClass( ConfigClass const &rhs ) { *this = rhs; }
+ConfigClass & ConfigClass::operator =( ConfigClass const & rhs) {
+    if (this != &rhs) {
+        this->__configFile = rhs.__configFile; 
+        this->__serverCount = rhs.__serverCount;
+        /* -- {DEEP COPY} __serverConf */
+    }
+    return *this;
+}
+ConfigClass::~ConfigClass() {}
 
 /* ----- Getters ---- */
-std::string 	ConfigFile::getConfigFile( void ) const { return this->__configFile; }
-size_t			ConfigFile::getServerCount( void ) const { return this->__serverCount; }
-ServerConfig	*ConfigFile::getServerConfig( void ) const { return __serverConf; }
+std::string 	ConfigClass::getConfigFile( void ) const { return this->__configFile; }
+size_t			ConfigClass::getServerCount( void ) const { return this->__serverCount; }
+ServerConfigClass	*ConfigClass::getServerConfigClass( void ) const { return __serverConf; }
 
 /* ----- Setters ---- */
-void    ConfigFile::__setServers( void ) {
+void    ConfigClass::__allocateServers( void ) {
     std::ifstream   file(this->__configFile);
     std::string     buffer;
     size_t   n = 0;
@@ -34,10 +41,10 @@ void    ConfigFile::__setServers( void ) {
             n++;
     }
     this->__serverCount = n;
-    this->__serverConf = new ServerConfig[this->__serverCount];
+    this->__serverConf = new ServerConfigClass[this->__serverCount];
 }
 
-void    ConfigFile::__setLocations( void ) {
+void    ConfigClass::__allocateLocations( void ) {
     std::ifstream   file(this->__configFile);
     std::string     buffer;
     size_t   n_serv = 0;
@@ -61,12 +68,12 @@ void    ConfigFile::__setLocations( void ) {
 
 /* ----- Main Parser ----- */
 /* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
-void    ConfigFile::parseConfigFile( void ) {
+void    ConfigClass::parseConfigFile( void ) {
     std::ifstream	file(this->__configFile);
     std::string		buffer;
     size_t			n_serv = 0;
-    this->__setServers();
-    this->__setLocations();
+    this->__allocateServers();
+    this->__allocateLocations();
     while (getline(file, buffer)) {
         if (buffer.find("server {") != std::string::npos) {
             size_t n_loc = 0;

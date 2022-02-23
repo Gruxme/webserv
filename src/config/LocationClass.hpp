@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 01:50:10 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 14:21:06 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:15:25 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,17 +18,18 @@
 # define __AUTOINDEX_ON__ 1
 
 class LocationClass {
-    /* ----- PRIVATE ----- */
-    public:
+    private:
         std::string __path;
         std::string __root;
-        std::string __cgi_ext;
+        std::string __cgiExt;
         bool        __autoindex;
         
     public:
         /* ----- Constructors & Destructor respectively ----- */
         LocationClass();
         ~LocationClass();
+        LocationClass( LocationClass const &x );
+        LocationClass &operator=( LocationClass const &rhs );
 
         /* ----- PRIVATE ----- */
         /* ----- Location Parser ----- */

@@ -45,6 +45,8 @@ class Request {
         /* ----- Constructors & Destructor respectively ----- */
         Request();
         ~Request();
+        Request( Request const &x );
+        Request& operator= ( Request const& rhs );
 
         std::string getDataGatherer( void ) const;
         std::string getMethod( void ) const;

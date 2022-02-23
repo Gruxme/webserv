@@ -6,26 +6,39 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/22 14:27:21 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 10:51:10 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "LocationClass.hpp"
 
 /* ----- Constructors & Destructor respectively ----- */
-LocationClass::LocationClass() : __path(""), __root(""), __cgi_ext(""), __autoindex(__AUTOINDEX_OFF__) {}
+LocationClass::LocationClass() : __path(""), __root(""), __cgiExt(""), __autoindex(__AUTOINDEX_OFF__) {}
 LocationClass::~LocationClass() {}
+LocationClass::LocationClass( LocationClass const &x ) { *this = x; }
+LocationClass & LocationClass::operator=( LocationClass const &rhs ) {
+    if (this != &rhs) {
+        this->__path = rhs.__path;
+        this->__root = rhs.__root;
+        this->__cgiExt = rhs.__cgiExt;
+        this->__autoindex = rhs.__autoindex;
+    }
+    return *this;
+}
 
 /* ----- Location Parser ----- */
 void    LocationClass::parseLocation( std::string buffer ) {
-    if (buffer.find("path = ") != std::string::npos)
-        this->__path = buffer.substr(buffer.find("path = ") + strlen("path = "));
-    else if (buffer.find("root = ") != std::string::npos)
-        this->__root = buffer.substr(buffer.find("root = ") + strlen("root = "));
-    else if (buffer.find("cgi_ext") != std::string::npos)
-        this->__cgi_ext = buffer.substr(buffer.find("cgi_ext = ") + strlen("cgi_ext = "));
-    else if (buffer.find("autoindex = on") != std::string::npos)
-        this->__autoindex = __AUTOINDEX_ON__;
+    if (!buffer.empty()) {
+        if (buffer.find("path = ") != std::string::npos)
+            this->__path = buffer.substr(buffer.find("path = ") + strlen("path = "));
+        else if (buffer.find("root = ") != std::string::npos)
+            this->__root = buffer.substr(buffer.find("root = ") + strlen("root = "));
+        else if (buffer.find("cgi_ext") != std::string::npos)
+            this->__cgiExt = buffer.substr(buffer.find("cgi_ext = ") + strlen("cgi_ext = "));
+        else if (buffer.find("autoindex = on") != std::string::npos)
+            this->__autoindex = __AUTOINDEX_ON__;
+    }
+    return ;
 }
 
 /* -- PUBLIC METHODS */
@@ -49,5 +62,5 @@ std::vector<std::string> LocationClass::split( std::string str, char separator )
 /* ----- Getters----- */
 std::string LocationClass::getPath( void ) const { return this->__path; }
 std::string LocationClass::getRoot( void ) const { return this->__root; }
-std::string LocationClass::getCgiExt( void ) const { return this->__cgi_ext; }
+std::string LocationClass::getCgiExt( void ) const { return this->__cgiExt; }
 bool        LocationClass::getAutoIndex( void ) const { return this->__autoindex; }

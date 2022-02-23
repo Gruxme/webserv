@@ -3,7 +3,7 @@ CC := clang++
 CFLAGS := -Wall -Werror -Wextra --std=c++98 
 DFLAGS := -g3
 SRC := testMain.cpp \
-./src/config/ConfigFile.cpp ./src/config/ServerConfig.cpp ./src/config/LocationClass.cpp \
+./src/config/ConfigClass.cpp ./src/config/ServerConfigClass.cpp ./src/config/LocationClass.cpp \
 ./src/request/Request.cpp \
 # ./src/sockets/sockets.cpp ./src/sockets/socketsIO.cpp
 

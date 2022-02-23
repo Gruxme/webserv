@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   sockets.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/22 13:22:55 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 11:11:41 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,13 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
-#include "../config/ServerConfig.hpp"
+#include "../config/ServerConfigClass.hpp"
 #define	SA	struct sockaddr
 
 class sockets
 {
 	public:
-		explicit sockets(ServerConfig conf);
+		explicit sockets(ServerConfigClass conf);
 		sockets(const sockets& x);
 		virtual ~sockets();
 		sockets&	operator=(const sockets& x);
@@ -36,7 +36,7 @@ class sockets
 		std::vector<int>&		getClientsVec();
 		int						getNumSds() const ;
 		int						getMainSock() const ;
-		ServerConfig			getConfig() const ;
+		ServerConfigClass			getConfig() const ;
 		struct sockaddr_in		getAddr() const;
 
 		class socketErr: public std::exception{
@@ -54,6 +54,6 @@ class sockets
 	private:
 		int					_mainSd, _nsds;
 		std::vector<int>	_clients;
-		ServerConfig		_config;
+		ServerConfigClass		_config;
 		struct sockaddr_in	_address;
 };
