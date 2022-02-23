@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 18:01:14 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 18:05:23 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void response::serveRequest( void ) {
     return ; 
 }
 
-void		response::setData(ServerConfigClass config, Request req){
+void		response::setData( ServerConfigClass config, Request req ){
 	_config = config;
 	_req = req;
 }
