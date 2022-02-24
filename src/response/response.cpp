@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 09:42:38 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/24 11:18:24 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ response::~response() {}
 
 void response::_getResrc( std::string path ) {
     // (void)path;
+	std::ifstream	bodyFile;
+	struct stat status;
 	if (_req.getUriExtension() == PHP)
 	{
 
@@ -26,22 +28,22 @@ void response::_getResrc( std::string path ) {
 		
 	}
 	else{
-		struct stat	status;
-		if(stat(path.c_str(), &status) < 0){
+		bodyFile.open(path, std::fstream::in);
+		if(bodyFile.fail()){
 			// if(errno == ENOENT)
 			// 	//send not found
-			// else
+			// else if(errno == EACCES)
 			// 	//send forbidden
+			// else
+			//	//send 500 internal server error
 		}
-		if(S_ISDIR(status.st_mode)){
+		if(stat(path.c_str(), &status) > 0 && S_ISDIR(status.st_mode)){
 			// if(_config.getAutoIndex())
 			// 	//launch autoindex module
 			// else
 			// 	//send forbidden
 		}
-		else{
-			
-		}
+		//
 	}
     return ;
 }
