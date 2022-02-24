@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 11:31:36 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/24 16:24:01 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ void    LocationClass::parseLocation( std::string buffer ) {
             this->_path = buffer.substr(buffer.find("path = ") + strlen("path = "));
         else if (buffer.find("root = ") != std::string::npos)
             this->_root = buffer.substr(buffer.find("root = ") + strlen("root = "));
+        else if (buffer.find("method = ") != std::string::npos)
+            this->_method = buffer.substr(buffer.find("method = ") + strlen("method = "));
         else if (buffer.find("cgi_ext") != std::string::npos)
             this->_cgiExt = buffer.substr(buffer.find("cgi_ext = ") + strlen("cgi_ext = "));
         else if (buffer.find("autoindex = on") != std::string::npos)
@@ -62,5 +64,6 @@ std::vector<std::string> LocationClass::split( std::string str, char separator )
 /* ----- Getters----- */
 std::string LocationClass::getPath( void ) const { return this->_path; }
 std::string LocationClass::getRoot( void ) const { return this->_root; }
+std::string LocationClass::getMethod( void ) const { return this->_method; }
 std::string LocationClass::getCgiExt( void ) const { return this->_cgiExt; }
 bool        LocationClass::getAutoIndex( void ) const { return this->_autoindex; }

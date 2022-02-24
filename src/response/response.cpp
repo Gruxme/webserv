@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 16:16:23 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/24 16:25:00 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,17 +63,15 @@ void	response::_extractData( void ) {
 	while (path.find("/") != std::string::npos) {
 		_path = path;
 		for (int i = 0; i < _config.getLocationCount(); i++) {
-			// if / == locationPath store which location I'm on;
-			if ("/" == _config.getLocationClass()[i].getPath())
+			if ("/" == _config.getLocationClass()[i].getPath() && _config.getLocationClass()[i].getMethod() == _req.getMethod())
 				this->_pos = i;
-			// else check which locationpath == path and if the method's appropriate
-			else if (path == _config.getLocationClass()[i].getPath()) { // PARSE METHODS ON CONFIG
-				// do the check without doing the substr on + 1
+			else if (path == _config.getLocationClass()[i].getPath() && _config.getLocationClass()[i].getMethod() == _req.getMethod() ) {
 				this->_scriptName = tmpPath.substr(this->_path.length(), tmpPath.length());
 				if (this->_scriptName == "/")
 					this->_scriptName = "";
+					
 				else if (this->_scriptName.find("/") != std::string::npos) {
-					this->_scriptName.erase(this->_scriptName.find_first_of("/") + 1);
+					this->_scriptName.erase(this->_scriptName.find_first_of("/"));
 				}
 				this->_pos = i;
 				return ;
@@ -87,6 +85,7 @@ void	response::_extractData( void ) {
 		else
 			path = path.substr(0, path.find_last_of("/"));
 	}
+	return ;
 }
 
 void response::serveRequest( void ) {
