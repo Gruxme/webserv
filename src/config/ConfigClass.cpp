@@ -6,14 +6,14 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 11:31:36 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 18:02:20 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "ConfigClass.hpp"
 
 /* ----- Constructors & Destructor respectively ----- */
-ConfigClass::ConfigClass() : _configFile("./conf.d/default.conf"), _serverCount(0), _serverConf() {}
+ConfigClass::ConfigClass() : _configFile("./conf.d/default.conf"), _serverCount(0), _serverConf(0) {}
 ConfigClass::ConfigClass( std::string const & configFile ) { this->_configFile = configFile; }
 ConfigClass::ConfigClass( ConfigClass const &rhs ) { *this = rhs; }
 ConfigClass & ConfigClass::operator =( ConfigClass const & rhs) {
@@ -21,6 +21,7 @@ ConfigClass & ConfigClass::operator =( ConfigClass const & rhs) {
         this->_configFile = rhs._configFile; 
         this->_serverCount = rhs._serverCount;
         /* -- {DEEP COPY} _serverConf */
+        this->_serverConf = rhs._serverConf;
     }
     return *this;
 }
@@ -29,7 +30,7 @@ ConfigClass::~ConfigClass() {}
 /* ----- Getters ---- */
 std::string 	ConfigClass::getConfigFile( void ) const { return this->_configFile; }
 size_t			ConfigClass::getServerCount( void ) const { return this->_serverCount; }
-ServerConfigClass	*ConfigClass::getServerConfigClass( void ) const { return _serverConf; }
+std::vector<ServerConfigClass> ConfigClass::getServerConfigClass( void ) const { return _serverConf; }
 
 /* ----- Setters ---- */
 void    ConfigClass::_allocateServers( void ) {
@@ -41,7 +42,8 @@ void    ConfigClass::_allocateServers( void ) {
             n++;
     }
     this->_serverCount = n;
-    this->_serverConf = new ServerConfigClass[this->_serverCount];
+    for (size_t i = 0; i < this->_serverCount; i++)
+        this->_serverConf.push_back(ServerConfigClass());
 }
 
 void    ConfigClass::_allocateLocations( void ) {
@@ -54,7 +56,8 @@ void    ConfigClass::_allocateLocations( void ) {
             while (getline(file, buffer)) {
                 if (buffer.find("}") != std::string::npos) {
                     this->_serverConf[n_serv]._locationCount = n_loc;
-                    this->_serverConf[n_serv]._location = new LocationClass[n_loc];
+                    for (size_t i = 0; i < n_loc; i++)
+                        this->_serverConf[n_serv]._location.push_back(LocationClass());
                     n_serv++;
                     n_loc = 0;
                     break ;
@@ -71,7 +74,7 @@ void    ConfigClass::_allocateLocations( void ) {
 void    ConfigClass::parseConfigFile( void ) {
     std::ifstream	file(this->_configFile);
     std::string		buffer;
-    size_t			n_serv = 0;
+    size_t			n_serv = 0; 
     this->_allocateServers();
     this->_allocateLocations();
     while (getline(file, buffer)) {

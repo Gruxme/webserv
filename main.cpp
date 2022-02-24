@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 11:26:34 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 14:04:23 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ int	main(int argc, char **argv)
 	if (argc == 2)
 		confFile = ConfigClass(std::string(argv[1]));
 	try {
-		confFile.parseConfig();
+		confFile.parseConfigFile();
 	}
 	catch (const std::exception& e)  {
 		std::cerr << "Config syntax error: " << e.what() << '\n';
@@ -36,7 +36,7 @@ int	main(int argc, char **argv)
 	}
 
 	for (size_t i = 0; i < confFile.getServerCount(); i++) {
-		sockets	sock(confFile.getServerConfig()[i]);
+		sockets	sock(confFile.getServerConfigClass()[i]);
 		sock.bindSock();
 		sock.listener(10);
 		//setter in socket to bind appropriate server config

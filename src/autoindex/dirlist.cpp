@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/01 16:32:45 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/03 16:22:02 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 18:28:58 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,8 @@ int main(void)
 		dirListHtml << "</pre><hr></body>\n</html>";
 		std::cout << dirListHtml.str() << std::endl;
 		closedir(dir);
+		delete status;
+		delete[] date;
 	}
 	else{
 		/* could not open directory */

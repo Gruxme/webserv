@@ -21,7 +21,8 @@ ServerConfigClass::ServerConfigClass() :
     _accessLog(""),
     _errorPage(""),
     _autoindex(_AUTOINDEX_OFF_),
-    _locationCount(0) {}
+    _locationCount(0),
+    _location(0) {}
 
 ServerConfigClass::ServerConfigClass( ServerConfigClass const &x ) {
     *this = x;
@@ -38,6 +39,7 @@ ServerConfigClass& ServerConfigClass::operator= ( const ServerConfigClass& rhs )
         this->_autoindex = rhs._autoindex;
         this->_locationCount = rhs._locationCount;
         /* -- {DEEP COPY} _serverConf */
+        this->_location = rhs._location;
     }
     return *this;
 }
@@ -53,4 +55,4 @@ std::string     ServerConfigClass::getAccessLog() const { return this->_accessLo
 std::string     ServerConfigClass::getErrorPage() const { return this->_errorPage; }
 bool            ServerConfigClass::getAutoIndex() const { return this->_autoindex; }
 size_t   ServerConfigClass::getLocationCount() const { return this->_locationCount; }
-LocationClass * ServerConfigClass::getLocation() const { return this->_location; }
+std::vector<LocationClass>  ServerConfigClass::getLocationClass() const { return this->_location; }

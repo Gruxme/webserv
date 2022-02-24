@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 11:31:36 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/23 18:01:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ int	main()
 # include "./src/config/ServerConfigClass.hpp"
 # include "./src/config/LocationClass.hpp"
 # include "./src/request/Request.hpp"
+# include "./src/response/response.hpp"
 
 /* CONFIGURATION FILE MAIN -- DO NOT TOUCH */
 int main( int ac, char **av ) {
@@ -52,13 +53,13 @@ int main( int ac, char **av ) {
     std::cout << s.getServerConfigClass()[0].getErrorPage() << std::endl;
     std::cout << s.getServerConfigClass()[0].getAutoIndex() << std::endl;
     std::cout << "-------- server 1 | location 1 --------" << std::endl;
-    std::cout << s.getServerConfigClass()[0].getLocation()[0].getPath() << std::endl;
-    std::cout << s.getServerConfigClass()[0].getLocation()[0].getRoot() << std::endl;
-    std::cout << s.getServerConfigClass()[0].getLocation()[0].getCgiExt() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getRoot() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getCgiExt() << std::endl;
     std::cout << "-------- server 1 | location 2 --------" << std::endl;
-    std::cout << s.getServerConfigClass()[0].getLocation()[1].getPath() << std::endl;
-    std::cout << s.getServerConfigClass()[0].getLocation()[1].getRoot() << std::endl;
-    std::cout << s.getServerConfigClass()[0].getLocation()[1].getCgiExt() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getRoot() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getCgiExt() << std::endl;
     std::cout << std::endl;
     std::cout << "-------- server 2 --------" << std::endl;
     std::cout << s.getServerConfigClass()[1].getPort() << std::endl;
@@ -68,11 +69,11 @@ int main( int ac, char **av ) {
     std::cout << s.getServerConfigClass()[1].getErrorPage() << std::endl;
     std::cout << s.getServerConfigClass()[1].getAutoIndex() << std::endl;
     std::cout << "-------- server 2 | location 1 --------" << std::endl;
-    std::cout << s.getServerConfigClass()[1].getLocation()[0].getPath() << std::endl;
-    std::cout << s.getServerConfigClass()[1].getLocation()[0].getRoot() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getRoot() << std::endl;
     std::cout << "-------- server 2 | location 2 --------" << std::endl;
-    std::cout << s.getServerConfigClass()[1].getLocation()[1].getPath() << std::endl;
-    std::cout << s.getServerConfigClass()[1].getLocation()[1].getRoot() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getRoot() << std::endl;
 
     return EXIT_SUCCESS;
 }
@@ -82,7 +83,10 @@ int main( int ac, char **av ) {
 // # define BUFFER_SIZE 1024
 
 // int main( void ) {
+//     ConfigClass config = ConfigClass();
+//     config.parseConfigFile();
 //     SimpleSocket socket = SimpleSocket(AF_INET, SOCK_STREAM, 0);
+//     response    res = response();
 //     std::string str = "Le serveur vous envoie un bonsoir!\n";
 //     socket.bind();
 //     socket.listen();
@@ -96,42 +100,9 @@ int main( int ac, char **av ) {
 
 //             /* -- INVOKING PARSER ---------- */
 //             req.append(buffer);
-//             // std::cout << std::endl << "------ basic request _dataGatherer -----" << std::endl << std::endl;
-//             // std::cout << req.getDataGatherer() << std::endl;
-            
-//             /* TESTING isComplete -- LOOOKS OKEY TESTED WITH BURPSUITE ON DIFFERENT REQUESTS */
-//             // req.parseRequest();
-//             // req.isComplete();
 //             req.parse();
-            
-//             // std::cout << "------ request line extraction ------" << std::endl << std::endl;
-//             // std::cout << req.getMethod() << std::endl;
-//             // std::cout << req.getUri() << std::endl;
-//             // std::cout << req.getProtocol() << std::endl;
-//             // std::cout << req.getUriExtension() << std::endl;
-//             // std::cout << std::endl << "------ extract headers ------" << std::endl << std::endl;
-//             // for (std::map<std::string, std::string>::const_iterator it = req.getHeaders().begin(); it != req.getHeaders().end(); ++it) {
-//             //     std::cout << it->first << " : " << it->second << std::endl;
-//             // }
-//             // std::cout << std::endl << "------ extract body/content ------" << std::endl << std::endl;
-//             // std::cout << "Body --> " << req.getBodyFilename() << std::endl << std::endl;
 
-//             /* ------------------------------ */
-//             std::string root = "/var/www/html";
-//             std::string path = "/images/";
-//             std::string pathroot = "/var/www/images/";
-            
-//             std::string s = req.getUri();
-//             std::cout << s << std::endl;
-//             for (int i = s.length(); i >= 0; i--) {
-//                 if (s[i] == '/') {
-//                     s = s.substr(0, i + 1);
-//                     if (s == path) {
-//                         std::cout << path << "   " << s << std::endl;
-//                     }          
-//                 }
-//             }
-            
+//             // res.serveRequest(config.getServerConfigClass()[0], req);
 
 //             /* ------------------------------ */
 //             // std::cout << "------------------ Message sent -------------------" << std::endl;

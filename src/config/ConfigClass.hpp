@@ -12,6 +12,7 @@
 
 #pragma once
 # include <string>
+# include <vector>
 # include <cstring>
 # include <iostream>
 # include <fstream>
@@ -23,7 +24,7 @@ class ConfigClass {
 	private:
 		std::string		_configFile;
 		size_t			_serverCount;
-		ServerConfigClass *	_serverConf;
+		std::vector<ServerConfigClass>	_serverConf;
 
 	private:
 		void	_allocateServers( void );
@@ -36,16 +37,16 @@ class ConfigClass {
 		ConfigClass & operator =( ConfigClass const & rhs);
 		~ConfigClass();
 
-		std::string			getConfigFile( void ) const;
-		size_t				getServerCount( void ) const;
-		ServerConfigClass	*getServerConfigClass( void ) const;
+		std::string		getConfigFile( void ) const;
+		size_t			getServerCount( void ) const;
+		std::vector<ServerConfigClass>	getServerConfigClass( void ) const;
 
 		void	parseConfigFile( void );
 
 		class ParsingError : public std::exception {
 		public:
 			virtual const char * what() const throw() {
-				return ("ParsingError");
+				return ("Parsing Error");
 			}
 	};
 };
