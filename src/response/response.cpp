@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 11:18:24 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/24 14:21:09 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,18 @@
 response::response() {}
 response::~response() {}
 
+std::string	response::_errorMsg( std::string type ){
+	std::ostringstream	errRes;
+	errRes << "HTTP /1.1 " << type << "\nDate: ";
+	time_t	now = time(0);
+	char	*date = new char[30]();
+	strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+	errRes << date << "\n" << "Server: Webserv/4.2.0 \n";
+	
+}
+
 void response::_getResrc( std::string path ) {
     // (void)path;
-	std::ifstream	bodyFile;
 	struct stat status;
 	if (_req.getUriExtension() == PHP)
 	{
@@ -28,8 +37,8 @@ void response::_getResrc( std::string path ) {
 		
 	}
 	else{
-		bodyFile.open(path, std::fstream::in);
-		if(bodyFile.fail()){
+		_body.open(path, std::fstream::in);
+		if(_body.fail()){
 			// if(errno == ENOENT)
 			// 	//send not found
 			// else if(errno == EACCES)
