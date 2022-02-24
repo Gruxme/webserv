@@ -6,11 +6,12 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 18:05:23 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/23 18:35:27 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
+
 
 response::response() {}
 response::~response() {}
@@ -25,7 +26,22 @@ void response::_getResrc( std::string path ) {
 		
 	}
 	else{
-		
+		struct stat	status;
+		if(stat(path.c_str(), &status) < 0){
+			// if(errno == ENOENT)
+			// 	//send not found
+			// else
+			// 	//send forbidden
+		}
+		if(S_ISDIR(status.st_mode)){
+			// if(_config.getAutoIndex())
+			// 	//launch autoindex module
+			// else
+			// 	//send forbidden
+		}
+		else{
+			
+		}
 	}
     return ;
 }
