@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 17:52:21 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/24 15:01:36 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ void	socketsIO::eventListener()
 					}
 					_requests[_pollfds[i].fd].append(&buffer[0]);
 					std::cout << "received: " << rc << "bytes" << std::endl;
-					try{
+					try {
 						req.parse();
 					}
 					catch (const std::exception &e){

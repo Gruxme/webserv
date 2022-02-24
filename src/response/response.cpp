@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 14:21:09 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/24 15:20:13 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,29 +57,14 @@ void response::_getResrc( std::string path ) {
     return ;
 }
 
-std::string response::_extractAbsolutePath( void ) {
-    std::string s;
-    std::string newUri;
-    for (size_t i = 0; i < _config.getLocationCount(); i++) {
-        s = _req.getUri();
-        newUri = _req.getUri();
-        for (int j = s.length(); j >= 0; j--) {
-            if (s[j] == '/') {
-                s = s.substr(0, j + 1);
-                std::cout << s << std::endl;
-                std::cout << _config.getLocationClass()[0].getPath() << std::endl;
-                if (s == _config.getLocationClass()[i].getPath()) {
-                    std::cout << "GOTCHA BITCH root-> " << _config.getLocationClass()[i].getRoot() << std::endl;
-                    std::cout << "GOTCHA BITCH path-> " << _config.getLocationClass()[i].getPath() << std::endl;
-                }
-            }
-        }
-    }
-    return s;
+std::pair<int, std::string> response::_extractLocPosNAbsPath( void ) {
+	std::string p = this->_req.getPath();
+	
+	return nullptr;
 }
 
 void response::serveRequest( void ) {
-    std::string absolutePath = _extractAbsolutePath();
+    std::pair<int, std::string> data = this->_extractLocPosNAbsPath();
     return ; 
 }
 

@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 18:22:07 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/24 15:18:01 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ Request::Request() :
     _method(""),
     _uri(""),
     _query(""),
+    _path(""),
     _protocol(""),
     _uriExtension(0),
 	_port(8080),
@@ -34,6 +35,7 @@ Request& Request::operator=( Request const &rhs ) {
         this->_method = rhs._method;
         this->_uri = rhs._uri;
         this->_query = rhs._query;
+        this->_path = rhs._path;
         this->_protocol = rhs._protocol;
         this->_uriExtension = rhs._uriExtension;
         this->_headers = rhs._headers;
@@ -50,6 +52,7 @@ Request& Request::operator=( Request const &rhs ) {
 std::string Request::getMethod( void ) const { return this->_method; }
 std::string Request::getUri( void ) const { return this->_uri; }
 std::string Request::getQuery( void ) const { return this->_query; }
+std::string Request::getPath( void ) const { return this->_path; }
 std::string Request::getProtocol(void ) const { return this->_protocol; }
 short       Request::getUriExtension( void ) const { return this->_uriExtension; }
 std::string Request::getBodyFilename( void ) const { return this->_bodyFilename; }
@@ -112,7 +115,12 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::vector<std::string> myvec = _split(line, ' ');
     myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->_method = myvec[0] : throw parseErr("405 Method Not Allowed"); //generate a Allow header in response
     this->_uri = myvec[1];
-    this->_uri.find("?") != std::string::npos ? this->_uri.substr(this->_uri.find("?"), this->_uri.length()) : "";
+    this->_path = this->_uri;
+    size_t pos = this->_uri.find("?");
+    if (pos) {
+        this->_query = this->_uri.substr(pos + 1, this->_uri.length());
+        this->_path.erase(pos, this->_path.length());
+    }
     myvec[2] == "HTTP/1.1" ? this->_protocol = myvec[2] : throw parseErr("505 HTTP Version Not Supported");
     if (_hasEnding(this->_uri, ".py")) { this->_uriExtension = PY; }
     else if (_hasEnding(this->_uri, ".php")) { this->_uriExtension = PHP; }
