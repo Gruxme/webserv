@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 15:21:10 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/24 16:15:57 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,14 +57,40 @@ void response::_getResrc( std::string path ) {
     return ;
 }
 
-std::pair<int, std::string> response::_extractLocPosNAbsPath( void ) {
-	std::string p = this->_req.getPath();
-	
-	return nullptr;
+void	response::_extractData( void ) {
+	std::string tmpPath = this->_req.getPath();
+	std::string path = this->_req.getPath();
+	while (path.find("/") != std::string::npos) {
+		_path = path;
+		for (int i = 0; i < _config.getLocationCount(); i++) {
+			// if / == locationPath store which location I'm on;
+			if ("/" == _config.getLocationClass()[i].getPath())
+				this->_pos = i;
+			// else check which locationpath == path and if the method's appropriate
+			else if (path == _config.getLocationClass()[i].getPath()) { // PARSE METHODS ON CONFIG
+				// do the check without doing the substr on + 1
+				this->_scriptName = tmpPath.substr(this->_path.length(), tmpPath.length());
+				if (this->_scriptName == "/")
+					this->_scriptName = "";
+				else if (this->_scriptName.find("/") != std::string::npos) {
+					this->_scriptName.erase(this->_scriptName.find_first_of("/") + 1);
+				}
+				this->_pos = i;
+				return ;
+			}
+		}
+		if (path.find_first_of("/") == path.find_last_of("/")) {
+			this->_path = "/";
+			this->_scriptName = tmpPath.substr(tmpPath.find("/") + 1, tmpPath.length());
+			return ;
+		}
+		else
+			path = path.substr(0, path.find_last_of("/"));
+	}
 }
 
 void response::serveRequest( void ) {
-    std::pair<int, std::string> data = this->_extractLocPosNAbsPath();
+	this->_extractData();
     return ; 
 }
 

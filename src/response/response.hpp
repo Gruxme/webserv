@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 15:20:05 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/24 15:24:40 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ class response {
 		void		_deleteResrc( std::string data );
 		void		_autoindexModule( void );
 
-		std::pair<int, std::string>	_extractLocPosNAbsPath( void );
+		void		_extractData( void );
 		
 	public:
 		void		serveRequest( void );
@@ -44,6 +44,11 @@ class response {
 		std::fstream		_body;
 		ServerConfigClass	_config;
 		Request				_req;
+
+	private:
+		std::string	_scriptName;
+		std::string	_path;
+		int			_pos;
 		
 };
 
