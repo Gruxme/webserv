@@ -35,6 +35,7 @@ class Request {
         std::string _method;
         std::string _uri;
         std::string _query;
+        std::string _path;
         std::string _protocol;
         short       _uriExtension;
         std::map<std::string, std::string>  _headers;
@@ -53,6 +54,7 @@ class Request {
         std::string getMethod( void ) const;
         std::string getUri( void ) const;
         std::string getQuery( void ) const;
+        std::string getPath( void ) const;
         std::string getProtocol(void ) const;
         short       getUriExtension( void ) const;
         std::map<std::string, std::string> const &getHeaders( void ) const;
