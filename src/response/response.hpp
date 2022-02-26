@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 18:08:06 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/26 17:26:03 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "../config/ConfigClass.hpp"
 #include "../request/Request.hpp"
+#include "mimeTypes.hpp"
 #include <sys/stat.h>
 #include <ctime>
 #include <fcntl.h>
@@ -29,7 +30,7 @@ class response {
 		response&	operator=( const response &x );
 
 	private:
-		std::string	_errorMsg( std::string type, std::string statusCode );
+		void		_errorMsg( std::string type, std::string statusCode );
 		void		_getResrc( std::string data );
 		void		_postResrc( std::string data );
 		void		_deleteResrc( std::string data );
@@ -43,14 +44,15 @@ class response {
 		bool		connStatus( void );
 	private:
 		std::string			_headers;
-		std::fstream		_body;
+		std::string			_body;
 		ServerConfigClass	_config;
 		Request				_req;
 
 	private:
 		std::string	_scriptName;
 		std::string	_path;
-		int			_pos;
+		int			_pos; // should default to -1 if no location for said path
+		bool		_headersStatus;
 		bool		_status;
 		
 };
