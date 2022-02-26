@@ -19,7 +19,7 @@ ServerConfigClass::ServerConfigClass() :
     _root(""),
     _bodySizeLimit(0),
     _accessLog(""),
-    _errorPage(""),
+    _errorPage("../errorPages/"),
     _autoindex(_AUTOINDEX_OFF_),
     _locationCount(0),
     _location(0) {}

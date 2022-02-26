@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 15:24:40 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/24 18:08:06 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include "../request/Request.hpp"
 #include <sys/stat.h>
 #include <ctime>
+#include <fcntl.h>
+#include <poll.h>
 
 
 class response {
@@ -27,7 +29,7 @@ class response {
 		response&	operator=( const response &x );
 
 	private:
-		std::string	_errorMsg( std::string type );
+		std::string	_errorMsg( std::string type, std::string statusCode );
 		void		_getResrc( std::string data );
 		void		_postResrc( std::string data );
 		void		_deleteResrc( std::string data );
@@ -38,7 +40,7 @@ class response {
 	public:
 		void		serveRequest( void );
 		void		setData(ServerConfigClass config, Request req);
-		
+		bool		connStatus( void );
 	private:
 		std::string			_headers;
 		std::fstream		_body;
@@ -49,6 +51,7 @@ class response {
 		std::string	_scriptName;
 		std::string	_path;
 		int			_pos;
+		bool		_status;
 		
 };
 

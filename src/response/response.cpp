@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 16:25:00 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/24 18:40:42 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,43 @@
 response::response() {}
 response::~response() {}
 
-std::string	response::_errorMsg( std::string type ){
+std::string	response::_errorMsg( std::string type , std::string statusCode){
 	std::ostringstream	errRes;
-	errRes << "HTTP /1.1 " << type << "\nDate: ";
+	std::ifstream		body;
+	std::string			errorFile;
+	struct pollfd		fds = {};
+	char				buff[512];
+
+	if(*(_config.getErrorPage().rbegin().base()) == '/')
+		errorFile = _config.getErrorPage() + statusCode + ".html";
+	else
+		errorFile = _config.getErrorPage() + "/" + statusCode + ".html";
+	errRes << "HTTP /1.1 " << type << "\r\nDate: ";
 	time_t	now = time(0);
 	char	*date = new char[30]();
 	strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
-	errRes << date << "\n" << "Server: Webserv/4.2.0 \n";
-	
+	errRes << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
+	errRes << "Content-Type: text/html\r\n";
+	body.open(errorFile, std::ios::binary );
+	body.seekg(0, std::ios::end);
+	errRes << "Content-Length: " << static_cast<int>(body.tellg()) << "\r\n";
+	body.close();
+	errRes << "Connection: closed\r\n\r\n";
+	_status = false;
+	int	fd = open(errorFile.c_str(), O_RDONLY);
+	fds.fd = fd;
+	fds.events = POLLIN;
+	while(1){
+		if ((poll(&fds, 1, -1) > 0) && (fds.revents = POLLIN))
+		{
+			bzero(&buff, 512);
+			if (read(fds.fd, &buff, 510) > 0)
+				errRes << buff;
+			else
+				break;
+		}
+	}
+	return errRes.str();
 }
 
 void response::_getResrc( std::string absPath ) {
@@ -92,6 +121,8 @@ void response::serveRequest( void ) {
 	this->_extractData();
     return ; 
 }
+
+bool		response::connStatus( void ) { return _status; }
 
 void		response::setData( ServerConfigClass config, Request req ){
 	_config = config;
