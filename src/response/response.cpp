@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/26 17:29:24 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/27 18:37:50 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,6 @@ void	response::_errorMsg( std::string type , std::string statusCode){
 	std::ostringstream	errRes;
 	struct stat			status;
 	std::string			errorFile;
-	struct pollfd		fds = {};
-	char				buff[512];
 
 	if(*(_config.getErrorPage().rbegin().base()) == '/')
 		errorFile = _config.getErrorPage() + statusCode + ".html"; // Maybe do this in config parsing
@@ -42,28 +40,17 @@ void	response::_errorMsg( std::string type , std::string statusCode){
 	}
 	errRes << "Content-Type: text/html\r\n";
 	if(stat(errorFile.c_str(), &status) < 0){
-		perror("stat: ");// define behaviour if error file defined in config do not actually exist
-		exit(EXIT_FAILURE);
+		errorFile = "/errorPages/" + statusCode + ".html";
+		if(stat(errorFile.c_str(), &status)){
+			perror("stat: ");
+			exit(EXIT_FAILURE);
+		}
 	}
-	errRes << "Content-Length: " << status.st_size << "\r\n";
+	errRes << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
 	errRes << "Connection: closed\r\n\r\n";
 	_headers = errRes.str();
 	_headersStatus = true;
 	_body = errorFile;
-	// int	fd = open(errorFile.c_str(), O_RDONLY); //make it non block
-	// fds.fd = fd;
-	// fds.events = POLLIN;
-	// while(1){
-	// 	if ((poll(&fds, 1, -1) > 0) && (fds.revents = POLLIN))
-	// 	{
-	// 		bzero(&buff, 512);
-	// 		if (read(fds.fd, &buff, 510) > 0)
-	// 			errRes << buff;
-	// 		else
-	// 			break;
-	// 	}
-	// }
-	// the above block to be in a send body method
 }
 
 void response::_getResrc( std::string absPath ) {
@@ -109,12 +96,38 @@ void response::_getResrc( std::string absPath ) {
 				perror("stat: "); // define behaviour if error file defined in config do not actually exist
 				exit(EXIT_FAILURE);
 			}
-			res << "Content-Length: " << status.st_size << "\r\n";
+			res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
 			res << "Connection: " << (_status = (_req.getHeaders().find("Connection")->second != "close")) << "\r\n\r\n";
 			_headersStatus = true;
 		}
 	}
     return ;
+}
+
+void		response::setSendStatus(bool status){
+	_sendStatus = status;
+}
+
+bool		response::getSendStatus( void ){
+	return _status;
+}
+
+std::string	response::getBodyContent( void ){
+	struct pollfd		fds = {};
+	char				buff[4097];
+	std::string			content("");
+	_bodyFd = open(_body.c_str(), O_RDONLY); //make it non block
+	fds.fd = _bodyFd;
+	fds.events = POLLIN;
+	if ((poll(&fds, 1, -1) > 0) && (fds.revents = POLLIN))
+	{
+		bzero(&buff, 4097);
+		if (read(fds.fd, &buff, 4096) > 0)
+			content = buff;
+	}
+	return content;
+	//above block to be set along headers if data is small enough not to be chunked
+	// for chunked response open file alongside header and send first chunk then send remaining chunks in here
 }
 
 void	response::_extractData( void ) {
@@ -150,6 +163,14 @@ void	response::_extractData( void ) {
 
 void response::serveRequest( void ) {
 	this->_extractData();
+	if(_req.getMethod() == "GET")
+		_getResrc(_path + _scriptName);
+	else if (_req.getMethod() == "POST")
+		_postResrc(_path + _scriptName);
+	else if(_req.getMethod() == "DELETE")
+		_deleteResrc(_path + _scriptName);
+	else
+		_errorMsg("405 Method Not Allowed", "405");
     return ; 
 }
 
