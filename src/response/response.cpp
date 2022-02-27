@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/26 17:29:24 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/27 18:31:04 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
 
-
-response::response() {}
+response::response() :
+	_headers(""), _body(""),
+	_fileName(""), _path("/"), _pos(-1), _headersStatus(false), _status(false) {}
 response::~response() {}
 
 void	response::_errorMsg( std::string type , std::string statusCode){
@@ -22,6 +23,8 @@ void	response::_errorMsg( std::string type , std::string statusCode){
 	std::string			errorFile;
 	struct pollfd		fds = {};
 	char				buff[512];
+	(void)fds;
+	(void)buff;
 
 	if(*(_config.getErrorPage().rbegin().base()) == '/')
 		errorFile = _config.getErrorPage() + statusCode + ".html"; // Maybe do this in config parsing
@@ -120,26 +123,30 @@ void response::_getResrc( std::string absPath ) {
 void	response::_extractData( void ) {
 	std::string tmpPath = this->_req.getPath();
 	std::string path = this->_req.getPath();
+	int ret = 0;
 	while (path.find("/") != std::string::npos) {
 		_path = path;
-		for (int i = 0; i < _config.getLocationCount(); i++) {
-			if ("/" == _config.getLocationClass()[i].getPath() && _config.getLocationClass()[i].getMethod() == _req.getMethod())
-				this->_pos = i;
+		for (size_t i = 0; i < _config.getLocationCount(); i++) {
+			if ("/" == _config.getLocationClass()[i].getPath() && _config.getLocationClass()[i].getMethod() == _req.getMethod()) {
+				ret = i;
+				this->_pos = ret;
+			}
 			else if (path == _config.getLocationClass()[i].getPath() && _config.getLocationClass()[i].getMethod() == _req.getMethod() ) {
-				this->_scriptName = tmpPath.substr(this->_path.length(), tmpPath.length());
-				if (this->_scriptName == "/")
-					this->_scriptName = "";
-					
-				else if (this->_scriptName.find("/") != std::string::npos) {
-					this->_scriptName.erase(this->_scriptName.find_first_of("/"));
+				this->_fileName = tmpPath.substr(this->_path.length(), tmpPath.length());
+				if (this->_fileName == "/")
+					this->_fileName = "";
+				else if (this->_fileName.find("/") != std::string::npos) {
+					this->_fileName.erase(this->_fileName.find_first_of("/"));
 				}
-				this->_pos = i;
+				ret = i;
+				this->_pos = ret;
 				return ;
 			}
 		}
 		if (path.find_first_of("/") == path.find_last_of("/")) {
 			this->_path = "/";
-			this->_scriptName = tmpPath.substr(tmpPath.find("/") + 1, tmpPath.length());
+			this->_fileName = tmpPath.substr(tmpPath.find("/") + 1, tmpPath.length());
+			this->_pos = ret;
 			return ;
 		}
 		else
@@ -159,3 +166,14 @@ void		response::setData( ServerConfigClass config, Request req ){
 	_config = config;
 	_req = req;
 }
+
+std::string	response::getHeaders( void ) const { return this->_headers; }
+std::string	response::getBody( void ) const { return this->_body; }
+/* 
+	1/2 WRITE A COUPLE OF GETTERS FOR THE CONFIG / REQ PVT ATTRIBUTES 
+*/
+std::string	response::getFileName( void ) const { return this->_fileName; }
+std::string response::getPath( void ) const { return this->_path; }
+int			response::getPos( void ) const { return this->_pos; }
+bool		response::getHeaderStatus( void ) const { return this->_headersStatus; }
+bool		response::getStatus( void ) const { return this->_status; }
