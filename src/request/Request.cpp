@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/24 15:18:01 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/02/27 18:03:23 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,6 @@ bool    Request::_bodyComplete( void ) {
 }
 
 void	Request::parse( void ) {
-	// int	contentLength = 0;
 	if (_headersComplete() == true) {
 		if (_headers.empty() == true) {
 			std::stringstream	iss(_dataGatherer);
@@ -99,7 +98,7 @@ void	Request::parse( void ) {
                 _handleBasicRequest(iss);
 				_status = true;
             }
-            else{
+            else {
 				_status = true;
 			}
 		}
@@ -117,7 +116,7 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     this->_uri = myvec[1];
     this->_path = this->_uri;
     size_t pos = this->_uri.find("?");
-    if (pos) {
+    if (pos != std::string::npos) {
         this->_query = this->_uri.substr(pos + 1, this->_uri.length());
         this->_path.erase(pos, this->_path.length());
     }
@@ -136,7 +135,7 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
             break ;
         myvec = _split(line, ':');
         if (myvec.at(0).empty() || myvec.at(1).empty())
-            throw parseErr("400 Bad Request");
+            throw parseErr("400 Bad Request");   
         myvec[1] = this->_ltrim(myvec[1], " ");
         this->_headers[myvec[0]] = myvec[1];
 		if (myvec[0] == "host") { this->_port = std::stoi(_split(myvec[1], ':')[1]); }
