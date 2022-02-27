@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/27 18:38:58 by abiari           ###   ########.fr       */
+/*   Updated: 2022/02/27 18:52:44 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,9 @@
 
 response::response() :
 	_headers(""), _body(""),
-	_fileName(""), _path("/"), _pos(-1), _headersStatus(false), _status(false) {}
+	_fileName(""), _path("/"), _pos(-1), _headersStatus(false), _status(false),
+	_bodyFd(-1), _bodySize(0), _sendStatus(true), _config(), _req() 
+	{}
 response::~response() {}
 
 void	response::_errorMsg( std::string type , std::string statusCode){
@@ -118,6 +120,10 @@ std::string	response::getBodyContent( void ){
 	char				buff[4097];
 	std::string			content("");
 	_bodyFd = open(_body.c_str(), O_RDONLY); //make it non block
+	if(!_sendStatus)
+	{
+		// check how many bytes sent from send, calculate where to go back with lseek and rewind before reading
+	}
 	fds.fd = _bodyFd;
 	fds.events = POLLIN;
 	if ((poll(&fds, 1, -1) > 0) && (fds.revents = POLLIN))
@@ -169,11 +175,11 @@ void	response::_extractData( void ) {
 void response::serveRequest( void ) {
 	this->_extractData();
 	if(_req.getMethod() == "GET")
-		_getResrc(_path + _scriptName);
+		_getResrc(_path + _fileName);
 	else if (_req.getMethod() == "POST")
-		_postResrc(_path + _scriptName);
+		_postResrc(_path + _fileName);
 	else if(_req.getMethod() == "DELETE")
-		_deleteResrc(_path + _scriptName);
+		_deleteResrc(_path + _fileName);
 	else
 		_errorMsg("405 Method Not Allowed", "405");
     return ; 
