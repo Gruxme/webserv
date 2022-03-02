@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/24 16:24:01 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/02 19:19:56 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ LocationClass & LocationClass::operator=( LocationClass const &rhs ) {
 /* ----- Location Parser ----- */
 void    LocationClass::parseLocation( std::string buffer ) {
     if (!buffer.empty()) {
+        if (buffer.find("#") != std::string::npos)
+            return ;
         if (buffer.find("path = ") != std::string::npos)
             this->_path = buffer.substr(buffer.find("path = ") + strlen("path = "));
         else if (buffer.find("root = ") != std::string::npos)
@@ -37,8 +39,13 @@ void    LocationClass::parseLocation( std::string buffer ) {
             this->_method = buffer.substr(buffer.find("method = ") + strlen("method = "));
         else if (buffer.find("cgi_ext") != std::string::npos)
             this->_cgiExt = buffer.substr(buffer.find("cgi_ext = ") + strlen("cgi_ext = "));
-        else if (buffer.find("autoindex = on") != std::string::npos)
-            this->_autoindex = _AUTOINDEX_ON_;
+        else if (buffer.find("autoindex = ") != std::string::npos) {
+            if (buffer.find("autoindex = on") != std::string::npos) this->_autoindex = _AUTOINDEX_ON_;
+            else if (buffer.find("autoindex = off") != std::string::npos) this->_autoindex = _AUTOINDEX_OFF_;
+        }
+            
+        else { throw parseErr("Parsing Error\nRemember to read comments in the default.conf file for usage guide\n"); }
+
     }
     return ;
 }

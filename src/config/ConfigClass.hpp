@@ -15,6 +15,7 @@
 # include <vector>
 # include <cstring>
 # include <iostream>
+# include <sstream>
 # include <fstream>
 # include <algorithm>
 # include "ServerConfigClass.hpp"
@@ -44,10 +45,14 @@ class ConfigClass {
 		void	_checkConfigValidity( void );
 		void	parseConfigFile( void );
 
-		class ParsingError : public std::exception {
-		public:
-			virtual const char * what() const throw() {
-				return ("Parsing Error");
-			}
-	};
+		class parseErr : public std::exception {
+        public:
+            explicit parseErr( const std::string &errStr ) throw() : _errStr(errStr) {}
+            ~parseErr() throw() {}
+            virtual const char * what() const throw() {
+                return (_errStr.c_str());
+            }
+        private:
+            std::string _errStr;
+        };
 };

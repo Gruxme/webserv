@@ -4,7 +4,7 @@ CFLAGS := -Wall -Werror -Wextra --std=c++98
 DFLAGS := -g3
 SRC := testMain.cpp \
 ./src/config/ConfigClass.cpp ./src/config/ServerConfigClass.cpp ./src/config/LocationClass.cpp \
-./src/request/Request.cpp \
+# ./src/request/Request.cpp \
 # ./src/response/response.cpp ./src/response/mimeTypes.cpp \
 # ./src/sockets/sockets.cpp ./src/sockets/socketsIO.cpp
 

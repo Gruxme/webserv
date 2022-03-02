@@ -94,7 +94,7 @@ class Request {
         /* ----- Exceptions ----- */
         class parseErr : public std::exception {
         public:
-            explicit parseErr(const std::string &errStr) throw() : _errStr(errStr) {}
+            explicit parseErr( const std::string &errStr ) throw() : _errStr(errStr) {}
             ~parseErr() throw() {}
             virtual const char * what() const throw() {
                 return (_errStr.c_str());

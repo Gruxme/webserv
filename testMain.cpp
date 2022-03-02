@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/02 10:36:12 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/02 19:11:34 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,96 +34,96 @@ int	main()
 # include "./src/config/ConfigClass.hpp"
 # include "./src/config/ServerConfigClass.hpp"
 # include "./src/config/LocationClass.hpp"
-# include "./src/request/Request.hpp"
+// # include "./src/request/Request.hpp"
 // # include "./src/response/response.hpp"
 
 /* CONFIGURATION FILE MAIN -- DO NOT TOUCH */
-// int main( int ac, char **av ) {
+int main( int ac, char **av ) {
 
-//     (void)ac;
-//     (void)av;
+    (void)ac;
+    (void)av;
 
-//     ConfigClass s = ConfigClass();
-//     s.parseConfigFile();
-//     std::cout << "-------- server 1 --------" << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getPort() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getServerName() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getBodySizeLimit() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getAccessLog() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getErrorPage() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getAutoIndex() << std::endl;
-//     std::cout << "-------- server 1 | location 1 --------" << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getPath() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getRoot() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getCgiExt() << std::endl;
-//     std::cout << "-------- server 1 | location 2 --------" << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getPath() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getRoot() << std::endl;
-//     std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getCgiExt() << std::endl;
-//     std::cout << std::endl;
-//     std::cout << "-------- server 2 --------" << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getPort() << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getServerName() << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getBodySizeLimit() << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getAccessLog() << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getErrorPage() << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getAutoIndex() << std::endl;
-//     std::cout << "-------- server 2 | location 1 --------" << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getPath() << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getRoot() << std::endl;
-//     std::cout << "-------- server 2 | location 2 --------" << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getPath() << std::endl;
-//     std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getRoot() << std::endl;
+    ConfigClass s = ConfigClass();
+    s.parseConfigFile();
+    std::cout << "-------- server 1 --------" << std::endl;
+    std::cout << s.getServerConfigClass()[0].getPort() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getServerName() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getBodySizeLimit() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getAccessLog() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getErrorPage() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getAutoIndex() << std::endl;
+    std::cout << "-------- server 1 | location 1 --------" << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getRoot() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[0].getCgiExt() << std::endl;
+    std::cout << "-------- server 1 | location 2 --------" << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getRoot() << std::endl;
+    std::cout << s.getServerConfigClass()[0].getLocationClass()[1].getCgiExt() << std::endl;
+    std::cout << std::endl;
+    std::cout << "-------- server 2 --------" << std::endl;
+    std::cout << s.getServerConfigClass()[1].getPort() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getServerName() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getBodySizeLimit() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getAccessLog() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getErrorPage() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getAutoIndex() << std::endl;
+    std::cout << "-------- server 2 | location 1 --------" << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getRoot() << std::endl;
+    std::cout << "-------- server 2 | location 2 --------" << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getPath() << std::endl;
+    std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getRoot() << std::endl;
 
-//     return EXIT_SUCCESS;
-// }
-
-# include "SimpleSocket.hpp"
-
-# define BUFFER_SIZE 1024
-
-int main( void ) {
-    ConfigClass config = ConfigClass();
-    config.parseConfigFile();
-    SimpleSocket socket = SimpleSocket(AF_INET, SOCK_STREAM, 0);
-    std::string str = "Le serveur vous envoie un bonsoir!\n";
-    socket.bind();
-    socket.listen();
-    try {
-        while (420) {
-            Request req = Request();
-            // response res = response();
-            std::cout << "\n+++++++ Waiting for new connection ++++++++\n\n";
-            int newSocket = socket.accept();
-            char buffer[BUFFER_SIZE] = {0};
-            recv(newSocket, buffer, BUFFER_SIZE, 0);
-
-            /* -- INVOKING PARSER ---------- */
-            req.append(buffer);
-            req.parse();
-
-            std::cout << req << std::endl;
-
-            // res.setData(config.getServerConfigClass()[0], req);
-            // res.serveRequest();
-
-            // std::cout << res.getFileName() << std::endl;
-            // std::cout << res.getPath() << std::endl;
-            // std::cout << res.getPos() << std::endl;
-
-            /* ------------------------------ */
-            // std::cout << "------------------ Message sent -------------------" << std::endl;
-            write(newSocket, str.c_str(), str.length());
-            close(newSocket);
-        }
-    } catch (std::exception &e) {
-        std::cout << e.what() << std::endl;
-        socket.close();
-        exit(0);
-    }
-    
-    return (EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }
+
+// # include "SimpleSocket.hpp"
+
+// # define BUFFER_SIZE 1024
+
+// int main( void ) {
+//     ConfigClass config = ConfigClass();
+//     config.parseConfigFile();
+//     SimpleSocket socket = SimpleSocket(AF_INET, SOCK_STREAM, 0);
+//     std::string str = "Le serveur vous envoie un bonsoir!\n";
+//     socket.bind();
+//     socket.listen();
+//     try {
+//         while (420) {
+//             Request req = Request();
+//             // response res = response();
+//             std::cout << "\n+++++++ Waiting for new connection ++++++++\n\n";
+//             int newSocket = socket.accept();
+//             char buffer[BUFFER_SIZE] = {0};
+//             recv(newSocket, buffer, BUFFER_SIZE, 0);
+
+//             /* -- INVOKING PARSER ---------- */
+//             req.append(buffer);
+//             req.parse();
+
+//             std::cout << req << std::endl;
+
+//             // res.setData(config.getServerConfigClass()[0], req);
+//             // res.serveRequest();
+
+//             // std::cout << res.getFileName() << std::endl;
+//             // std::cout << res.getPath() << std::endl;
+//             // std::cout << res.getPos() << std::endl;
+
+//             /* ------------------------------ */
+//             // std::cout << "------------------ Message sent -------------------" << std::endl;
+//             write(newSocket, str.c_str(), str.length());
+//             close(newSocket);
+//         }
+//     } catch (std::exception &e) {
+//         std::cout << e.what() << std::endl;
+//         socket.close();
+//         exit(0);
+//     }
+    
+//     return (EXIT_SUCCESS);
+// }
 
 
 /* REQUEST MAIN -- DO NOT TOUCH */

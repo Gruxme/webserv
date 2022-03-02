@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/02 14:48:10 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/02 19:25:12 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,8 +88,8 @@ void    ConfigClass::parseConfigFile( void ) {
             while (getline(file, buffer)) {
                 if (buffer.find("}") != std::string::npos)
                     break ;
-               /*  if (buffer.find("#") != std::string::npos) 
-                    continue ; */
+                if (buffer.find("#") != std::string::npos) 
+                    continue ;
                 else if (buffer.find("listen = ") != std::string::npos)
                     this->_serverConf[n_serv]._port = std::stoi(buffer.substr(buffer.find("listen = ") + strlen("listen = ")));
                 else if (buffer.find("server_name = ") != std::string::npos)
@@ -112,6 +112,7 @@ void    ConfigClass::parseConfigFile( void ) {
                     }
                     n_loc++;
                 }
+                else { throw parseErr("Parsing Error\nRemember to read comments in the default.conf file for usage guide\n"); }
             }
             n_serv++;
         }

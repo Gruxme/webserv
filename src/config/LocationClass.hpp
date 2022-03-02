@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 01:50:10 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/24 16:23:07 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/02 19:16:55 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,4 +45,15 @@ class LocationClass {
         std::string getMethod( void ) const;
         std::string getCgiExt( void ) const;
         bool        getAutoIndex( void ) const;
+
+        class parseErr : public std::exception {
+        public:
+            explicit parseErr( const std::string &errStr ) throw() : _errStr(errStr) {}
+            ~parseErr() throw() {}
+            virtual const char * what() const throw() {
+                return (_errStr.c_str());
+            }
+        private:
+            std::string _errStr;
+        };
 };
