@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/24 15:01:36 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/01 15:05:40 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,8 +124,8 @@ void	socketsIO::eventListener()
 						if (_socks[j].getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
 							res.setData(_socks[j].getConfig(), _requests.find(_pollfds[i].fd)->second);
 					//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
-					rc = send(_pollfds[i].fd, res.getMsg().c_str() + sentBytes, res.getMsg().length() - sentBytes, 0);
-					sentBytes += rc;
+					rc = send(_pollfds[i].fd, res.getBodyContent().c_str(), res.getBodyContent().length(), 0);
+					
 					std::cout << "sent: " << rc << "bytes"
 							  << "for a total of " << sentBytes << "bytes" << std::endl;
 					if (sentBytes == res.getMsg().length())

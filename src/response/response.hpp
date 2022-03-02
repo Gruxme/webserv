@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/27 18:39:09 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/01 11:04:35 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ class response {
 	public:
 		void		serveRequest( void );
 		void		setData(ServerConfigClass config, Request req);
-		void		setSendStatus(bool status);
+		void		setSendStatus(bool status, size_t _bytesSent);
 		bool		getSendStatus( void );
 		std::string	getBodyContent( void );
 		bool		connStatus( void );
@@ -64,6 +64,7 @@ class response {
 		std::string			_body;
 		int					_bodyFd;
 		size_t				_bodySize;
+		size_t				_bytesSent;
 		bool				_sendStatus;
 		ServerConfigClass	_config;
 		Request				_req;

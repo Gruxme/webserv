@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/27 18:52:44 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/01 11:04:38 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,8 +107,9 @@ void response::_getResrc( std::string absPath ) {
     return ;
 }
 
-void		response::setSendStatus(bool status){
+void		response::setSendStatus(bool status, size_t bytesSent){
 	_sendStatus = status;
+	_bytesSent += bytesSent;
 }
 
 bool		response::getSendStatus( void ){
@@ -120,8 +121,10 @@ std::string	response::getBodyContent( void ){
 	char				buff[4097];
 	std::string			content("");
 	_bodyFd = open(_body.c_str(), O_RDONLY); //make it non block
+	fcntl(_bodyFd, F_SETFL, O_NONBLOCK);
 	if(!_sendStatus)
 	{
+		lseek(_bodyFd, _bytesSent, SEEK_CUR);
 		// check how many bytes sent from send, calculate where to go back with lseek and rewind before reading
 	}
 	fds.fd = _bodyFd;
