@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 18:02:20 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/02 14:48:10 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,11 @@ void    ConfigClass::_allocateLocations( void ) {
     }
 }
 
+void    ConfigClass::_checkConfigValidity( void ) {
+    
+    return ;
+}
+
 /* ----- Main Parser ----- */
 /* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
 void    ConfigClass::parseConfigFile( void ) {
@@ -83,8 +88,8 @@ void    ConfigClass::parseConfigFile( void ) {
             while (getline(file, buffer)) {
                 if (buffer.find("}") != std::string::npos)
                     break ;
-                if (buffer.find("#") != std::string::npos) 
-                    continue ;
+               /*  if (buffer.find("#") != std::string::npos) 
+                    continue ; */
                 else if (buffer.find("listen = ") != std::string::npos)
                     this->_serverConf[n_serv]._port = std::stoi(buffer.substr(buffer.find("listen = ") + strlen("listen = ")));
                 else if (buffer.find("server_name = ") != std::string::npos)

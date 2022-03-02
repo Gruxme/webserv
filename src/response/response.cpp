@@ -3,20 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/01 11:04:38 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/02 11:28:42 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
 
-response::response() :
+response::response() {}
+/* response::response() :
 	_headers(""), _body(""),
 	_fileName(""), _path("/"), _pos(-1), _headersStatus(false), _status(false),
 	_bodyFd(-1), _bodySize(0), _sendStatus(true), _config(), _req() 
-	{}
+	{} */
 response::~response() {}
 
 void	response::_errorMsg( std::string type , std::string statusCode){

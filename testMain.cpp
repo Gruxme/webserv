@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/27 18:14:34 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/02 10:36:12 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int	main()
 # include "./src/config/ServerConfigClass.hpp"
 # include "./src/config/LocationClass.hpp"
 # include "./src/request/Request.hpp"
-# include "./src/response/response.hpp"
+// # include "./src/response/response.hpp"
 
 /* CONFIGURATION FILE MAIN -- DO NOT TOUCH */
 // int main( int ac, char **av ) {
@@ -92,7 +92,7 @@ int main( void ) {
     try {
         while (420) {
             Request req = Request();
-            response res = response();
+            // response res = response();
             std::cout << "\n+++++++ Waiting for new connection ++++++++\n\n";
             int newSocket = socket.accept();
             char buffer[BUFFER_SIZE] = {0};
@@ -102,12 +102,14 @@ int main( void ) {
             req.append(buffer);
             req.parse();
 
-            res.setData(config.getServerConfigClass()[0], req);
-            res.serveRequest();
+            std::cout << req << std::endl;
 
-            std::cout << res.getFileName() << std::endl;
-            std::cout << res.getPath() << std::endl;
-            std::cout << res.getPos() << std::endl;
+            // res.setData(config.getServerConfigClass()[0], req);
+            // res.serveRequest();
+
+            // std::cout << res.getFileName() << std::endl;
+            // std::cout << res.getPath() << std::endl;
+            // std::cout << res.getPos() << std::endl;
 
             /* ------------------------------ */
             // std::cout << "------------------ Message sent -------------------" << std::endl;
