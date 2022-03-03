@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/01 15:05:40 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/02 20:40:08 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,14 @@ socketsIO::socketsIO(): _nfds(0), _socks(), _pollfds() {}
 
 socketsIO::socketsIO(const socketsIO& x) { this->operator=(x); }
 
-socketsIO::~socketsIO() {}
+socketsIO::~socketsIO() {
+	std::vector<sockets *>::iterator it = _socks.begin(), ite = _socks.end();
+	while (it != ite)
+	{
+		delete *it;
+		it++;
+	}
+}
 
 socketsIO&	socketsIO::operator=(const socketsIO& x){
 	_nfds = x._nfds;
@@ -25,12 +32,12 @@ socketsIO&	socketsIO::operator=(const socketsIO& x){
 	return *this;
 }
 
-void	socketsIO::setSock(sockets sock){
+void	socketsIO::setSock(sockets *sock){
 	struct	pollfd	fds = {};
-	fds.fd = sock.getMainSock();
+	_socks.push_back(sock);
+	fds.fd = sock->getMainSock();
 	fds.events = POLLIN;
 	_pollfds.push_back(fds);
-	_socks.push_back(sock);
 	_nfds++;
 }
 
@@ -40,13 +47,13 @@ bool	socketsIO::_tryConnect( int fd ){
 
 	for (size_t j = 0; j < _socks.size(); j++)
 	{
-		if (fd != _socks[j].getMainSock())
+		if (fd != _socks[j]->getMainSock())
 			continue;
 		wasMainSock = true;
-		std::cout << "socket listening on port: " << _socks[j].getConfig().getPort() << " is readable" << std::endl;
+		std::cout << "socket listening on port: " << _socks[j]->getConfig().getPort() << " is readable" << std::endl;
 		try
 		{
-			fds.fd = _socks[j].acceptClient();
+			fds.fd = _socks[j]->acceptClient();
 		}
 		catch (const std::exception &e)
 		{
@@ -62,15 +69,16 @@ bool	socketsIO::_tryConnect( int fd ){
 
 void	socketsIO::eventListener()
 {
-	char buffer[1024];
-	Request		req;
-	response	res;
+	char buffer[4096];
 	int rc;
 	unsigned long sentBytes = 0;
-	bool connClosed = false;
+	bool connClosed;
 	while (1)
 	{
 		connClosed = false;
+		for (size_t i = 0; i < _pollfds.size(); i++){
+			_pollfds[i].revents = 0;
+		}
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
 		if (rc < 0)
@@ -81,19 +89,17 @@ void	socketsIO::eventListener()
 				continue;
 			if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT)
 			{
-				// close only the fd and not the server loop and erase node from maps
 				close(_pollfds[i].fd);
 				_pollfds.erase(_pollfds.begin() + i);
 				_nfds--;
 				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl;
 				continue;
 			}
-			// std::string res("HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: 741\n\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n<title>Webserv</title>\n<body>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n<h1>Connected to server</h1>\n</body>\n</html>");
 			if (!_tryConnect(_pollfds[i].fd))
 			{
-				if (!req.isComplete() && _pollfds[i].revents == POLLIN)
+				if (!_requests[_pollfds[i].fd].isComplete() && _pollfds[i].revents == POLLIN)
 				{
-					bzero(buffer, 1024);
+					bzero(buffer, 4096);
 					rc = recv(_pollfds[i].fd, &buffer, sizeof(buffer), 0);
 					if (rc == -1)
 						continue;
@@ -106,43 +112,67 @@ void	socketsIO::eventListener()
 					_requests[_pollfds[i].fd].append(&buffer[0]);
 					std::cout << "received: " << rc << "bytes" << std::endl;
 					try {
-						req.parse();
+						_requests[_pollfds[i].fd].parse();
 					}
 					catch (const std::exception &e){
-						//make method in response class that makes generic error responses
-						std::cerr << e.what() << '\n'; // if caught exception forge appropriate err res and continue poll loop to send it
+						_responses[_pollfds[i].fd].errorMsg(e.what());
 					}
 					// check if req complete and set event to pollout
-					if (req.isComplete())
+					if (_requests[_pollfds[i].fd].isComplete())
 						_pollfds[i].events = POLLOUT;
 					std::cout << "===============REQUEST BEGIN===================\n";
-					std::cout << req << std::endl;
+					std::cout << _requests[_pollfds[i].fd] << std::endl;
 				}
-				if (req.isComplete() && _pollfds[i].revents == POLLOUT)
+				if (_requests[_pollfds[i].fd].isComplete() && _pollfds[i].revents == POLLOUT)
 				{
-					for (int j = 0; j < _socks.size(); j++)
-						if (_socks[j].getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
-							res.setData(_socks[j].getConfig(), _requests.find(_pollfds[i].fd)->second);
-					//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
-					rc = send(_pollfds[i].fd, res.getBodyContent().c_str(), res.getBodyContent().length(), 0);
-					
-					std::cout << "sent: " << rc << "bytes"
-							  << "for a total of " << sentBytes << "bytes" << std::endl;
-					if (sentBytes == res.getMsg().length())
-					{
-						_requests.erase(_pollfds[i].fd);
-						_responses.erase(_pollfds[i].fd);
-						connClosed = true;
+					std::string content("");
+					bool connClose = _requests[_pollfds[i].fd].getHeaders().find("Connection")->second == "close";
+					bool isErrorResp = _responses[_pollfds[i].fd].isError();
+					if(_requests.find(_pollfds[i].fd)->second.getPort() == 0)
+						_responses[_pollfds[i].fd].setData(_socks[0]->getConfig(), _requests.find(_pollfds[i].fd)->second);
+					else {
+						for (size_t j = 0; j < _socks.size(); j++)
+							if (_socks[j]->getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
+								_responses[_pollfds[i].fd].setData(_socks[j]->getConfig(), _requests.find(_pollfds[i].fd)->second);
 					}
-					if (connClosed && req.getHeaders().find("Connection")->second == "close")
+					if(!_responses[_pollfds[i].fd].isError() && !_responses[_pollfds[i].fd].getHeaderStatus())
+						_responses[_pollfds[i].fd].serveRequest();
+					//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
+					if(_responses[_pollfds[i].fd].getHeaderStatus())
+						content = _responses[_pollfds[i].fd].getBodyContent();
+					else
+						content = _responses[_pollfds[i].fd].getHeaders();
+					rc = send(_pollfds[i].fd, content.c_str(), content.length(), 0);
+					if(rc > 0)
 					{
-						// check if rc == 0 should close connection regardless
+						if (rc < static_cast<int>(content.length()))
+							_responses[_pollfds[i].fd].offsetCursor(rc - content.length()); // check if headers sending might fail and set things accordingly
+						else if (rc == static_cast<int>(content.length()) && !_responses[_pollfds[i].fd].getHeaderStatus())
+							_responses[_pollfds[i].fd].headersSent();
+						else if(_responses[_pollfds[i].fd].getHeaderStatus())
+							_responses[_pollfds[i].fd].setBytesSent(rc);
+						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
+						{
+							_requests.erase(_pollfds[i].fd);
+							_responses.erase(_pollfds[i].fd);
+							connClosed = true;
+						}
+					}
+					else{
 						close(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
-						connClosed = false;
+						continue ;
 					}
-					// make sure to have the exact Content lenght filled in header
+					std::cout << "sent: " << rc << "bytes"
+							  << "for a total of " << sentBytes << "bytes" << std::endl;
+					
+					if ((connClosed && connClose) || isErrorResp)
+					{
+						close(_pollfds[i].fd);
+						_pollfds.erase(_pollfds.begin() + i);
+						_nfds--;
+					}
 				}
 			}
 		}

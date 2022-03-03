@@ -3,27 +3,40 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/02 11:28:42 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 10:40:46 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
 
-response::response() {}
-/* response::response() :
-	_headers(""), _body(""),
-	_fileName(""), _path("/"), _pos(-1), _headersStatus(false), _status(false),
-	_bodyFd(-1), _bodySize(0), _sendStatus(true), _config(), _req() 
-	{} */
+response::response() :
+	_headers(""), _body(""), _bodyFd(-1),
+	_bodySize(0), _totalSent(0), _headersSent(false),
+	_error(false), _config(), _req(), _fileName(""),
+	_path(""), _pos(-1)
+	{}
 response::~response() {}
 
-void	response::_errorMsg( std::string type , std::string statusCode){
+void	response::headersSent(){
+	_headersSent = true;
+}
+
+bool	response::getHeaderStatus() const{
+	return _headersSent;
+}
+
+void	response::offsetCursor(off_t offset){
+	lseek(_bodyFd, offset, SEEK_CUR);
+}
+
+void	response::errorMsg( std::string type){
 	std::ostringstream	errRes;
 	struct stat			status;
 	std::string			errorFile;
+	std::string			statusCode = type.substr(0, 3);
 
 	if(*(_config.getErrorPage().rbegin().base()) == '/')
 		errorFile = _config.getErrorPage() + statusCode + ".html"; // Maybe do this in config parsing
@@ -53,8 +66,8 @@ void	response::_errorMsg( std::string type , std::string statusCode){
 	errRes << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
 	errRes << "Connection: closed\r\n\r\n";
 	_headers = errRes.str();
-	_headersStatus = true;
 	_body = errorFile;
+	_error = true;
 }
 
 void response::_getResrc( std::string absPath ) {
@@ -68,77 +81,85 @@ void response::_getResrc( std::string absPath ) {
 		int	fd = -1;
 		if((fd = open(absPath.c_str(), O_RDONLY)) < 0){
 			if(errno == ENOENT)
-				_errorMsg("404 Not Found", "404");
+				errorMsg("404 Not Found");
 			else if(errno == EACCES)
-				_errorMsg("403 Forbidden", "403");
+				errorMsg("403 Forbidden");
 			else if(errno == EISDIR){
 				if(_config.getAutoIndex()){
 					//launch autoindex module
 				}
 				else
-					_errorMsg("403 Forbidden", "403");
+					errorMsg("403 Forbidden");
 			}
 			else
-				_errorMsg("500 Internal Server Error", "500");
+				errorMsg("500 Internal Server Error");
 		}
 		else{
-			std::ostringstream	res("HTTP /1.1 200 OK\r\nDate: ");
+			std::ostringstream	res;
 			struct stat			status;
 			const char *mimeType = MimeTypes::getType(absPath.c_str());
 
 			time_t now = time(0);
 			char *date = new char[30]();
 			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
-			res << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
+			res << "HTTP/1.1 200 OK\r\nDate: " << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
 			free(date);
 			if(mimeType == NULL)
 				res << "Content-Type: text/plain\r\n";
 			else
 				res << "Content-Type: " << mimeType << "\r\n";
-			if (stat(absPath.c_str(), &status) < 0)
-			{
-				perror("stat: "); // define behaviour if error file defined in config do not actually exist
-				exit(EXIT_FAILURE);
-			}
+			stat(absPath.c_str(), &status);
 			res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
-			res << "Connection: " << (_status = (_req.getHeaders().find("Connection")->second != "close")) << "\r\n\r\n";
-			_headersStatus = true;
+			res << "Connection: " << (_req.getHeaders().find("Connection")->second != "close") << "\r\n\r\n";
+			_headers = res.str();
+			_body = absPath;
 		}
 	}
     return ;
 }
 
-void		response::setSendStatus(bool status, size_t bytesSent){
-	_sendStatus = status;
-	_bytesSent += bytesSent;
+
+void		response::_postResrc( std::string absPath ){
+	(void)absPath;
+}
+void		response::_deleteResrc( std::string absPath ){
+	(void)absPath;
 }
 
-bool		response::getSendStatus( void ){
-	return _status;
+void		response::setBytesSent(size_t bytesSent){
+	_totalSent += bytesSent;
+}
+
+size_t		response::getBodySize( void ) const{
+	return _bodySize;
+}
+
+bool		response::bodyEof( void ) const{
+	return (_totalSent == _bodySize);
 }
 
 std::string	response::getBodyContent( void ){
 	struct pollfd		fds = {};
-	char				buff[4097];
+	char				buff[1024000];
 	std::string			content("");
-	_bodyFd = open(_body.c_str(), O_RDONLY); //make it non block
-	fcntl(_bodyFd, F_SETFL, O_NONBLOCK);
-	if(!_sendStatus)
+	int					rc = 0;
+	if(_bodyFd == -1)
 	{
-		lseek(_bodyFd, _bytesSent, SEEK_CUR);
-		// check how many bytes sent from send, calculate where to go back with lseek and rewind before reading
+		_bodyFd = open(_body.c_str(), O_RDONLY); // make it non block
+		fcntl(_bodyFd, F_SETFL, O_NONBLOCK);
 	}
 	fds.fd = _bodyFd;
 	fds.events = POLLIN;
 	if ((poll(&fds, 1, -1) > 0) && (fds.revents = POLLIN))
 	{
-		bzero(&buff, 4097);
-		if (read(fds.fd, &buff, 4096) > 0)
-			content = buff;
+		bzero(&buff, 1024000);
+		if ((rc = read(fds.fd, &buff, 1024000)) > 0){
+			for (int i = 0; i < rc; i++)
+				content += buff[i];
+			
+		}
 	}
 	return content;
-	//above block to be set along headers if data is small enough not to be chunked
-	// for chunked response open file alongside header and send first chunk then send remaining chunks in here
 }
 
 void	response::_extractData( void ) {
@@ -165,7 +186,7 @@ void	response::_extractData( void ) {
 			}
 		}
 		if (path.find_first_of("/") == path.find_last_of("/")) {
-			this->_path = "/";
+			this->_path = _config.getRoot();
 			this->_fileName = tmpPath.substr(tmpPath.find("/") + 1, tmpPath.length());
 			this->_pos = ret;
 			return ;
@@ -174,6 +195,10 @@ void	response::_extractData( void ) {
 			path = path.substr(0, path.find_last_of("/"));
 	}
 	return ;
+}
+
+bool	response::isError( void ) const{
+	return _error;
 }
 
 void response::serveRequest( void ) {
@@ -185,11 +210,9 @@ void response::serveRequest( void ) {
 	else if(_req.getMethod() == "DELETE")
 		_deleteResrc(_path + _fileName);
 	else
-		_errorMsg("405 Method Not Allowed", "405");
+		errorMsg("405 Method Not Allowed");
     return ; 
 }
-
-bool		response::connStatus( void ) { return _status; }
 
 void		response::setData( ServerConfigClass config, Request req ){
 	_config = config;
@@ -204,5 +227,3 @@ std::string	response::getBody( void ) const { return this->_body; }
 std::string	response::getFileName( void ) const { return this->_fileName; }
 std::string response::getPath( void ) const { return this->_path; }
 int			response::getPos( void ) const { return this->_pos; }
-bool		response::getHeaderStatus( void ) const { return this->_headersStatus; }
-bool		response::getStatus( void ) const { return this->_status; }

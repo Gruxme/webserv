@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/02 19:25:12 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 10:41:29 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ void    ConfigClass::parseConfigFile( void ) {
                 else if (buffer.find("server_name = ") != std::string::npos)
                     this->_serverConf[n_serv]._serverName = buffer.substr(buffer.find("server_name = ") + strlen("server_name = "));
                 else if (buffer.find("root = ") != std::string::npos)
-                    this->_serverConf[n_serv]._root = buffer.substr(buffer.find("root = ") + strlen("root = "));
+                    this->_serverConf[n_serv]._root = buffer.substr(buffer.find("root = ") + strlen("root = ")); // if not ended with / add it
                 else if (buffer.find("body_size_limit = ") != std::string::npos)
                     this->_serverConf[n_serv]._bodySizeLimit = std::stoi(buffer.substr(buffer.find("body_size_limit = ") + strlen("body_size_limit = ")));
                 else if (buffer.find("access_log = ") != std::string::npos)
