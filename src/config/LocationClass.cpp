@@ -6,14 +6,14 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 14:36:41 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 18:55:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "LocationClass.hpp"
 
 /* ----- Constructors & Destructor respectively ----- */
-LocationClass::LocationClass() : _path(), _root(), _method(), _redirect(), _cgiExt(), _autoindex(_AUTOINDEX_OFF_) {}
+LocationClass::LocationClass() : _path(""), _root(""), _method(""), _redirect(""), _cgiExt(""), _autoindex(_AUTOINDEX_OFF_) {}
 LocationClass::~LocationClass() {}
 LocationClass::LocationClass( LocationClass const &x ) { *this = x; }
 LocationClass & LocationClass::operator=( LocationClass const &rhs ) {

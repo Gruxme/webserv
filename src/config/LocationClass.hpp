@@ -6,11 +6,12 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 01:50:10 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 11:35:49 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 18:40:55 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+# include <iostream>
 # include <string>
 # include <vector>
 

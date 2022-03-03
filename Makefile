@@ -1,6 +1,6 @@
 NAME := webserv
 CC := clang++
-CFLAGS := -Wall -Werror -Wextra --std=c++98 
+CFLAGS := -Wall -Werror -Wextra --std=c++98 -fsanitize=address -g
 DFLAGS := -g3
 SRC := testMain.cpp \
 ./src/config/ConfigClass.cpp ./src/config/ServerConfigClass.cpp ./src/config/LocationClass.cpp \

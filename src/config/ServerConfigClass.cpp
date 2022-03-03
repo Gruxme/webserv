@@ -15,12 +15,12 @@
 /* ----- Constructors & Destructor respectively ----- */
 ServerConfigClass::ServerConfigClass() :
     _port(8080),
-    _serverName(),
-    _root(),
-    _redirect(),
+    _serverName(""),
+    _root(""),
+    _redirect(""),
     _bodySizeLimit(0),
-    _accessLog(),
-    _errorPage(),
+    _accessLog(""),
+    _errorPage(""),
     _autoindex(_AUTOINDEX_OFF_),
     _locationCount(0),
     _location(0) {}

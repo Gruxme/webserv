@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 14:40:37 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 18:53:29 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,18 +32,33 @@ std::string 	ConfigClass::getConfigFile( void ) const { return this->_configFile
 size_t			ConfigClass::getServerCount( void ) const { return this->_serverCount; }
 std::vector<ServerConfigClass> ConfigClass::getServerConfigClass( void ) const { return _serverConf; }
 
+std::string _ltrim(const std::string &s, const std::string set ) {
+    size_t start = s.find_first_not_of(set);
+    return (start == std::string::npos) ? "" : s.substr(start);
+}
+
+std::string _rtrim(const std::string &s, const std::string set ) {
+    size_t end = s.find_last_not_of(set);
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+}
+
+std::string _trim(const std::string &s, const std::string set ) {
+    return _rtrim(_ltrim(s, set), set);
+}
+
 /* ----- Setters ---- */
 void    ConfigClass::_allocateServers( void ) {
     std::ifstream   file(this->_configFile);
     std::string     buffer;
     size_t   n = 0;
     while (getline(file, buffer)) {
-        if (buffer.find("server {") != std::string::npos)
+        buffer = _trim(buffer, " ");
+        if (buffer == "server {")
             n++;
     }
     this->_serverCount = n;
     for (size_t i = 0; i < this->_serverCount; i++)
-        this->_serverConf.push_back(ServerConfigClass());+
+        this->_serverConf.push_back(ServerConfigClass());
 }
 
 void    ConfigClass::_allocateLocations( void ) {
@@ -52,9 +67,12 @@ void    ConfigClass::_allocateLocations( void ) {
     size_t   n_serv = 0;
     size_t   n_loc = 0;
     while (getline(file, buffer)) {
-        if (buffer.find("server {") != std::string::npos) {
+        buffer = _trim(buffer, " ");
+        if (buffer == "server {") {
             while (getline(file, buffer)) {
-                if (buffer.find("}") != std::string::npos) {
+                buffer = _trim(buffer, " ");
+                if (buffer.find("}") != std::string::npos && buffer != "}") throw parseErr("SyntaxError || F U");
+                if (buffer == "}") {
                     this->_serverConf[n_serv]._locationCount = n_loc;
                     for (size_t i = 0; i < n_loc; i++) {
                         this->_serverConf[n_serv]._location.push_back(LocationClass());
@@ -63,7 +81,7 @@ void    ConfigClass::_allocateLocations( void ) {
                     n_loc = 0;
                     break ;
                 }
-                else if (buffer.find("location = [") != std::string::npos)
+                else if (buffer == "location = [")
                     n_loc++;
             }
         }
@@ -77,33 +95,14 @@ void    ConfigClass::_checkConfigValidity( void ) {
 
 /* ----- Main Parser ----- */
 
-const std::string WHITESPACE = " ";
-
-std::string ltrim(const std::string &s) {
-    size_t start = s.find_first_not_of(WHITESPACE);
-    return (start == std::string::npos) ? "" : s.substr(start);
-}
-
-std::string rtrim(const std::string &s) {
-    size_t end = s.find_last_not_of(WHITESPACE);
-    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
-}
-
-std::string trim(const std::string &s) {
-    return rtrim(ltrim(s));
-}
-
 void    ConfigClass::parseConfigFile( void ) {
     std::ifstream	file(this->_configFile);
     std::string		buffer;
     size_t			n_serv = 0; 
     this->_allocateServers();
     this->_allocateLocations();
-
-    std::cout << "Server count = " << this->_serverCount << std::endl;
-
     while (getline(file, buffer)) {
-        buffer = trim(buffer);
+        buffer = _trim(buffer, " ");
         if (buffer != "server {") {
             if ((buffer[0] == '#' && buffer.find_first_of("#") == 0) || buffer.empty()) continue ;
             else throw parseErr("SyntaxError || WEIRD AF");
@@ -111,7 +110,10 @@ void    ConfigClass::parseConfigFile( void ) {
         else {
             size_t n_loc = 0;
             while (getline(file, buffer)) {
-                buffer = trim(buffer);
+                buffer = _trim(buffer, " ");
+                if (buffer.find("#") != std::string::npos) {
+                    std::cout << buffer << std::endl;
+                }
                 if (buffer == "}") break ;
                 switch (buffer[0]) {
                     case 'a':
@@ -144,7 +146,7 @@ void    ConfigClass::parseConfigFile( void ) {
                         }
                         else if (std::strncmp("location = [", buffer.c_str(), 12) == 0) {
                             while (getline(file, buffer)) {
-                                buffer = trim(buffer);
+                                buffer = _trim(buffer, " ");
                                 if (buffer == "]") break ;
                                 this->_serverConf[n_serv]._location[n_loc].parseLocation(buffer);
                             }
