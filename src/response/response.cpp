@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/03 10:40:46 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/03 14:44:27 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,9 @@ response::response() :
 	_error(false), _config(), _req(), _fileName(""),
 	_path(""), _pos(-1)
 	{}
-response::~response() {}
+response::~response() {
+	//check if sigpipe would need close of fd here
+}
 
 void	response::headersSent(){
 	_headersSent = true;
@@ -38,10 +40,10 @@ void	response::errorMsg( std::string type){
 	std::string			errorFile;
 	std::string			statusCode = type.substr(0, 3);
 
-	if(*(_config.getErrorPage().rbegin().base()) == '/')
-		errorFile = _config.getErrorPage() + statusCode + ".html"; // Maybe do this in config parsing
-	else
-		errorFile = _config.getErrorPage() + "/" + statusCode + ".html";
+	// if(*(_config.getErrorPage().rbegin().base()) == '/')
+	// 	errorFile = _config.getErrorPage() + statusCode + ".html"; // Maybe do this in config parsing
+	// else
+	errorFile = _config.getErrorPage() + statusCode + ".html";
 	errRes << "HTTP /1.1 " << type << "\r\nDate: ";
 	time_t	now = time(0);
 	char	*date = new char[30]();
@@ -56,12 +58,10 @@ void	response::errorMsg( std::string type){
 		errRes << "Allow: GET, POST, DELETE\r\n";
 	}
 	errRes << "Content-Type: text/html\r\n";
+	std::cout << errorFile << std::endl;
 	if(stat(errorFile.c_str(), &status) < 0){
-		errorFile = "/errorPages/" + statusCode + ".html";
-		if(stat(errorFile.c_str(), &status)){
-			perror("stat: ");
-			exit(EXIT_FAILURE);
-		}
+		errorFile = "/Users/abiari/Desktop/webserv/errorPages/" + statusCode + ".html";
+		stat(errorFile.c_str(), &status);
 	}
 	errRes << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
 	errRes << "Connection: closed\r\n\r\n";
@@ -110,7 +110,7 @@ void response::_getResrc( std::string absPath ) {
 				res << "Content-Type: " << mimeType << "\r\n";
 			stat(absPath.c_str(), &status);
 			res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
-			res << "Connection: " << (_req.getHeaders().find("Connection")->second != "close") << "\r\n\r\n";
+			res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
 			_headers = res.str();
 			_body = absPath;
 		}
@@ -135,12 +135,16 @@ size_t		response::getBodySize( void ) const{
 }
 
 bool		response::bodyEof( void ) const{
-	return (_totalSent == _bodySize);
+	if(_totalSent == _bodySize){
+		close(_bodyFd);
+		return true;
+	}
+	return false;
 }
 
 std::string	response::getBodyContent( void ){
 	struct pollfd		fds = {};
-	char				buff[1024000];
+	char				buff[2028*100];
 	std::string			content("");
 	int					rc = 0;
 	if(_bodyFd == -1)
@@ -152,11 +156,10 @@ std::string	response::getBodyContent( void ){
 	fds.events = POLLIN;
 	if ((poll(&fds, 1, -1) > 0) && (fds.revents = POLLIN))
 	{
-		bzero(&buff, 1024000);
-		if ((rc = read(fds.fd, &buff, 1024000)) > 0){
+		bzero(&buff, 2028*100);
+		if ((rc = read(fds.fd, &buff, 2028*100)) > 0){
 			for (int i = 0; i < rc; i++)
 				content += buff[i];
-			
 		}
 	}
 	return content;

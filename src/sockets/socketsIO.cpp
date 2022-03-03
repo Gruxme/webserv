@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/02 20:40:08 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/03 14:42:08 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,15 +76,13 @@ void	socketsIO::eventListener()
 	while (1)
 	{
 		connClosed = false;
-		for (size_t i = 0; i < _pollfds.size(); i++){
-			_pollfds[i].revents = 0;
-		}
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
 		if (rc < 0)
 			throw socketIOErr("poll: ");
 		for (int i = 0; i < _nfds; i++)
 		{
+			std::cout << "check event" << std::endl;
 			if (_pollfds[i].revents == 0)
 				continue;
 			if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT)
@@ -92,13 +90,15 @@ void	socketsIO::eventListener()
 				close(_pollfds[i].fd);
 				_pollfds.erase(_pollfds.begin() + i);
 				_nfds--;
-				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl;
+				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl << std::dec;
 				continue;
 			}
 			if (!_tryConnect(_pollfds[i].fd))
 			{
-				if (!_requests[_pollfds[i].fd].isComplete() && _pollfds[i].revents == POLLIN)
+				std::cout << "accept" << std::endl;
+				if (_pollfds[i].revents == POLLIN)
 				{
+					std::cout << "POLLIN" << std::endl;
 					bzero(buffer, 4096);
 					rc = recv(_pollfds[i].fd, &buffer, sizeof(buffer), 0);
 					if (rc == -1)
@@ -123,8 +123,9 @@ void	socketsIO::eventListener()
 					std::cout << "===============REQUEST BEGIN===================\n";
 					std::cout << _requests[_pollfds[i].fd] << std::endl;
 				}
-				if (_requests[_pollfds[i].fd].isComplete() && _pollfds[i].revents == POLLOUT)
+				else if (_pollfds[i].revents == POLLOUT)
 				{
+					std::cout << "POLLOUT" << std::endl;
 					std::string content("");
 					bool connClose = _requests[_pollfds[i].fd].getHeaders().find("Connection")->second == "close";
 					bool isErrorResp = _responses[_pollfds[i].fd].isError();
@@ -137,15 +138,19 @@ void	socketsIO::eventListener()
 					}
 					if(!_responses[_pollfds[i].fd].isError() && !_responses[_pollfds[i].fd].getHeaderStatus())
 						_responses[_pollfds[i].fd].serveRequest();
+					std::cout << "Frist part" << std::endl;
 					//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
 					if(_responses[_pollfds[i].fd].getHeaderStatus())
 						content = _responses[_pollfds[i].fd].getBodyContent();
-					else
+					else {
 						content = _responses[_pollfds[i].fd].getHeaders();
+						std::cout << content << std::endl;
+					}
+					std::cout << "Sec part" << std::endl;
 					rc = send(_pollfds[i].fd, content.c_str(), content.length(), 0);
 					if(rc > 0)
 					{
-						if (rc < static_cast<int>(content.length()))
+						if (rc < static_cast<int>(content.length()) && _responses[_pollfds[i].fd].getHeaderStatus())
 							_responses[_pollfds[i].fd].offsetCursor(rc - content.length()); // check if headers sending might fail and set things accordingly
 						else if (rc == static_cast<int>(content.length()) && !_responses[_pollfds[i].fd].getHeaderStatus())
 							_responses[_pollfds[i].fd].headersSent();
@@ -155,6 +160,7 @@ void	socketsIO::eventListener()
 						{
 							_requests.erase(_pollfds[i].fd);
 							_responses.erase(_pollfds[i].fd);
+							_pollfds[i].events = POLLIN;
 							connClosed = true;
 						}
 					}
@@ -164,8 +170,8 @@ void	socketsIO::eventListener()
 						_nfds--;
 						continue ;
 					}
-					std::cout << "sent: " << rc << "bytes"
-							  << "for a total of " << sentBytes << "bytes" << std::endl;
+					std::cout << "sent: " << rc << " bytes"
+							  << " for a total of " << sentBytes << " bytes" << std::endl;
 					
 					if ((connClosed && connClose) || isErrorResp)
 					{
