@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/03 18:53:30 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 21:05:16 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ bool	socketsIO::_tryConnect( int fd ){
 		if (fd != _socks[j]->getMainSock())
 			continue;
 		wasMainSock = true;
-		std::cout << "socket listening on port: " << _socks[j]->getConfig().getPort() << " is readable" << std::endl;
+		std::cout << "socket listening on port: " << _socks[j]->getConfig().getPort() << " is readable, with fd: " << fd << std::endl;
 		try
 		{
 			fds.fd = _socks[j]->acceptClient();
@@ -82,7 +82,6 @@ void	socketsIO::eventListener()
 			throw socketIOErr("poll: ");
 		for (int i = 0; i < _nfds; i++)
 		{
-			std::cout << "check event" << std::endl;
 			if (_pollfds[i].revents == 0)
 				continue;
 			if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT)
@@ -95,10 +94,9 @@ void	socketsIO::eventListener()
 			}
 			if (!_tryConnect(_pollfds[i].fd))
 			{
-				std::cout << "accept" << std::endl;
 				if (_pollfds[i].revents == POLLIN)
 				{
-					std::cout << "POLLIN" << std::endl;
+					std::cout << "POLLIN on: " << _pollfds[i].fd << std::endl;
 					bzero(buffer, 4096);
 					rc = recv(_pollfds[i].fd, &buffer, sizeof(buffer), 0);
 					if (rc == -1)
@@ -110,7 +108,7 @@ void	socketsIO::eventListener()
 						continue ; // still not sure of this
 					}
 					_requests[_pollfds[i].fd].append(&buffer[0]);
-					std::cout << "received: " << rc << "bytes" << std::endl;
+					std::cout << "fd: " << _pollfds[i].fd << "received: " << rc << " bytes" << std::endl;
 					try {
 						_requests[_pollfds[i].fd].parse();
 					}
@@ -120,12 +118,12 @@ void	socketsIO::eventListener()
 					// check if req complete and set event to pollout
 					if (_requests[_pollfds[i].fd].isComplete())
 						_pollfds[i].events = POLLOUT;
-					std::cout << "===============REQUEST BEGIN===================\n";
+					std::cout << "===============REQUEST BEGIN FOR FD: " << _pollfds[i].fd << "===================\n";
 					std::cout << _requests[_pollfds[i].fd] << std::endl;
 				}
 				else if (_pollfds[i].revents == POLLOUT)
 				{
-					std::cout << "POLLOUT" << std::endl;
+					std::cout << "POLLOUT on fd" << _pollfds[i].fd << std::endl;
 					std::string content("");
 					bool connClose = _requests[_pollfds[i].fd].getHeaders().find("Connection")->second == "close";
 					bool isErrorResp = _responses[_pollfds[i].fd].isError();
@@ -138,7 +136,7 @@ void	socketsIO::eventListener()
 					}
 					if(!_responses[_pollfds[i].fd].isError() && !_responses[_pollfds[i].fd].getHeaderStatus())
 						_responses[_pollfds[i].fd].serveRequest();
-					std::cout << "Frist part" << std::endl;
+					// std::cout << "Frist part" << std::endl;
 					//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
 					if(_responses[_pollfds[i].fd].getHeaderStatus())
 						content = _responses[_pollfds[i].fd].getBodyContent();
@@ -146,12 +144,15 @@ void	socketsIO::eventListener()
 						content = _responses[_pollfds[i].fd].getHeaders();
 						std::cout << content << std::endl;
 					}
-					std::cout << "Sec part" << std::endl;
 					rc = send(_pollfds[i].fd, content.c_str(), content.length(), 0);
-					if(rc > 0)
+					std::cout << "Content lenght" << content.length() << std::endl;
+					if(rc >= 0)
 					{
-						if (rc < static_cast<int>(content.length()) && _responses[_pollfds[i].fd].getHeaderStatus())
+						if (rc < static_cast<int>(content.length()) && _responses[_pollfds[i].fd].getHeaderStatus()){
 							_responses[_pollfds[i].fd].offsetCursor(rc - content.length()); // check if headers sending might fail and set things accordingly
+							if(_responses[_pollfds[i].fd].getHeaderStatus())
+								_responses[_pollfds[i].fd].setBytesSent(rc);
+						}
 						else if (rc == static_cast<int>(content.length()) && !_responses[_pollfds[i].fd].getHeaderStatus())
 							_responses[_pollfds[i].fd].headersSent();
 						else if(_responses[_pollfds[i].fd].getHeaderStatus())

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/03 17:47:27 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 20:59:10 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void	response::errorMsg( std::string type){
 	// 	errorFile = _config.getErrorPage() + statusCode + ".html"; // Maybe do this in config parsing
 	// else
 	errorFile = _config.getErrorPage() + statusCode + ".html";
-	errRes << "HTTP /1.1 " << type << "\r\nDate: ";
+	errRes << "HTTP/1.1 " << type << "\r\nDate: ";
 	time_t	now = time(0);
 	char	*date = new char[30]();
 	strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
@@ -135,6 +135,7 @@ size_t		response::getBodySize( void ) const{
 }
 
 bool		response::bodyEof( void ) const{
+	std::cout << _body.c_str() << " " << _totalSent << " " <<_bodySize << std::endl;
 	if(_totalSent == _bodySize){
 		close(_bodyFd);
 		return true;
