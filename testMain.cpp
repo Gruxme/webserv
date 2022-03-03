@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 11:57:06 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 14:35:27 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,16 +67,21 @@ int main( int ac, char **av ) {
     // std::cout << "-------- server 2 --------" << std::endl;
     // std::cout << s.getServerConfigClass()[1].getPort() << std::endl;
     // std::cout << s.getServerConfigClass()[1].getServerName() << std::endl;
+    // std::cout << s.getServerConfigClass()[1].getRedirect() << std::endl;
     // std::cout << s.getServerConfigClass()[1].getBodySizeLimit() << std::endl;
     // std::cout << s.getServerConfigClass()[1].getAccessLog() << std::endl;
     // std::cout << s.getServerConfigClass()[1].getErrorPage() << std::endl;
     // std::cout << s.getServerConfigClass()[1].getAutoIndex() << std::endl;
-    // std::cout << "-------- server 2 | location 1 --------" << std::endl;
+    // std::cout << "-------- server 1 | location 1 --------" << std::endl;
     // std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getPath() << std::endl;
     // std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getRoot() << std::endl;
-    // std::cout << "-------- server 2 | location 2 --------" << std::endl;
+    // std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getMethod() << std::endl;
+    // std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getRedirect() << std::endl;
+    // std::cout << s.getServerConfigClass()[1].getLocationClass()[0].getCgiExt() << std::endl;
+    // std::cout << "-------- server 1 | location 2 --------" << std::endl;
     // std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getPath() << std::endl;
     // std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getRoot() << std::endl;
+    // std::cout << s.getServerConfigClass()[1].getLocationClass()[1].getCgiExt() << std::endl;
 
     return EXIT_SUCCESS;
 }

@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 11:59:06 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 14:36:41 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,23 +31,47 @@ LocationClass & LocationClass::operator=( LocationClass const &rhs ) {
 /* ----- Location Parser ----- */
 void    LocationClass::parseLocation( std::string buffer ) {
     if (!buffer.empty()) {
-        if (buffer.find("path = ") != std::string::npos)
-            this->_path = buffer.substr(buffer.find("path = ") + strlen("path = "));
-        else if (buffer.find("root = ") != std::string::npos) {
-            this->_root = buffer.substr(buffer.find("root = ") + strlen("root = "));
-            if (this->_root[this->_root.size() - 1 != '/']) this->_root += "/";
+        switch (buffer[0]) {
+            case 'a':
+                if (std::strncmp("autoindex = ", buffer.c_str(), 12) == 0) {
+                    if (std::strncmp("autoindex = on", buffer.c_str(), 14) == 0) this->_autoindex = _AUTOINDEX_ON_;
+                    else if (std::strncmp("autoindex = off", buffer.c_str(), 15) == 0) this->_autoindex = _AUTOINDEX_OFF_;
+                    break ;
+                }
+                throw parseErr("SyntaxError || Loc 1");
+            case 'c':
+                if (std::strncmp("cgi_ext = ", buffer.c_str(), 10) == 0) {
+                    this->_cgiExt = buffer.substr(buffer.find("cgi_ext = ") + strlen("cgi_ext = "));
+                    break ;
+                }
+                throw parseErr("SyntaxError || Loc 2");
+            case 'm':
+                if (std::strncmp("method = ", buffer.c_str(), 9) == 0) {
+                    this->_method = buffer.substr(buffer.find("method = ") + strlen("method = "));
+                    break ;
+                }
+                throw parseErr("SyntaxError || Loc 3");
+            case 'p':
+                if (std::strncmp("path = ", buffer.c_str(), 7) == 0) {
+                    this->_path = buffer.substr(buffer.find("path = ") + strlen("path = "));
+                    break ;
+                }
+                throw parseErr("SyntaxError || Loc 4");
+            case 'r':
+                if (std::strncmp("root = ", buffer.c_str(), 7) == 0) {
+                    this->_root = buffer.substr(buffer.find("root = ") + strlen("root = "));
+                    if (this->_root[this->_root.size() - 1 != '/']) this->_root += "/";
+                    break ;
+                }
+                else if (std::strncmp("redirect = ", buffer.c_str(), 11) == 0) {
+                    this->_redirect = buffer.substr(buffer.find("redirect = ") + strlen("redirect = "));
+                    break ;
+                }
+                throw parseErr("SyntaxError || Loc 5");
+            default:
+                if (buffer.empty()) break ;
+                throw parseErr("SyntaxError || LOCATION SIDE");
         }
-        else if (buffer.find("method = ") != std::string::npos)
-            this->_method = buffer.substr(buffer.find("method = ") + strlen("method = "));
-        else if (buffer.find("redirect = ") != std::string::npos)
-            this->_redirect = buffer.substr(buffer.find("redirect = ") + strlen("redirect = "));
-        else if (buffer.find("cgi_ext") != std::string::npos)
-            this->_cgiExt = buffer.substr(buffer.find("cgi_ext = ") + strlen("cgi_ext = "));
-        else if (buffer.find("autoindex = ") != std::string::npos) {
-            if (buffer.find("autoindex = on") != std::string::npos) this->_autoindex = _AUTOINDEX_ON_;
-            else if (buffer.find("autoindex = off") != std::string::npos) this->_autoindex = _AUTOINDEX_OFF_;
-        }
-        else { throw parseErr("Parsing Error\nRemember to read comments in the default.conf file for usage guide\n"); }
     }
     return ;
 }
