@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/27 18:03:23 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 10:38:50 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ Request::Request() :
     _path(""),
     _protocol(""),
     _uriExtension(0),
-	_port(8080),
+	_port(0), //to be filled with default port of default server
     _bodyFilename(""),
 	_status(false) {}
 
@@ -58,7 +58,7 @@ short       Request::getUriExtension( void ) const { return this->_uriExtension;
 std::string Request::getBodyFilename( void ) const { return this->_bodyFilename; }
 bool		Request::isComplete( void ) const { return _status; }
 std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->_headers; }
-int 		Request::getPort( void ) const { return this->_port; }
+size_t 		Request::getPort( void ) const { return this->_port; }
 
 /* -- PUBLIC METHODS */
 void    Request::append( const char * recvBuffer ) {
@@ -88,6 +88,7 @@ void	Request::parse( void ) {
                         /* -- CHECK THAT WE DONT HAVE A DUPLICATE FILE */
                         _handleChunkedRequest(iss);
 						_status = true;
+						return ;
                     }
                 }
                 /* ------
@@ -97,9 +98,11 @@ void	Request::parse( void ) {
                 ------ */
                 _handleBasicRequest(iss);
 				_status = true;
+				return ;
             }
             else {
 				_status = true;
+				return ;
 			}
 		}
 	}

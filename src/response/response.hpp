@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/01 11:04:35 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/03 10:16:51 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,21 +30,21 @@ class response {
 		response&	operator=( const response &x );
 
 	private:
-		void		_errorMsg( std::string type, std::string statusCode );
-		void		_getResrc( std::string data );
-		void		_postResrc( std::string data );
-		void		_deleteResrc( std::string data );
+		void		_getResrc( std::string absPath );
+		void		_postResrc( std::string absPath );
+		void		_deleteResrc( std::string absPath );
 		void		_autoindexModule( void );
 
 		void		_extractData( void );
 		
 	public:
+		void		errorMsg( std::string type );
 		void		serveRequest( void );
 		void		setData(ServerConfigClass config, Request req);
-		void		setSendStatus(bool status, size_t _bytesSent);
-		bool		getSendStatus( void );
+		void		setBytesSent(size_t bytesSent);
+		void		offsetCursor(off_t offset);
 		std::string	getBodyContent( void );
-		bool		connStatus( void );
+		void		headersSent();
 
 	public:
 		std::string	getHeaders( void ) const;
@@ -57,6 +57,9 @@ class response {
 		int			getPos( void ) const;
 		bool		getHeaderStatus( void ) const;
 		bool		getStatus( void ) const;
+		bool		isError( void ) const;
+		size_t		getBodySize( void ) const;
+		bool		bodyEof( void ) const;
 		
 	
 	private:
@@ -64,17 +67,14 @@ class response {
 		std::string			_body;
 		int					_bodyFd;
 		size_t				_bodySize;
-		size_t				_bytesSent;
-		bool				_sendStatus;
+		size_t				_totalSent;
+		bool				_headersSent;
+		bool				_error;
 		ServerConfigClass	_config;
 		Request				_req;
-
-	private:
-		std::string	_fileName;
-		std::string	_path;
-		int			_pos; // should default to -1 if no location for said path
-		bool		_headersStatus;
-		bool		_status;
+		std::string			_fileName;
+		std::string			_path;
+		int					_pos; // should default to -1 if no location for said path
 		
 };
 

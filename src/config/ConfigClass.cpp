@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 18:02:20 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/02 20:16:31 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void    ConfigClass::parseConfigFile( void ) {
                 else if (buffer.find("server_name = ") != std::string::npos)
                     this->_serverConf[n_serv]._serverName = buffer.substr(buffer.find("server_name = ") + strlen("server_name = "));
                 else if (buffer.find("root = ") != std::string::npos)
-                    this->_serverConf[n_serv]._root = buffer.substr(buffer.find("root = ") + strlen("root = "));
+                    this->_serverConf[n_serv]._root = buffer.substr(buffer.find("root = ") + strlen("root = ")); // if not ended with / add it
                 else if (buffer.find("body_size_limit = ") != std::string::npos)
                     this->_serverConf[n_serv]._bodySizeLimit = std::stoi(buffer.substr(buffer.find("body_size_limit = ") + strlen("body_size_limit = ")));
                 else if (buffer.find("access_log = ") != std::string::npos)
