@@ -29,7 +29,6 @@
 # define _BODY_INCOMPLETE_ 2
 
 class Request {
-    /* ----- PRIVATE ----- */
     private:
         std::string _dataGatherer;
         std::string _method;
@@ -71,10 +70,8 @@ class Request {
         void    _extractHeaders( std::stringstream & iss );
         void    _handleChunkedRequest( std::stringstream & iss );
         void    _handleBasicRequest( std::stringstream & iss );
-        // void    _extractContent( std::stringstream & iss );
 		bool	_headersComplete( void );
         bool    _bodyComplete( void );
-
 
     public:
 		void	parse( void );
@@ -85,6 +82,7 @@ class Request {
         void    _eraseSubstr( std::string &str, const std::string &substr );
         void    _eraseAllSubstr( std::string &str, const std::string &substr );
         std::string _ltrim( const std::string &s, const std::string &delim );
+        bool    _checkHeadersKeySyntax( std::string key );
         bool    _hasEnding( std::string const &fullString, std::string const &ending );
         int     _findFileSize( std::ofstream &file );
         bool    _isHexNotation( std::string const& s );

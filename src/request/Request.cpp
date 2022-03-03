@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 10:38:50 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/03 10:40:31 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,13 +67,6 @@ void    Request::append( const char * recvBuffer ) {
     return ;
 }
 
-bool	Request::_headersComplete( void ) {
-	return _dataGatherer.find("\r\n\r\n") != std::string::npos;
-}
-
-bool    Request::_bodyComplete( void ) {
-    return _dataGatherer.find("0\r\n\r\n") != std::string::npos;
-}
 
 void	Request::parse( void ) {
 	if (_headersComplete() == true) {
@@ -91,11 +84,6 @@ void	Request::parse( void ) {
 						return ;
                     }
                 }
-                /* ------
-                    CAN BE CHANGED
-                    {{ THIS WOULD EITHER GET COMPLETED AND isComplete will return TRUE
-                    OR AN EXCEPTION WILL BE THROWN
-                ------ */
                 _handleBasicRequest(iss);
 				_status = true;
 				return ;
@@ -131,17 +119,24 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
 void    Request::_extractHeaders( std::stringstream & iss ) {
     std::string line;
     std::vector<std::string> myvec(0);
-    /* -- DO ERROR TREATMENTS ON STANDARDS IN HERE */
     while (std::getline(iss, line)) {
         line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
         if (line.size() == 0)
             break ;
-        myvec = _split(line, ':');
-        if (myvec.at(0).empty() || myvec.at(1).empty())
-            throw parseErr("400 Bad Request");   
-        myvec[1] = this->_ltrim(myvec[1], " ");
-        this->_headers[myvec[0]] = myvec[1];
-		if (myvec[0] == "host") { this->_port = std::stoi(_split(myvec[1], ':')[1]); }
+        myvec.push_back(line.substr(0, line.find(':')));
+        myvec.push_back(line.substr(myvec[0].length() + 2, line.length()));
+        if ((myvec.at(0).empty() || myvec.at(1).empty()) ||
+            _checkHeadersKeySyntax(myvec[0]) == false)
+            throw parseErr("400 Bad Request");
+        if (this->_headers.find(myvec[0]) == this->_headers.end()) {
+            this->_headers[myvec[0]] = myvec[1];
+    		if (myvec[0] == "Host" && (myvec[1].find(':') != std::string::npos)) {
+                std::string s = myvec[1].substr(myvec[1].find(':') + 1, myvec[1].length());
+                (!s.empty() && s.find_first_not_of("0123456789") == std::string::npos) ? this->_port = std::stoi(s) : throw parseErr("400 Bad Request");
+            }
+        }
+        else throw parseErr("400 Bad Request");
+        myvec.clear();
     }
     /* ------
         TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST
@@ -210,6 +205,15 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     f.close();
 }
 
+bool	Request::_headersComplete( void ) {
+	return _dataGatherer.find("\r\n\r\n") != std::string::npos;
+}
+
+bool    Request::_bodyComplete( void ) {
+    return _dataGatherer.find("0\r\n\r\n") != std::string::npos;
+}
+
+
 /* ----- Utils ------ */
 /* -- PVT METHODS */
 
@@ -245,6 +249,14 @@ void    Request::_eraseAllSubstr( std::string &str, const std::string &substr ) 
 std::string Request::_ltrim( const std::string &s, const std::string &delim ) {
     size_t start = s.find_first_not_of(delim);
     return (start == std::string::npos) ? "" : s.substr(start);
+}
+
+bool    Request::_checkHeadersKeySyntax( std::string key ) {
+    for (size_t i = 0; i < key.length(); i++) {
+        if (!((key[i] >= 'a' && key[i] <= 'z') || (key[i] >= 'A' && key[i] <= 'Z') || key[i] == '-'))
+            return false;
+    }
+    return true;
 }
 
 bool    Request::_hasEnding( std::string const &fullString, std::string const &ending ) {
@@ -310,7 +322,7 @@ std::ostream & operator<<( std::ostream & o, Request const & req ) {
 	std::cout << std::endl;
 	std::ifstream	body(req.getBodyFilename());
 	std::string line;
-	while(getline(body, line))
+	while (getline(body, line))
 		std::cout << line << std::endl;
 	return o;
 }
