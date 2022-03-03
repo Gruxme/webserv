@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 01:50:10 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/02 19:16:55 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 11:35:49 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ class LocationClass {
         std::string _path;
         std::string _root;
         std::string _method;
+        std::string _redirect;
         std::string _cgiExt;
         bool        _autoindex;
         
@@ -43,6 +44,7 @@ class LocationClass {
         std::string getPath( void ) const;
         std::string getRoot( void ) const;
         std::string getMethod( void ) const;
+        std::string getRedirect( void ) const;
         std::string getCgiExt( void ) const;
         bool        getAutoIndex( void ) const;
 

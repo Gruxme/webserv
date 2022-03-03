@@ -2,11 +2,11 @@ NAME := webserv
 CC := clang++
 CFLAGS := -Wall -Werror -Wextra --std=c++98 
 DFLAGS := -g3
-SRC := main.cpp \
+SRC := testMain.cpp \
 ./src/config/ConfigClass.cpp ./src/config/ServerConfigClass.cpp ./src/config/LocationClass.cpp \
-./src/request/Request.cpp \
-./src/response/response.cpp ./src/response/mimeTypes.cpp \
-./src/sockets/sockets.cpp ./src/sockets/socketsIO.cpp
+# ./src/request/Request.cpp \
+# ./src/response/response.cpp ./src/response/mimeTypes.cpp \
+# ./src/sockets/sockets.cpp ./src/sockets/socketsIO.cpp
 
 all: $(NAME)
 

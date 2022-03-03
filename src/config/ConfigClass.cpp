@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 11:08:24 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 11:58:34 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ void    ConfigClass::_allocateServers( void ) {
     std::string     buffer;
     size_t   n = 0;
     while (getline(file, buffer)) {
+        if (buffer.find("#") != std::string::npos)
+            continue ;
         if (buffer.find("server {") != std::string::npos)
             n++;
     }
@@ -52,12 +54,16 @@ void    ConfigClass::_allocateLocations( void ) {
     size_t   n_serv = 0;
     size_t   n_loc = 0;
     while (getline(file, buffer)) {
+        if (buffer.find("#") != std::string::npos)
+            continue ;
         if (buffer.find("server {") != std::string::npos) {
             while (getline(file, buffer)) {
                 if (buffer.find("}") != std::string::npos) {
                     this->_serverConf[n_serv]._locationCount = n_loc;
-                    for (size_t i = 0; i < n_loc; i++)
+                    for (size_t i = 0; i < n_loc; i++) {
+                        std::cout << "N_SERV = " << n_serv << " || N_LOC " << n_loc << std::endl;
                         this->_serverConf[n_serv]._location.push_back(LocationClass());
+                    }
                     n_serv++;
                     n_loc = 0;
                     break ;
@@ -82,12 +88,16 @@ void    ConfigClass::parseConfigFile( void ) {
     size_t			n_serv = 0; 
     this->_allocateServers();
     this->_allocateLocations();
+
+    /* */
+    std::cout << "Server count = " << this->_serverCount << std::endl;
+
     while (getline(file, buffer)) {
+        if (buffer.find("#") != std::string::npos)
+            continue ;
         if (buffer.find("server {") != std::string::npos) {
             size_t n_loc = 0;
             while (getline(file, buffer)) {
-                if (buffer.find("}") != std::string::npos)
-                    break ;
                 if (buffer.find("#") != std::string::npos) 
                     continue ;
                 else if (buffer.find("listen = ") != std::string::npos)
@@ -98,6 +108,8 @@ void    ConfigClass::parseConfigFile( void ) {
                     this->_serverConf[n_serv]._root = buffer.substr(buffer.find("root = ") + strlen("root = "));
                     if (this->_serverConf[n_serv]._root[this->_serverConf[n_serv]._root.size() - 1 != '/']) this->_serverConf[n_serv]._root += "/";
                 }
+                else if (buffer.find("redirect = ") != std::string::npos)
+                    this->_serverConf[n_serv]._redirect = buffer.substr(buffer.find("redirect = ") + 1, buffer.length());
                 else if (buffer.find("body_size_limit = ") != std::string::npos)
                     this->_serverConf[n_serv]._bodySizeLimit = std::stoi(buffer.substr(buffer.find("body_size_limit = ") + strlen("body_size_limit = ")));
                 else if (buffer.find("access_log = ") != std::string::npos)
@@ -114,11 +126,12 @@ void    ConfigClass::parseConfigFile( void ) {
                     }
                     n_loc++;
                 }
-                else { throw parseErr("Parsing Error\nRemember to read comments in the default.conf file for usage guide\n"); }
             }
             n_serv++;
+            std::cout << "n_serv = " << n_serv << std::endl;
         }
     }
+    // exit(1);
 	/* -- THIS PARSER SHOULD THROW EXCEPTIONS -- */
     /* Write final check Method */
 }

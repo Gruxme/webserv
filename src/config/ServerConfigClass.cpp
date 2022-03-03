@@ -15,11 +15,12 @@
 /* ----- Constructors & Destructor respectively ----- */
 ServerConfigClass::ServerConfigClass() :
     _port(8080),
-    _serverName(""),
-    _root(""),
+    _serverName(),
+    _root(),
+    _redirect(),
     _bodySizeLimit(0),
-    _accessLog(""),
-    _errorPage("../errorPages/"),
+    _accessLog(),
+    _errorPage(),
     _autoindex(_AUTOINDEX_OFF_),
     _locationCount(0),
     _location(0) {}
@@ -33,6 +34,7 @@ ServerConfigClass& ServerConfigClass::operator= ( const ServerConfigClass& rhs )
         this->_port = rhs._port;
         this->_serverName = rhs._serverName;
         this->_root = rhs._root;
+        this->_redirect = rhs._redirect;
         this->_bodySizeLimit = rhs._bodySizeLimit;
         this->_accessLog = rhs._accessLog;
         this->_errorPage = rhs._errorPage;
@@ -50,6 +52,7 @@ ServerConfigClass::~ServerConfigClass() {}
 size_t   ServerConfigClass::getPort() const { return this->_port; }
 std::string     ServerConfigClass::getServerName() const { return this->_serverName; }
 std::string     ServerConfigClass::getRoot() const { return this->_root; }
+std::string     ServerConfigClass::getRedirect() const { return this->_redirect; }
 size_t   ServerConfigClass::getBodySizeLimit() const { return this->_bodySizeLimit; }
 std::string     ServerConfigClass::getAccessLog() const { return this->_accessLog; }
 std::string     ServerConfigClass::getErrorPage() const { return this->_errorPage; }
