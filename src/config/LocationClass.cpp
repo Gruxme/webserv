@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/02 19:19:56 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 11:08:57 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,10 @@ void    LocationClass::parseLocation( std::string buffer ) {
             return ;
         if (buffer.find("path = ") != std::string::npos)
             this->_path = buffer.substr(buffer.find("path = ") + strlen("path = "));
-        else if (buffer.find("root = ") != std::string::npos)
+        else if (buffer.find("root = ") != std::string::npos) {
             this->_root = buffer.substr(buffer.find("root = ") + strlen("root = "));
+            if (this->_root[this->_root.size() - 1 != '/']) this->_root += "/";
+        }
         else if (buffer.find("method = ") != std::string::npos)
             this->_method = buffer.substr(buffer.find("method = ") + strlen("method = "));
         else if (buffer.find("cgi_ext") != std::string::npos)

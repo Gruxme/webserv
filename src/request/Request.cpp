@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 10:40:31 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/03 10:55:07 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ Request::Request() :
     _path(""),
     _protocol(""),
     _uriExtension(0),
-	_port(0), //to be filled with default port of default server
+	_port(0), // to be filled with default port of default server
     _bodyFilename(""),
 	_status(false) {}
 

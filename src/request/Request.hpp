@@ -19,6 +19,7 @@
 # include <vector>
 # include <map>
 # include <algorithm>
+# include "../config/ServerConfigClass.hpp"
 
 # define PY 1
 # define PHP 2
