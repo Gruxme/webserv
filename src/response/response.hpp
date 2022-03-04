@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/03 10:16:51 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/04 13:32:59 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <ctime>
 #include <fcntl.h>
 #include <poll.h>
+#include <dirent.h>
 
 
 class response {
@@ -33,7 +34,7 @@ class response {
 		void		_getResrc( std::string absPath );
 		void		_postResrc( std::string absPath );
 		void		_deleteResrc( std::string absPath );
-		void		_autoindexModule( void );
+		void		_autoindexModule( std::string path );
 
 		void		_extractData( void );
 		

@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/04 11:44:14 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/04 12:59:51 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,8 +129,12 @@ void	socketsIO::eventListener()
 					// check if req complete and set event to pollout
 					if (_requests[_pollfds[i].fd].isComplete() || isErrorResp)
 						_pollfds[i].events = POLLOUT;
-					std::cout << "===============REQUEST BEGIN FOR FD: " << _pollfds[i].fd << "===================\n";
-					std::cout << _requests[_pollfds[i].fd] << std::endl;
+					if(isErrorResp)
+						std::cout << "===============ERROR IN REQUEST FROM FD: " << _pollfds[i].fd << "===================\n";
+					else{
+						std::cout << "===============REQUEST FROM FD: " << _pollfds[i].fd << "===================\n";
+						std::cout << _requests[_pollfds[i].fd] << std::endl;
+					}
 				}
 				else if (_pollfds[i].revents == POLLOUT)
 				{
