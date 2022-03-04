@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/04 13:53:45 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/04 11:37:34 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,47 +32,6 @@ bool	response::getHeaderStatus() const{
 
 void	response::offsetCursor(off_t offset){
 	lseek(_bodyFd, offset, SEEK_CUR);
-}
-
-void	response::_autoindexModule(std::string path){
-	DIR 			*dir;
-	struct dirent	*ent;
-	struct stat		status;
-	char			*date = new char[20]();
-	std::ostringstream dirListHtml;
-	dirListHtml << "<html>\n<head><title>Index of " << path << "</title></head>\n<body>\n<h1>Index of "\
-				<< path << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
-	if ((dir = opendir(path.c_str())) != NULL){
-		while ((ent = readdir(dir)) != NULL){
-			std::string	fileName(ent->d_name);
-			if(fileName == "." || fileName == "..")
-				continue;
-			stat((path + fileName).c_str(), &status);
-			if(S_ISDIR(status.st_mode))
-				fileName += "/";
-			dirListHtml << "<a href=\"" << fileName << "\">" << fileName << "</a>";
-			strftime(date, 17, "%d-%b-%y %H:%M", gmtime(&(status.st_mtimespec.tv_sec)));
-			delete[] date;
-			dirListHtml << std::setw(62 - fileName.length()) << date;
-			if(S_ISDIR(status.st_mode))
-				dirListHtml << std::setw(21) << std::right << "-\n";
-			else{
-				dirListHtml << std::setw(20) << status.st_size << std::endl;
-			}
-		}
-		dirListHtml << "</pre><hr></body>\n</html>";
-		std::cout << dirListHtml.str() << std::endl;
-		closedir(dir);
-	}
-	else{
-		/* could not open directory */
-		if(errno == ENOENT)
-			//send not found response
-		else if(errno == EACCES)
-			//send forbidden response
-		else
-			//internal server error
-	}
 }
 
 void	response::errorMsg( std::string type){
@@ -127,8 +86,7 @@ void response::_getResrc( std::string absPath ) {
 				errorMsg("403 Forbidden");
 			else if(errno == EISDIR){
 				if(_config.getAutoIndex()){
-					//launch autoindex module and check if path is root to launch default index instead
-					
+					//launch autoindex module
 				}
 				else
 					errorMsg("403 Forbidden");
