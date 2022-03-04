@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/03 20:59:10 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/04 11:37:34 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void	response::errorMsg( std::string type){
 	if(statusCode == "405"){
 		std::string allowedMethods;
 		//check allowed method in location if any first
-		if(_pos == -1 && (allowedMethods = _config.getLocationClass()[_pos].getMethod()).empty() == false )
+		if(_pos != -1 && (allowedMethods = _config.getLocationClass()[_pos].getMethod()).empty() == false )
 			errRes << "Allow: " << allowedMethods << "\r\n";
 		errRes << "Allow: GET, POST, DELETE\r\n";
 	}
@@ -135,7 +135,7 @@ size_t		response::getBodySize( void ) const{
 }
 
 bool		response::bodyEof( void ) const{
-	std::cout << _body.c_str() << " " << _totalSent << " " <<_bodySize << std::endl;
+	std::cout << _body.c_str() << " -> sent  " << _totalSent << " bytes of " <<_bodySize << std::endl;
 	if(_totalSent == _bodySize){
 		close(_bodyFd);
 		return true;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 10:55:07 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/04 10:10:03 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,15 @@ void	Request::parse( void ) {
 	if (_headersComplete() == true) {
 		if (_headers.empty() == true) {
 			std::stringstream	iss(_dataGatherer);
-			_extractRequestLine(iss);
-			_extractHeaders(iss);
+			try
+			{
+				_extractRequestLine(iss);
+				_extractHeaders(iss);
+			}
+			catch(const std::exception& e)
+			{
+				throw parseErr(e.what());
+			}
             if (this->_method == "POST") {
                 std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
                 if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
@@ -84,7 +91,14 @@ void	Request::parse( void ) {
 						return ;
                     }
                 }
-                _handleBasicRequest(iss);
+				try
+				{
+					_handleBasicRequest(iss);
+				}
+				catch (const std::exception &e)
+				{
+					throw(e);
+				}
 				_status = true;
 				return ;
             }
@@ -103,7 +117,10 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     std::vector<std::string> myvec = _split(line, ' ');
-    myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->_method = myvec[0] : throw parseErr("405 Method Not Allowed"); //generate a Allow header in response
+	if(myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE")
+		this->_method = myvec[0];
+	else
+		throw parseErr("405 Method Not Allowed");
     this->_uri = myvec[1];
     this->_path = this->_uri;
     size_t pos = this->_uri.find("?");
