@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 10:55:07 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/04 13:57:30 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,6 +144,13 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
     if (this->_headers.find("host") != this->_headers.end()) { throw parseErr("400 Bad Request"); } // ==?
 }
 
+template <class T>
+inline std::string Request::_toString( const T& t ) {
+    std::stringstream ss;
+    ss << t;
+    return ss.str();
+}
+
 void Request::_handleChunkedRequest( std::stringstream & iss ) {
     /* ------
         "Messages MUST NOT include both a Content-Length header field and a non-identity transfer-coding.
@@ -153,7 +160,7 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     std::ofstream f;
     std::string line;
     uint16_t n = 0;
-    this->_bodyFilename = "./src/request/bodyChunked.txt";
+    this->_bodyFilename = "./src/request/" + _toString(clock());
     f.open(this->_bodyFilename);
     while (std::getline(iss, line)) {
         line.erase(line.find_last_of('\r'));
@@ -189,17 +196,15 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
             _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
     std::ofstream f;
-    std::string line;
-    this->_bodyFilename = "./src/request/bodyX.txt";
+    this->_bodyFilename = "./src/request/" + _toString(clock());
     f.open(this->_bodyFilename);
     f << iss.rdbuf();
     /* ------
         IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW
     ------ */
     if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
-		//test if precedency works only
         f.close();
-        unlink("/src/request/bodyX.txt");
+        unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
     }
     f.close();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/03 21:05:16 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/05 13:29:20 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,9 +87,9 @@ void	socketsIO::eventListener()
 			if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT)
 			{
 				close(_pollfds[i].fd);
+				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl << std::dec;
 				_pollfds.erase(_pollfds.begin() + i);
 				_nfds--;
-				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl << std::dec;
 				continue;
 			}
 			if (!_tryConnect(_pollfds[i].fd))
@@ -173,7 +173,6 @@ void	socketsIO::eventListener()
 					}
 					std::cout << "sent: " << rc << " bytes"
 							  << " for a total of " << sentBytes << " bytes" << std::endl;
-					
 					if ((connClosed && connClose) || isErrorResp)
 					{
 						close(_pollfds[i].fd);

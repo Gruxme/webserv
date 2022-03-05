@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 18:55:43 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/05 15:09:41 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,13 +54,16 @@ void    LocationClass::parseLocation( std::string buffer ) {
             case 'p':
                 if (std::strncmp("path = ", buffer.c_str(), 7) == 0) {
                     this->_path = buffer.substr(buffer.find("path = ") + strlen("path = "));
+                    if (this->_path[this->_path.size() - 1] != '/')
+                        this->_path += "/";
                     break ;
                 }
                 throw parseErr("SyntaxError || Loc 4");
             case 'r':
                 if (std::strncmp("root = ", buffer.c_str(), 7) == 0) {
                     this->_root = buffer.substr(buffer.find("root = ") + strlen("root = "));
-                    if (this->_root[this->_root.size() - 1 != '/']) this->_root += "/";
+                    if (this->_root[this->_root.size() - 1] == '/')
+                        this->_root.resize(this->_root.size() - 1);
                     break ;
                 }
                 else if (std::strncmp("redirect = ", buffer.c_str(), 11) == 0) {
