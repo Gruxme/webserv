@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/05 12:19:13 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/05 16:43:10 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void    ConfigClass::_allocateServers( void ) {
         if (buffer == "server {")
             n++;
     }
-    this->_serverCount = n;
+    n > 0 ? this->_serverCount = n : throw parseErr("Invalid Server");
     for (size_t i = 0; i < this->_serverCount; i++)
         this->_serverConf.push_back(ServerConfigClass());
 }
@@ -72,7 +72,8 @@ void    ConfigClass::_allocateLocations( void ) {
                 buffer = _trim(buffer, " ");
                 if (buffer.find("}") != std::string::npos && buffer != "}") throw parseErr("SyntaxError || F U");
                 if (buffer == "}") {
-                    this->_serverConf[n_serv]._locationCount = n_loc;
+                    
+                    n_loc > 0 ? this->_serverConf[n_serv]._locationCount = n_loc : throw parseErr("Invalid Locations");
                     for (size_t i = 0; i < n_loc; i++) {
                         this->_serverConf[n_serv]._location.push_back(LocationClass());
                     }
@@ -85,11 +86,6 @@ void    ConfigClass::_allocateLocations( void ) {
             }
         }
     }
-}
-
-void    ConfigClass::_checkConfigValidity( void ) {
-    
-    return ;
 }
 
 /* ----- Main Parser ----- */
