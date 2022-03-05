@@ -3,16 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   sockets.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/02/23 11:11:41 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/02 17:57:47 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "sockets.hpp"
 
-sockets::sockets(ServerConfigClass conf): _mainSd(-1), _clients(), _config(conf), _address(){
+sockets::sockets(): _mainSd(-1), _nsds(0), _clients(), _config(), _address(){}
+
+sockets::sockets(ServerConfigClass conf, int maxLoad): _clients(), _config(conf), _address(){
 	int	opt = 1;
 	if((_mainSd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw socketErr("socket: ");
@@ -20,6 +22,8 @@ sockets::sockets(ServerConfigClass conf): _mainSd(-1), _clients(), _config(conf)
 		throw socketErr("setsockopt: ");
 	if (fcntl(_mainSd, F_SETFL, O_NONBLOCK) < 0)
 		throw socketErr("fcntl: ");
+	_bindSock();
+	_listener(maxLoad);
 	_nsds = 1;
 }
 
@@ -43,7 +47,7 @@ sockets&	sockets::operator=(const sockets& x){
 	return *this;
 }
 
-void	sockets::bindSock(){
+void	sockets::_bindSock(){
 	//check port if already bound
 	_address.sin_addr.s_addr = INADDR_ANY;
 	_address.sin_port = htons(_config.getPort());
@@ -52,7 +56,7 @@ void	sockets::bindSock(){
 		throw socketErr("bind: ");
 }
 
-void	sockets::listener(int maxLoad) const{
+void	sockets::_listener(int maxLoad){
 	if(listen(_mainSd, maxLoad) < 0)
 		throw socketErr("Listen: ");
 	std::cout << "Socket listening on port " << _config.getPort() << std::endl;

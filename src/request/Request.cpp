@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 18:22:07 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/04 10:10:03 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,10 @@ Request::Request() :
     _method(""),
     _uri(""),
     _query(""),
+    _path(""),
     _protocol(""),
     _uriExtension(0),
-	_port(8080),
+	_port(0), // to be filled with default port of default server
     _bodyFilename(""),
 	_status(false) {}
 
@@ -34,6 +35,7 @@ Request& Request::operator=( Request const &rhs ) {
         this->_method = rhs._method;
         this->_uri = rhs._uri;
         this->_query = rhs._query;
+        this->_path = rhs._path;
         this->_protocol = rhs._protocol;
         this->_uriExtension = rhs._uriExtension;
         this->_headers = rhs._headers;
@@ -50,12 +52,13 @@ Request& Request::operator=( Request const &rhs ) {
 std::string Request::getMethod( void ) const { return this->_method; }
 std::string Request::getUri( void ) const { return this->_uri; }
 std::string Request::getQuery( void ) const { return this->_query; }
+std::string Request::getPath( void ) const { return this->_path; }
 std::string Request::getProtocol(void ) const { return this->_protocol; }
 short       Request::getUriExtension( void ) const { return this->_uriExtension; }
 std::string Request::getBodyFilename( void ) const { return this->_bodyFilename; }
 bool		Request::isComplete( void ) const { return _status; }
 std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->_headers; }
-int 		Request::getPort( void ) const { return this->_port; }
+size_t 		Request::getPort( void ) const { return this->_port; }
 
 /* -- PUBLIC METHODS */
 void    Request::append( const char * recvBuffer ) {
@@ -64,21 +67,20 @@ void    Request::append( const char * recvBuffer ) {
     return ;
 }
 
-bool	Request::_headersComplete( void ) {
-	return _dataGatherer.find("\r\n\r\n") != std::string::npos;
-}
-
-bool    Request::_bodyComplete( void ) {
-    return _dataGatherer.find("0\r\n\r\n") != std::string::npos;
-}
 
 void	Request::parse( void ) {
-	// int	contentLength = 0;
 	if (_headersComplete() == true) {
 		if (_headers.empty() == true) {
 			std::stringstream	iss(_dataGatherer);
-			_extractRequestLine(iss);
-			_extractHeaders(iss);
+			try
+			{
+				_extractRequestLine(iss);
+				_extractHeaders(iss);
+			}
+			catch(const std::exception& e)
+			{
+				throw parseErr(e.what());
+			}
             if (this->_method == "POST") {
                 std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
                 if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
@@ -86,18 +88,23 @@ void	Request::parse( void ) {
                         /* -- CHECK THAT WE DONT HAVE A DUPLICATE FILE */
                         _handleChunkedRequest(iss);
 						_status = true;
+						return ;
                     }
                 }
-                /* ------
-                    CAN BE CHANGED
-                    {{ THIS WOULD EITHER GET COMPLETED AND isComplete will return TRUE
-                    OR AN EXCEPTION WILL BE THROWN
-                ------ */
-                _handleBasicRequest(iss);
+				try
+				{
+					_handleBasicRequest(iss);
+				}
+				catch (const std::exception &e)
+				{
+					throw(e);
+				}
 				_status = true;
+				return ;
             }
-            else{
+            else {
 				_status = true;
+				return ;
 			}
 		}
 	}
@@ -110,9 +117,17 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     std::vector<std::string> myvec = _split(line, ' ');
-    myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->_method = myvec[0] : throw parseErr("405 Method Not Allowed"); //generate a Allow header in response
+	if(myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE")
+		this->_method = myvec[0];
+	else
+		throw parseErr("405 Method Not Allowed");
     this->_uri = myvec[1];
-    this->_uri.find("?") != std::string::npos ? this->_uri.substr(this->_uri.find("?"), this->_uri.length()) : "";
+    this->_path = this->_uri;
+    size_t pos = this->_uri.find("?");
+    if (pos != std::string::npos) {
+        this->_query = this->_uri.substr(pos + 1, this->_uri.length());
+        this->_path.erase(pos, this->_path.length());
+    }
     myvec[2] == "HTTP/1.1" ? this->_protocol = myvec[2] : throw parseErr("505 HTTP Version Not Supported");
     if (_hasEnding(this->_uri, ".py")) { this->_uriExtension = PY; }
     else if (_hasEnding(this->_uri, ".php")) { this->_uriExtension = PHP; }
@@ -121,17 +136,24 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
 void    Request::_extractHeaders( std::stringstream & iss ) {
     std::string line;
     std::vector<std::string> myvec(0);
-    /* -- DO ERROR TREATMENTS ON STANDARDS IN HERE */
     while (std::getline(iss, line)) {
         line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
         if (line.size() == 0)
             break ;
-        myvec = _split(line, ':');
-        if (myvec.at(0).empty() || myvec.at(1).empty())
+        myvec.push_back(line.substr(0, line.find(':')));
+        myvec.push_back(line.substr(myvec[0].length() + 2, line.length()));
+        if ((myvec.at(0).empty() || myvec.at(1).empty()) ||
+            _checkHeadersKeySyntax(myvec[0]) == false)
             throw parseErr("400 Bad Request");
-        myvec[1] = this->_ltrim(myvec[1], " ");
-        this->_headers[myvec[0]] = myvec[1];
-		if (myvec[0] == "host") { this->_port = std::stoi(_split(myvec[1], ':')[1]); }
+        if (this->_headers.find(myvec[0]) == this->_headers.end()) {
+            this->_headers[myvec[0]] = myvec[1];
+    		if (myvec[0] == "Host" && (myvec[1].find(':') != std::string::npos)) {
+                std::string s = myvec[1].substr(myvec[1].find(':') + 1, myvec[1].length());
+                (!s.empty() && s.find_first_not_of("0123456789") == std::string::npos) ? this->_port = std::stoi(s) : throw parseErr("400 Bad Request");
+            }
+        }
+        else throw parseErr("400 Bad Request");
+        myvec.clear();
     }
     /* ------
         TO COMPLY WITH HTTP/1.1, CLIENTS MUST INCLUDE THE "Host: header" WITH EACH REQUEST
@@ -200,6 +222,15 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     f.close();
 }
 
+bool	Request::_headersComplete( void ) {
+	return _dataGatherer.find("\r\n\r\n") != std::string::npos;
+}
+
+bool    Request::_bodyComplete( void ) {
+    return _dataGatherer.find("0\r\n\r\n") != std::string::npos;
+}
+
+
 /* ----- Utils ------ */
 /* -- PVT METHODS */
 
@@ -235,6 +266,14 @@ void    Request::_eraseAllSubstr( std::string &str, const std::string &substr ) 
 std::string Request::_ltrim( const std::string &s, const std::string &delim ) {
     size_t start = s.find_first_not_of(delim);
     return (start == std::string::npos) ? "" : s.substr(start);
+}
+
+bool    Request::_checkHeadersKeySyntax( std::string key ) {
+    for (size_t i = 0; i < key.length(); i++) {
+        if (!((key[i] >= 'a' && key[i] <= 'z') || (key[i] >= 'A' && key[i] <= 'Z') || key[i] == '-'))
+            return false;
+    }
+    return true;
 }
 
 bool    Request::_hasEnding( std::string const &fullString, std::string const &ending ) {
@@ -300,7 +339,7 @@ std::ostream & operator<<( std::ostream & o, Request const & req ) {
 	std::cout << std::endl;
 	std::ifstream	body(req.getBodyFilename());
 	std::string line;
-	while(getline(body, line))
+	while (getline(body, line))
 		std::cout << line << std::endl;
 	return o;
 }

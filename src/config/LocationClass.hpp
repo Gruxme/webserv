@@ -6,11 +6,12 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 01:50:10 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 11:31:36 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 18:40:55 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+# include <iostream>
 # include <string>
 # include <vector>
 
@@ -21,6 +22,8 @@ class LocationClass {
     private:
         std::string _path;
         std::string _root;
+        std::string _method;
+        std::string _redirect;
         std::string _cgiExt;
         bool        _autoindex;
         
@@ -41,6 +44,19 @@ class LocationClass {
         /* ----- Getters----- */
         std::string getPath( void ) const;
         std::string getRoot( void ) const;
+        std::string getMethod( void ) const;
+        std::string getRedirect( void ) const;
         std::string getCgiExt( void ) const;
         bool        getAutoIndex( void ) const;
+
+        class parseErr : public std::exception {
+        public:
+            explicit parseErr( const std::string &errStr ) throw() : _errStr(errStr) {}
+            ~parseErr() throw() {}
+            virtual const char * what() const throw() {
+                return (_errStr.c_str());
+            }
+        private:
+            std::string _errStr;
+        };
 };

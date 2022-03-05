@@ -19,6 +19,7 @@
 # include <vector>
 # include <map>
 # include <algorithm>
+# include "../config/ServerConfigClass.hpp"
 
 # define PY 1
 # define PHP 2
@@ -29,16 +30,16 @@
 # define _BODY_INCOMPLETE_ 2
 
 class Request {
-    /* ----- PRIVATE ----- */
     private:
         std::string _dataGatherer;
         std::string _method;
         std::string _uri;
         std::string _query;
+        std::string _path;
         std::string _protocol;
         short       _uriExtension;
         std::map<std::string, std::string>  _headers;
-		int			_port;
+		size_t		_port;
         std::string _bodyFilename;
 		bool		_status;
         
@@ -53,10 +54,11 @@ class Request {
         std::string getMethod( void ) const;
         std::string getUri( void ) const;
         std::string getQuery( void ) const;
+        std::string getPath( void ) const;
         std::string getProtocol(void ) const;
         short       getUriExtension( void ) const;
         std::map<std::string, std::string> const &getHeaders( void ) const;
-		int 		getPort( void ) const;
+		size_t 		getPort( void ) const;
         std::string getBodyFilename( void ) const;
 		bool		isComplete( void ) const;
 
@@ -69,10 +71,8 @@ class Request {
         void    _extractHeaders( std::stringstream & iss );
         void    _handleChunkedRequest( std::stringstream & iss );
         void    _handleBasicRequest( std::stringstream & iss );
-        // void    _extractContent( std::stringstream & iss );
 		bool	_headersComplete( void );
         bool    _bodyComplete( void );
-
 
     public:
 		void	parse( void );
@@ -83,6 +83,7 @@ class Request {
         void    _eraseSubstr( std::string &str, const std::string &substr );
         void    _eraseAllSubstr( std::string &str, const std::string &substr );
         std::string _ltrim( const std::string &s, const std::string &delim );
+        bool    _checkHeadersKeySyntax( std::string key );
         bool    _hasEnding( std::string const &fullString, std::string const &ending );
         int     _findFileSize( std::ofstream &file );
         bool    _isHexNotation( std::string const& s );
@@ -94,7 +95,7 @@ class Request {
         /* ----- Exceptions ----- */
         class parseErr : public std::exception {
         public:
-            explicit parseErr(const std::string &errStr) throw() : _errStr(errStr) {}
+            explicit parseErr( const std::string &errStr ) throw() : _errStr(errStr) {}
             ~parseErr() throw() {}
             virtual const char * what() const throw() {
                 return (_errStr.c_str());
