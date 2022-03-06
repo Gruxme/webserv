@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/05 18:32:26 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/06 13:03:21 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ extern char **environ;
 cgi::cgi()
 {
     this->getOrPost = 1;
+	this->documentOrRedirection = 0;
     this->queryString = "fname=heyyyyyyy";
     // std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.py";
 	// std::string scriptType = "/usr/bin/python";
@@ -62,7 +63,7 @@ void cgi::exec_script(int *fd, int *fd1)
 	tmp[2] = NULL;
 
     if (this->getOrPost)
-    {
+    { 
 		setEnv(getOrPost);
         dup2(fd1[0], 0);
 		// std::cout << this->queryString << "\n";
@@ -80,17 +81,46 @@ void cgi::exec_script(int *fd, int *fd1)
         exit(EXIT_FAILURE);
 }
 
+void cgi::setHeader(const std::string &key, const std::string &value, bool end)
+{
+	this->_buffer += key + ": " + value + "\r\n";
+	if (end)
+		_buffer += "\r\n";
+}
+void cgi::handleResponse()
+{
+	this->_buffer.insert(0, "HTTP/1.1 \r\n");
+	this->_buffer.insert(0, "Date: \r\n");
+	this->_buffer.insert(0, "Accept-Ranges: none\r\n");
+	this->_buffer.insert(0, "Server: webserv/1.1 \r\n");
+}
+
+void cgi::handleRedirectResponse()
+{
+	this->_buffer.insert(0, "Accept-Ranges: none\r\n");
+	this->_buffer.insert(0, "Date: \r\n");
+	this->_buffer.insert(0, "Server: webserv/1.1 \r\n");
+	this->_buffer.insert(0, "HTTP/1.1 \r\n");
+}
+
 void cgi::script_output(int *fd, int *fd1, pid_t pid)
 {
     int status;
     ssize_t count;
-    char buffer[9999];
+    char *buffer;
 
+	if (documentOrRedirection)
+		handleResponse();
+	else
+		handleRedirectResponse();
+	buffer = (char *)malloc(10000);
     close(fd[1]);
     close(fd1[0]);
     close(fd1[1]);
-	bzero(buffer, 9999);
-    count = read(fd[0], &buffer, 9999);
+	// bzero(buffer, 0);
+    count = read(fd[0], buffer, 5000);
+	// if (count < 1000)
+	// 	read(fd[0], buffer, 1000 - count);
 	std::cout << buffer << std::endl;
     close(fd[0]);
     if (!WEXITSTATUS(status))

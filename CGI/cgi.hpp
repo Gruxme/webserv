@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/05 18:23:58 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/06 12:52:11 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,13 @@ class cgi
 	public:
 		Request request;
 		bool getOrPost;
+		bool documentOrRedirection;
 		char *queryString;
 		std::string arg;
 		std::string scriptType;
 		std::vector<std::string> my_headers;
 		std::vector<std::string> my_headerPost;
+		std::string _buffer;
 	public:
 		cgi();
 		~cgi();
@@ -52,4 +54,7 @@ class cgi
 		std::vector<std::string> setEnvInVectorPost(Request &request);
 		char *const* setEnv(std::vector<std::string> my_env);
 		void setEnv(int getOrPost);
+		void setHeader(const std::string &key, const std::string &value, bool end);
+		void handleRedirectResponse();
+		void handleResponse();
 };
