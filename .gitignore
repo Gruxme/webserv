@@ -2,3 +2,6 @@
 *dSYM
 .vscode
 _TEMP_
+*.mp4
+*.jpeg
+www/

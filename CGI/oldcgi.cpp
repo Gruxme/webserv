@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/02 12:52:15 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/02/24 12:31:12 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/05 11:46:33 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 #include <istream>
 #include <sys/types.h>
 #include <signal.h>
-#include "../request/Request.hpp"
+#include "../src/request/Request.hpp"
 
 // Status codes
 // 200 - OK
@@ -150,7 +150,7 @@ int main()
 	
 	// std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.py";
 	// std::string scriptType = "/usr/bin/python";
-	std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.php";
+	std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test1.php";
 	std::string scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
 	std::vector<std::string> my_headers = setEnvInVector(my_request);
 	std::vector<std::string> my_headerPost = setEnvInVectorPost(my_request);
