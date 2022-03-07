@@ -6,15 +6,15 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/05 18:30:36 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/07 11:06:24 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Request.hpp"
-
+#include <fcntl.h>
 /* ----- Constructors & Destructor respectively ----- */
 Request::Request() :
-    _dataGatherer(""),
+    _dataGatherer(),
     _method(""),
     _uri(""),
     _query(""),
@@ -195,19 +195,35 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     if (_checkContentLength() == _CONTENT_LENGTH_NOT_FOUND_ ||
             _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
-    std::ofstream f;
     this->_bodyFilename = "./src/request/" + _toString(clock());
-    f.open(this->_bodyFilename);
-    f << iss.rdbuf();
+    int fptr = open(this->_bodyFilename.c_str(), O_WRONLY);
+    struct pollfd fds = {};
+    fds.fd = fptr;
+    fds.events = POLLOUT;
+    // int rc = poll(&fds, 1, 0);
+    // if (rc < 1)
+    //     ;
+    // else if (rc == 1 && fds.events & POLLOUT) {
+        std::cout << _toString(iss.rdbuf()).c_str() << std::endl;
+        
+        int x = write(fptr, "HELLO", 5);
+        std::cout << x << std::endl;
+        // fptr << iss.rdbuf();
+    // }
+        
+    
+    // std::ofstream f;
+    // f.open(this->_bodyFilename);
+    // f << iss.rdbuf();
     /* ------
         IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW
     ------ */
-    if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
+/*     if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
         f.close();
         unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
-    }
-    f.close();
+    } */
+    close(fptr);
 }
 
 bool	Request::_headersComplete( void ) {

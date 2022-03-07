@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/05 11:10:00 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/07 10:52:53 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ int	main()
 
 # include "SimpleSocket.hpp"
 
-# define BUFFER_SIZE 1024
+# define BUFFER_SIZE 500000
 
 int main( void ) {
     ConfigClass config = ConfigClass();
@@ -126,6 +126,7 @@ int main( void ) {
             /* -- INVOKING PARSER ---------- */
             req.append(buffer);
             req.parse();
+            std::cout << req << std::endl;
 
             // std::cout << req << std::endl;
 // 

@@ -18,6 +18,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <poll.h>
 # include <algorithm>
 # include "../config/ServerConfigClass.hpp"
 
