@@ -1,3 +1,5 @@
 <?php
-    phpinfo();
+
+    phpinfo(10);
+    // while(1);
 ?>
