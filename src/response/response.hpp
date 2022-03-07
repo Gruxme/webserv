@@ -22,7 +22,6 @@
 #include <poll.h>
 #include <dirent.h>
 
-
 class response {
 	public:
 		response();
@@ -77,8 +76,7 @@ class response {
 		ServerConfigClass	_config;
 		Request				_req;
 		std::string			_fileName;
-		int					_pos; // should default to -1 if no location for said path
-		
+		int					_pos; // should default to -1 if no location for said path	
 };
 
 #endif // WEBSERV_RESPONSE_HPP
