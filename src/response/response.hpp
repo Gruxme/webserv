@@ -50,9 +50,8 @@ class response {
 	public:
 		std::string	getHeaders( void ) const;
 		std::string	getBody( void ) const;
-		/* 
-			1/2 WRITE A COUPLE OF GETTERS FOR THE CONFIG / REQ PVT ATTRIBUTES 
-		*/
+		ServerConfigClass	getConfig( void ) const;
+		Request	getRequest( void ) const;
 		std::string	getFileName( void ) const;
 		std::string	getPath( void ) const;
 		std::string	indexListContent( void ) const;
@@ -78,7 +77,6 @@ class response {
 		ServerConfigClass	_config;
 		Request				_req;
 		std::string			_fileName;
-		std::string			_path;
 		int					_pos; // should default to -1 if no location for said path
 		
 };

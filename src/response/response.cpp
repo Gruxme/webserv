@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/07 17:17:32 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/07 22:14:38 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
 	_error(false), _autoIndex(false), _config(), _req(), _fileName(""),
-	_path(""), _pos(-1)
+	_pos(-1)
 	{}
 response::~response() {
 	//check if sigpipe would need close of fd here
@@ -40,7 +40,6 @@ response	&response::operator=(const response &x){
 	_config = x._config;
 	_req = x._req;
 	_fileName = x._fileName;
-	_path = x._path;
 	_pos = x._pos;
 	return *this;
 }
@@ -164,10 +163,10 @@ void response::_getResrc( std::string absPath ) {
 			free(date);
 			stat(absPath.c_str(), &status);
 			if(S_ISDIR(status.st_mode)){
-				if(!_config.getAutoIndex()){
+				/* if(!_config.getAutoIndex()){
 					errorMsg("403 Forbidden");
 					return ;
-				}
+				} */
 				_autoIndex = true;
 				if(!_autoindexModule(absPath)){
 					errorMsg("500 Internal Server Error");
@@ -243,39 +242,38 @@ std::string	response::getBodyContent( void ){
 }
 
 void	response::_extractData( void ) {
-	std::string tmpPath = this->_req.getPath();
-	std::string path = this->_req.getPath();
-	int ret = 0;
-	while (path.find("/") != std::string::npos) {
-		_path = path;
+	std::string	tmp = this->_req.getPath();
+	if (std::count(tmp.begin(), tmp.end(), '/') == 1) {
 		for (size_t i = 0; i < _config.getLocationCount(); i++) {
-			if ("/" == _config.getLocationClass()[i].getPath() && _config.getLocationClass()[i].getMethod() == _req.getMethod()) {
-				ret = i;
-				this->_pos = ret;
-			}
-			else if (path == _config.getLocationClass()[i].getPath() && _config.getLocationClass()[i].getMethod() == _req.getMethod() ) {
-				this->_fileName = tmpPath.substr(this->_path.length(), tmpPath.length());
-				if (this->_fileName == "/")
-					this->_fileName = "";
-				else if (this->_fileName.find("/") != std::string::npos) {
-					this->_fileName.erase(this->_fileName.find_first_of("/"));
-				}
-				ret = i;
-				this->_pos = ret;
+			if ("/" == _config.getLocationClass()[i].getPath()) {
+				this->_fileName = tmp;
+				this->_pos = i;
 				return ;
 			}
 		}
-		if (path.find_first_of("/") == path.find_last_of("/")) {
-			this->_path = _config.getRoot();
-			this->_fileName = tmpPath.substr(tmpPath.find("/") + 1, tmpPath.length());
-			this->_pos = ret;
+	}
+	while (420) {
+		for (size_t i = 0; i < _config.getLocationCount(); i++) {
+			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath()) &&
+				this->_req.getMethod() == _config.getLocationClass()[i].getMethod()) {
+				try {
+					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
+					this->_pos = i;
+					return ;
+				} catch (...) {
+					return ;
+				}
+			}
+		}
+		try {
+			this->_fileName = tmp.substr(tmp.find_last_of("/"), tmp.length()) + _fileName;	
+			tmp = tmp.substr(0, tmp.find_last_of("/"));
+		} catch ( std::exception &e ) {
 			return ;
 		}
-		else
-			path = path.substr(0, path.find_last_of("/"));
 	}
-	return ;
 }
+
 
 bool	response::isError( void ) const{
 	return _error;
@@ -283,12 +281,13 @@ bool	response::isError( void ) const{
 
 void response::serveRequest( void ) {
 	this->_extractData();
+	std::string absolutePath = _config.getLocationClass()[this->_pos].getRoot() + _fileName;
 	if(_req.getMethod() == "GET")
-		_getResrc(_path + _fileName);
+		_getResrc(absolutePath);
 	else if (_req.getMethod() == "POST")
-		_postResrc(_path + _fileName);
+		_postResrc(absolutePath);
 	else if(_req.getMethod() == "DELETE")
-		_deleteResrc(_path + _fileName);
+		_deleteResrc(absolutePath);
 	else
 		errorMsg("405 Method Not Allowed");
     return ; 
@@ -301,9 +300,7 @@ void		response::setData( ServerConfigClass config, Request req ){
 
 std::string	response::getHeaders( void ) const { return this->_headers; }
 std::string	response::getBody( void ) const { return this->_body; }
-/* 
-	1/2 WRITE A COUPLE OF GETTERS FOR THE CONFIG / REQ PVT ATTRIBUTES 
-*/
+ServerConfigClass	response::getConfig( void ) const { return this->_config; }
+Request	response::getRequest( void ) const { return this->_req; }
 std::string	response::getFileName( void ) const { return this->_fileName; }
-std::string response::getPath( void ) const { return this->_path; }
 int			response::getPos( void ) const { return this->_pos; }

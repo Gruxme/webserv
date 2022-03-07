@@ -42,7 +42,6 @@ class ConfigClass {
 		size_t			getServerCount( void ) const;
 		std::vector<ServerConfigClass>	getServerConfigClass( void ) const;
 
-		void	_checkConfigValidity( void );
 		void	parseConfigFile( void );
 
 		class parseErr : public std::exception {
