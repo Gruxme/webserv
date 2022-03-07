@@ -20,6 +20,9 @@ class ServerConfigClass {
     private:
         size_t			_port;
         std::string     _serverName;
+        std::string     _root;
+        std::string     _redirect;
+        std::string     _index;
         size_t			_bodySizeLimit;
         std::string     _accessLog;
         std::string     _errorPage;
@@ -34,6 +37,9 @@ class ServerConfigClass {
         
         size_t			getPort() const;
         std::string     getServerName() const;
+        std::string     getRoot() const;
+        std::string     getRedirect() const;
+        std::string     getIndex() const;
         size_t			getBodySizeLimit() const;
         std::string     getAccessLog() const;
         std::string     getErrorPage() const;

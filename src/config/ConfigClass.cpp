@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/07 19:39:13 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/07 22:56:56 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,6 +150,22 @@ void    ConfigClass::parseConfigFile( void ) {
                             break ;
                         }
                         throw parseErr("SyntaxError || 6");
+                    case 'r':
+                        if (std::strncmp("root = ", buffer.c_str(), 7) == 0) {
+                            this->_serverConf[n_serv]._root = buffer.substr(buffer.find("root = ") + strlen("root = "));
+                            break ;
+                        }
+                        else if (std::strncmp("redirect = ", buffer.c_str(), 11) == 0) {
+                            this->_serverConf[n_serv]._redirect = buffer.substr(buffer.find("redirect = ") + strlen("redirect = "));
+                            break ;
+                        }
+                        throw parseErr("SyntaxError || 7");
+                    case 'i':
+                        if (std::strncmp("index = ", buffer.c_str(), 8) == 0) {
+                            this->_serverConf[n_serv]._index = buffer.substr(buffer.find("index = ") + strlen("index = "));
+                            break ;
+                        }
+                        throw parseErr("SyntaxError || 8");
                     default:
                         if (buffer.empty()) break ;
                         throw parseErr("SyntaxError || SERVER SIDE");
