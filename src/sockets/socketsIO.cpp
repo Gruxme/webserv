@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/07 16:52:26 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/07 17:27:01 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,34 +134,34 @@ void	socketsIO::eventListener()
 				}
 				else if (_pollfds[i].revents == POLLOUT)
 				{
-					response	currRes = _responses[_pollfds[i].fd];
+					// response	currRes = _responses[_pollfds[i].fd];
 					Request		currReq = _requests[_pollfds[i].fd];
 					std::cout << "POLLOUT on fd" << _pollfds[i].fd << std::endl;
 					std::string content("");
 					if(isErrorResp){
-						if (currRes.getHeaderStatus())
-							content = currRes.getBodyContent();
+						if (_responses[_pollfds[i].fd].getHeaderStatus())
+							content = _responses[_pollfds[i].fd].getBodyContent();
 						else
 						{
-							content = currRes.getHeaders();
+							content = _responses[_pollfds[i].fd].getHeaders();
 							std::cout << content << std::endl;
 						}
 						rc = send(_pollfds[i].fd, content.c_str(), content.length(), 0);
 						std::cout << "Content lenght of read data " << content.length() << std::endl;
 						if (rc >= 0)
 						{
-							bool headersStatus = currRes.getHeaderStatus();
+							bool headersStatus = _responses[_pollfds[i].fd].getHeaderStatus();
 							if (rc < static_cast<int>(content.length()) && headersStatus)
 							{
-								currRes.offsetCursor(rc - content.length()); // check if headers sending might fail and set things accordingly
+								_responses[_pollfds[i].fd].offsetCursor(rc - content.length()); // check if headers sending might fail and set things accordingly
 								if (headersStatus)
-									currRes.setBytesSent(rc);
+									_responses[_pollfds[i].fd].setBytesSent(rc);
 							}
 							else if (rc == static_cast<int>(content.length()) && !headersStatus)
-								currRes.headersSent();
+								_responses[_pollfds[i].fd].headersSent();
 							else if (headersStatus)
-								currRes.setBytesSent(rc);
-							if (currRes.bodyEof() || g_sigpipe)
+								_responses[_pollfds[i].fd].setBytesSent(rc);
+							if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
 							{
 								_requests.erase(_pollfds[i].fd);
 								_responses.erase(_pollfds[i].fd);
@@ -176,37 +176,37 @@ void	socketsIO::eventListener()
 					}
 					bool connClose = currReq.getHeaders().find("Connection")->second == "close";
 					if(currReq.getPort() == 0)
-						currRes.setData(_socks[0]->getConfig(), currReq);
+						_responses[_pollfds[i].fd].setData(_socks[0]->getConfig(), currReq);
 					else {
 						for (size_t j = 0; j < _socks.size(); j++)
 							if (_socks[j]->getConfig().getPort() == currReq.getPort())
-								currRes.setData(_socks[j]->getConfig(), currReq);
+								_responses[_pollfds[i].fd].setData(_socks[j]->getConfig(), currReq);
 					}
-					if(/* !currRes.isError() &&  */!currRes.getHeaderStatus())
-						currRes.serveRequest();
-					if(currRes.getHeaderStatus())
-						if(currRes.isAutoIndex())
-							content = currRes.indexListContent();
+					if(/* !_responses[_pollfds[i].fd].isError() &&  */!_responses[_pollfds[i].fd].getHeaderStatus())
+						_responses[_pollfds[i].fd].serveRequest();
+					if(_responses[_pollfds[i].fd].getHeaderStatus())
+						if(_responses[_pollfds[i].fd].isAutoIndex())
+							content = _responses[_pollfds[i].fd].indexListContent();
 						else
-							content = currRes.getBodyContent();
+							content = _responses[_pollfds[i].fd].getBodyContent();
 					else {
-						content = currRes.getHeaders();
+						content = _responses[_pollfds[i].fd].getHeaders();
 						std::cout << content << std::endl;
 					}
 					rc = send(_pollfds[i].fd, content.c_str(), content.length(), 0);
 					std::cout << "Content lenght of read data  " << content.length() << std::endl;
 					if(rc >= 0)
 					{
-						if (rc < static_cast<int>(content.length()) && currRes.getHeaderStatus()){
-							currRes.offsetCursor(rc - content.length()); // check if headers sending might fail and set things accordingly
-							if(currRes.getHeaderStatus())
-								currRes.setBytesSent(rc);
+						if (rc < static_cast<int>(content.length()) && _responses[_pollfds[i].fd].getHeaderStatus()){
+							_responses[_pollfds[i].fd].offsetCursor(rc - content.length()); // check if headers sending might fail and set things accordingly
+							if(_responses[_pollfds[i].fd].getHeaderStatus())
+								_responses[_pollfds[i].fd].setBytesSent(rc);
 						}
-						else if (rc == static_cast<int>(content.length()) && !currRes.getHeaderStatus())
-							currRes.headersSent();
-						else if(currRes.getHeaderStatus())
-							currRes.setBytesSent(rc);
-						if (currRes.bodyEof() || g_sigpipe)
+						else if (rc == static_cast<int>(content.length()) && !_responses[_pollfds[i].fd].getHeaderStatus())
+							_responses[_pollfds[i].fd].headersSent();
+						else if(_responses[_pollfds[i].fd].getHeaderStatus())
+							_responses[_pollfds[i].fd].setBytesSent(rc);
+						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
 						{
 							std::cout << "client with fd: " << _pollfds[i].fd << " kept alive and reset to POLLIN" << std::endl;
 							_requests.erase(_pollfds[i].fd);

@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/05 16:43:10 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/03 18:53:29 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ ConfigClass & ConfigClass::operator =( ConfigClass const & rhs) {
     if (this != &rhs) {
         this->_configFile = rhs._configFile; 
         this->_serverCount = rhs._serverCount;
+        /* -- {DEEP COPY} _serverConf */
         this->_serverConf = rhs._serverConf;
     }
     return *this;
@@ -55,7 +56,7 @@ void    ConfigClass::_allocateServers( void ) {
         if (buffer == "server {")
             n++;
     }
-    n > 0 ? this->_serverCount = n : throw parseErr("Invalid Server");
+    this->_serverCount = n;
     for (size_t i = 0; i < this->_serverCount; i++)
         this->_serverConf.push_back(ServerConfigClass());
 }
@@ -72,8 +73,7 @@ void    ConfigClass::_allocateLocations( void ) {
                 buffer = _trim(buffer, " ");
                 if (buffer.find("}") != std::string::npos && buffer != "}") throw parseErr("SyntaxError || F U");
                 if (buffer == "}") {
-                    
-                    n_loc > 0 ? this->_serverConf[n_serv]._locationCount = n_loc : throw parseErr("Invalid Locations");
+                    this->_serverConf[n_serv]._locationCount = n_loc;
                     for (size_t i = 0; i < n_loc; i++) {
                         this->_serverConf[n_serv]._location.push_back(LocationClass());
                     }
@@ -86,6 +86,11 @@ void    ConfigClass::_allocateLocations( void ) {
             }
         }
     }
+}
+
+void    ConfigClass::_checkConfigValidity( void ) {
+    
+    return ;
 }
 
 /* ----- Main Parser ----- */
@@ -116,6 +121,11 @@ void    ConfigClass::parseConfigFile( void ) {
                             this->_serverConf[n_serv]._accessLog = buffer.substr(buffer.find("access_log = ") + strlen("access_log = "));
                             break ;
                         }
+                        else if (std::strncmp("autoindex = ", buffer.c_str(), 12) == 0) {
+                            if (std::strncmp("autoindex = on", buffer.c_str(), 14) == 0) this->_serverConf[n_serv]._autoindex = _AUTOINDEX_ON_;
+                            else if (std::strncmp("autoindex = off", buffer.c_str(), 15) == 0) this->_serverConf[n_serv]._autoindex = _AUTOINDEX_OFF_;
+                            break ;
+                        }
                         throw parseErr("SyntaxError || 1");
                     case 'b':
                         if (std::strncmp("body_size_limit = ", buffer.c_str(), 18) == 0) {
@@ -143,7 +153,19 @@ void    ConfigClass::parseConfigFile( void ) {
                             n_loc++;
                             break ;
                         }
-                        throw parseErr("SyntaxError || 4");       
+                        throw parseErr("SyntaxError || 4");
+                    case 'r':
+                        if (std::strncmp("root = ", buffer.c_str(), 7) == 0) {
+                            this->_serverConf[n_serv]._root = buffer.substr(buffer.find("root = ") + strlen("root = "));
+                            if (this->_serverConf[n_serv]._root[this->_serverConf[n_serv]._root.size() - 1] != '/')
+                                this->_serverConf[n_serv]._root += "/";
+                            break ;
+                        }
+                        else if (std::strncmp("redirect = ", buffer.c_str(), 11) == 0) {
+                            this->_serverConf[n_serv]._redirect = buffer.substr(buffer.find("redirect = ") + strlen("redirect = "));
+                            break ;
+                        }
+                        throw parseErr("SyntaxError || 5");                        
                     case 's':
                         if (std::strncmp("server_name = ", buffer.c_str(), 14) == 0) {
                             this->_serverConf[n_serv]._serverName = buffer.substr(buffer.find("server_name = ") + strlen("server_name = "));

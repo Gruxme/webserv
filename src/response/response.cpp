@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/07 16:59:04 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/07 17:17:32 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,34 @@
 response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
-	_error(false), _autoIndex(false), _config(), _path(""),
-	_req(), _fileName(""), _pos(-1)
+	_error(false), _autoIndex(false), _config(), _req(), _fileName(""),
+	_path(""), _pos(-1)
 	{}
 response::~response() {
 	//check if sigpipe would need close of fd here
+}
+
+response::response( const response &x)
+{
+	this->operator=(x);
+}
+
+response	&response::operator=(const response &x){
+	_headers = x._headers;
+	_body = x._body;
+	_indexList = x._indexList;
+	_bodyFd = x._bodyFd;
+	_bodySize = x._bodySize;
+	_totalSent = x._totalSent;
+	_headersSent = x._headersSent;
+	_error = x._error;
+	_autoIndex = x._autoIndex;
+	_config = x._config;
+	_req = x._req;
+	_fileName = x._fileName;
+	_path = x._path;
+	_pos = x._pos;
+	return *this;
 }
 
 void	response::headersSent(){
@@ -59,7 +82,7 @@ bool	response::_autoindexModule(std::string path){
 				dirListHtml << std::setw(20) << status.st_size << std::endl;
 			}
 		}
-			delete[] date;
+		delete[] date;
 		dirListHtml << "</pre><hr></body>\n</html>";
 		_indexList = dirListHtml.str();
 		closedir(dir);
@@ -141,7 +164,7 @@ void response::_getResrc( std::string absPath ) {
 			free(date);
 			stat(absPath.c_str(), &status);
 			if(S_ISDIR(status.st_mode)){
-				if(!_config.getLocationClass()[_pos].getAutoIndex()){
+				if(!_config.getAutoIndex()){
 					errorMsg("403 Forbidden");
 					return ;
 				}
@@ -243,7 +266,7 @@ void	response::_extractData( void ) {
 			}
 		}
 		if (path.find_first_of("/") == path.find_last_of("/")) {
-			this->_path = _config.getLocationClass()[_pos].getRoot();
+			this->_path = _config.getRoot();
 			this->_fileName = tmpPath.substr(tmpPath.find("/") + 1, tmpPath.length());
 			this->_pos = ret;
 			return ;

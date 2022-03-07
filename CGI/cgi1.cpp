@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/07 16:17:09 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/06 15:08:56 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,23 +28,6 @@ cgi::cgi()
 
 cgi::~cgi()
 {
-}
-
-cgi::cgi( cgi const &obj ) { *this = obj; }
-
-cgi& cgi::operator=( cgi const &rhs )
-{
-    if (this != &rhs)
-	{
-        this->request = rhs.request;
-        this->getOrPost = rhs.getOrPost;
-        this->documentOrRedirection = rhs.documentOrRedirection;
-        this->queryString = rhs.queryString;
-        this->arg = rhs.arg;
-        this->scriptType = rhs.scriptType;
-        this->_buffer = rhs._buffer;
-    }
-    return *this;
 }
 
 const char* cgi::getErrorMessage(int codeError)
@@ -120,16 +103,6 @@ void cgi::setEnv(int getOrPost)
 		setenv("REQUEST_METHOD","get", 1);
 		setenv("REDIRECT_STATUS","200",1);
 		setenv("SCRIPT_FILENAME", "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php",1);
-		// std::map<std::string, std::string>::iterator it;
-		// for (it = request.getHeaders().begin(); it != request.getHeaders().end(); it++) {
-		// 	std::cout << it->first << " : " << it->second << std::endl;
-		// }
-		// setenv("SERVER_PROTOCOL", request.getProtocol().c_str(), 1);
-		// setenv("QUERY_STRING",request.getQuery().c_str(), 1);
-		// setenv("PATH_INFO", request.getPath().c_str(), 1);
-		// setenv("REQUEST_METHOD", request.getMethod().c_str(), 1);
-		// setenv("REDIRECT_STATUS","200",1);
-		// setenv("SCRIPT_FILENAME", "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php",1);
 	}
 }
 
@@ -137,6 +110,7 @@ void cgi::exec_script(int *fd, int *fd1)
 {
     int ret;
     char *tmp[3];
+    char *const*env;
 
 	tmp[0] = (char*)scriptType.c_str();
 	tmp[1] = (char*)arg.c_str();
@@ -146,7 +120,8 @@ void cgi::exec_script(int *fd, int *fd1)
     { 
 		setEnv(getOrPost);
         dup2(fd1[0], 0);
-        write(fd1[1], queryString.c_str(), queryString.length());
+		// std::cout << this->queryString << "\n";
+        write(fd1[1], this->queryString, strlen(this->queryString));
     }
     else
 		setEnv(getOrPost);
@@ -184,26 +159,23 @@ void cgi::handleRedirectResponse()
 	this->_buffer.insert(0, "HTTP/1.1 \r\n");
 }
 
-void cgi::script_output(int *fd, int *fd1)
+void cgi::script_output(int *fd, int *fd1, pid_t pid)
 {
     int status;
     ssize_t count;
-    char buffer[4096] = {0};
+    char *buffer;
 
-	// if (documentOrRedirection)
-	// 	handleResponse(200);
-	// else
-	// 	handleRedirectResponse();
+	if (documentOrRedirection)
+		handleResponse(200);
+	else
+		handleRedirectResponse();
+	buffer = (char *)malloc(10000);
     close(fd[1]);
     close(fd1[0]);
     close(fd1[1]);
-	bzero(buffer, 4096);
-	if ((count = read(fd[0], buffer, 4096)) > 0)
-	{
-		for (int i = 0; i < count; i++)
-			_body += buffer[i];
-	}
-	std::cout << _body << std::endl;
+	// bzero(buffer, 0);
+    count = read(fd[0], buffer, 5000);
+	std::cout << buffer << std::endl;
     close(fd[0]);
     if (!WEXITSTATUS(status))
         exit(EXIT_SUCCESS);
@@ -211,8 +183,9 @@ void cgi::script_output(int *fd, int *fd1)
         exit(EXIT_FAILURE);
 }
 
-void cgi::processing_cgi()
+void cgi::processing_cgi(Request &request)
 {
+    int rett;
 	int fd[2];
 	int fd1[2];
     pid_t pid;
@@ -227,6 +200,6 @@ void cgi::processing_cgi()
 	else if (pid == 0)
 		exec_script(fd, fd1);
     else
-        script_output(fd, fd1);
+        script_output(fd, fd1, pid);
 	wait(NULL);
 }

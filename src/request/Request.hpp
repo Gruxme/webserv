@@ -18,7 +18,6 @@
 # include <string>
 # include <vector>
 # include <map>
-# include <poll.h>
 # include <algorithm>
 # include "../config/ServerConfigClass.hpp"
 
@@ -45,6 +44,7 @@ class Request {
 		bool		_status;
         
     public:
+        /* ----- Constructors & Destructor respectively ----- */
         Request();
         ~Request();
         Request( Request const &x );
@@ -79,8 +79,6 @@ class Request {
 
     private:
         /* ----- Utils ------ */
-        template <class T>
-            inline std::string _toString( const T& t );
         std::vector<std::string> _split( std::string str, char separator );
         void    _eraseSubstr( std::string &str, const std::string &substr );
         void    _eraseAllSubstr( std::string &str, const std::string &substr );
