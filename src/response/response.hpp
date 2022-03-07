@@ -1,12 +1,12 @@
-/* ************************************************************************** */
+  /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/05 16:36:28 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/07 15:30:40 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <ctime>
 #include <fcntl.h>
 #include <poll.h>
+#include <dirent.h>
 
 
 class response {
@@ -33,7 +34,8 @@ class response {
 		void		_getResrc( std::string absPath );
 		void		_postResrc( std::string absPath );
 		void		_deleteResrc( std::string absPath );
-		void		_autoindexModule( void );
+		bool		_autoindexModule( std::string path );
+
 		void		_extractData( void );
 		
 	public:
@@ -48,13 +50,16 @@ class response {
 	public:
 		std::string	getHeaders( void ) const;
 		std::string	getBody( void ) const;
-		ServerConfigClass	getConfig( void) const;
-		Request		getRequest( void ) const;
+		ServerConfigClass	getConfig( void ) const;
+		Request	getRequest( void ) const;
 		std::string	getFileName( void ) const;
+		std::string	getPath( void ) const;
+		std::string	indexListContent( void ) const;
 		int			getPos( void ) const;
 		bool		getHeaderStatus( void ) const;
 		bool		getStatus( void ) const;
 		bool		isError( void ) const;
+		bool		isAutoIndex( void ) const;
 		size_t		getBodySize( void ) const;
 		bool		bodyEof( void ) const;
 		
@@ -62,11 +67,13 @@ class response {
 	private:
 		std::string			_headers;
 		std::string			_body;
+		std::string			_indexList;
 		int					_bodyFd;
 		size_t				_bodySize;
 		size_t				_totalSent;
 		bool				_headersSent;
 		bool				_error;
+		bool				_autoIndex;
 		ServerConfigClass	_config;
 		Request				_req;
 		std::string			_fileName;
