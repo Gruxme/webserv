@@ -6,12 +6,12 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/07 11:06:24 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/07 11:35:46 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Request.hpp"
-#include <fcntl.h>
+
 /* ----- Constructors & Destructor respectively ----- */
 Request::Request() :
     _dataGatherer(),
@@ -196,20 +196,18 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
             _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
     this->_bodyFilename = "./src/request/" + _toString(clock());
-    int fptr = open(this->_bodyFilename.c_str(), O_WRONLY);
+    FILE * fptr = fopen(this->_bodyFilename.c_str(), "rwx");
     struct pollfd fds = {};
-    fds.fd = fptr;
+    fds.fd = fileno(fptr);
     fds.events = POLLOUT;
-    // int rc = poll(&fds, 1, 0);
-    // if (rc < 1)
-    //     ;
-    // else if (rc == 1 && fds.events & POLLOUT) {
-        std::cout << _toString(iss.rdbuf()).c_str() << std::endl;
-        
-        int x = write(fptr, "HELLO", 5);
+    int rc = poll(&fds, 1, 0);
+    if (rc < 1)
+        ;
+    else if (rc == 1 && fds.events & POLLOUT) {
+        int x = write(fds.fd, _toString(iss.rdbuf()).c_str(), _toString(iss.rdbuf()).length());
         std::cout << x << std::endl;
         // fptr << iss.rdbuf();
-    // }
+    }
         
     
     // std::ofstream f;
@@ -223,7 +221,7 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
         unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
     } */
-    close(fptr);
+    fclose(fptr);
 }
 
 bool	Request::_headersComplete( void ) {
