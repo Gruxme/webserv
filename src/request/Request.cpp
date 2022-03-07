@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/07 14:36:10 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/07 14:45:50 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,30 +161,41 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     std::string line;
     uint16_t n = 0;
     this->_bodyFilename = "./src/request/" + _toString(clock());
-    f.open(this->_bodyFilename);
-    while (std::getline(iss, line)) {
-        line.erase(line.find_last_of('\r'));
-        if (_isHexNotation(line))
-            n = _hexadecimalToDecimal(line);
-        else {
-            if (n > line.length()) {
-                int x = line.length();
-                line += "\n";
-                while (x < (n)) {
-                    std::string buffer;
-                    std::getline(iss, buffer);
-                    buffer.erase(buffer.find_last_of('\r'));
-                    x += buffer.length() + 2;
-                    line += buffer + "\n";
+    FILE * fptr = fopen(this->_bodyFilename.c_str(), "w");
+    struct pollfd fds = {};
+    fds.fd = fileno(fptr);
+    fds.events = POLLOUT;
+    int rc = poll(&fds, 1, 0);
+    if (rc < 1)
+        ;
+    else if (rc == 1 && fds.events & POLLOUT) {
+        std::string vagn = "";
+        while (std::getline(iss, line)) {
+            line.erase(line.find_last_of('\r'));
+            if (_isHexNotation(line))
+                n = _hexadecimalToDecimal(line);
+            else {
+                if (n > line.length()) {
+                    int x = line.length();
+                    line += "\n";
+                    while (x < (n)) {
+                        std::string buffer;
+                        std::getline(iss, buffer);
+                        buffer.erase(buffer.find_last_of('\r'));
+                        x += buffer.length() + 2;
+                        line += buffer + "\n";
+                    }
+                    line.erase(line.find_last_of('\n'));
+                    write(fds.fd, line, line.length());
+                    // f << line;
                 }
-                line.erase(line.find_last_of('\n'));
-                f << line;
-            }
-            else
-                f << line;
-        }  
+                else
+                    write(fds.fd, line, line.length());
+                    // f << line;
+            }  
+        }
     }
-    f.close();
+    fclose(fptr);
 }
 
 # include <fcntl.h>
@@ -206,10 +217,8 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     if (rc < 1)
         ;
     else if (rc == 1 && fds.events & POLLOUT) {
-        // std::string str = _toString(iss.rdbuf());
-        std::cout << _toString(iss.rdbuf()) << std::endl;
-        std::cout << _toString(iss.rdbuf()).length() << std::endl;
-        // write(fds.fd, str.c_str(), str.length());
+        std::string str = _toString(iss.rdbuf());
+        write(fds.fd, str.c_str(), str.length());
     }
         
     
