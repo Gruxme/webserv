@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/04 11:37:34 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/07 16:18:38 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
-	_error(false), _config(), _req(), _fileName(""),
+	_error(false), _autoIndex(false), _config(), _req(), _fileName(""),
 	_path(""), _pos(-1)
 	{}
 response::~response() {
@@ -32,6 +32,44 @@ bool	response::getHeaderStatus() const{
 
 void	response::offsetCursor(off_t offset){
 	lseek(_bodyFd, offset, SEEK_CUR);
+}
+
+bool	response::_autoindexModule(std::string path){
+	DIR 			*dir;
+	struct dirent	*ent;
+	struct stat		status;
+	char			*date = new char[20]();
+	std::ostringstream dirListHtml;
+	dirListHtml << "<html>\n<head><title>Index of " << path << "</title></head>\n<body>\n<h1>Index of "\
+				<< path << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
+	if ((dir = opendir(path.c_str())) != NULL){
+		while ((ent = readdir(dir)) != NULL){
+			std::string	fileName(ent->d_name);
+			if(fileName == "." || fileName == "..")
+				continue;
+			stat((path + fileName).c_str(), &status);
+			if(S_ISDIR(status.st_mode))
+				fileName += "/";
+			dirListHtml << "<a href=\"" << fileName << "\">" << fileName << "</a>";
+			strftime(date, 17, "%d-%b-%y %H:%M", gmtime(&(status.st_mtimespec.tv_sec)));
+			dirListHtml << std::setw(62 - fileName.length()) << date;
+			if(S_ISDIR(status.st_mode))
+				dirListHtml << std::setw(21) << std::right << "-\n";
+			else{
+				dirListHtml << std::setw(20) << status.st_size << std::endl;
+			}
+		}
+		delete[] date;
+		dirListHtml << "</pre><hr></body>\n</html>";
+		_indexList = dirListHtml.str();
+		closedir(dir);
+		return true;
+	}
+		return false;
+}
+
+bool	response::isAutoIndex( void ) const{
+	return _autoIndex;
 }
 
 void	response::errorMsg( std::string type){
@@ -70,6 +108,10 @@ void	response::errorMsg( std::string type){
 	_error = true;
 }
 
+std::string		response::indexListContent( void ) const{
+	return _indexList;
+}
+
 void response::_getResrc( std::string absPath ) {
 	if (_req.getUriExtension() == PHP){
 
@@ -84,35 +126,46 @@ void response::_getResrc( std::string absPath ) {
 				errorMsg("404 Not Found");
 			else if(errno == EACCES)
 				errorMsg("403 Forbidden");
-			else if(errno == EISDIR){
-				if(_config.getAutoIndex()){
-					//launch autoindex module
-				}
-				else
-					errorMsg("403 Forbidden");
-			}
 			else
 				errorMsg("500 Internal Server Error");
 		}
 		else{
 			std::ostringstream	res;
 			struct stat			status;
-			const char *mimeType = MimeTypes::getType(absPath.c_str());
+			const char *mimeType;
 
 			time_t now = time(0);
 			char *date = new char[30]();
 			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
 			res << "HTTP/1.1 200 OK\r\nDate: " << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
 			free(date);
-			if(mimeType == NULL)
-				res << "Content-Type: text/plain\r\n";
-			else
-				res << "Content-Type: " << mimeType << "\r\n";
 			stat(absPath.c_str(), &status);
-			res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
+			if(S_ISDIR(status.st_mode)){
+				if(!_config.getAutoIndex()){
+					errorMsg("403 Forbidden");
+					return ;
+				}
+				_autoIndex = true;
+				if(!_autoindexModule(absPath)){
+					errorMsg("500 Internal Server Error");
+					return;
+				}
+				res << "Content-Type: text/html\r\n";
+				res << "Content-Length: " << (_bodySize = _indexList.length()) << "\r\n";
+				_body = "";
+			}
+			else
+			{
+				mimeType = MimeTypes::getType(absPath.c_str());
+				if (mimeType == NULL)
+					res << "Content-Type: text/plain\r\n";
+				else
+					res << "Content-Type: " << mimeType << "\r\n";
+				res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
+				_body = absPath;
+			}
 			res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
 			_headers = res.str();
-			_body = absPath;
 		}
 	}
     return ;
