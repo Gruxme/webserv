@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
 /*   Updated: 2022/03/07 15:30:40 by abiari           ###   ########.fr       */
@@ -15,6 +15,7 @@
 
 #include "../config/ConfigClass.hpp"
 #include "../request/Request.hpp"
+#include "../../CGI/cgi.hpp"
 #include "mimeTypes.hpp"
 #include <sys/stat.h>
 #include <ctime>
@@ -50,9 +51,8 @@ class response {
 	public:
 		std::string	getHeaders( void ) const;
 		std::string	getBody( void ) const;
-		/* 
-			1/2 WRITE A COUPLE OF GETTERS FOR THE CONFIG / REQ PVT ATTRIBUTES 
-		*/
+		ServerConfigClass	getConfig( void) const;
+		Request		getRequest( void ) const;
 		std::string	getFileName( void ) const;
 		std::string	getPath( void ) const;
 		std::string	indexListContent( void ) const;
@@ -76,10 +76,12 @@ class response {
 		bool				_error;
 		bool				_autoIndex;
 		ServerConfigClass	_config;
+		std::string			_path;
 		Request				_req;
 		std::string			_fileName;
-		std::string			_path;
 		int					_pos; // should default to -1 if no location for said path
+		
+		cgi					_cgi;
 		
 };
 
