@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/04 11:44:14 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/07 09:51:59 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,11 +71,10 @@ void	socketsIO::eventListener()
 {
 	char buffer[4096];
 	int rc;
+	unsigned long sentBytes = 0;
 	bool connClosed;
-	bool isErrorResp;
 	while (1)
 	{
-		// isErrorResp = false;
 		connClosed = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
@@ -87,7 +86,6 @@ void	socketsIO::eventListener()
 				continue;
 			if (_pollfds[i].revents != POLLIN && _pollfds[i].revents != POLLOUT)
 			{
-				std::cout << "client with fd: " << _pollfds[i].fd << " closed after client closed it's connection end" << std::endl;
 				close(_pollfds[i].fd);
 				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl << std::dec;
 				_pollfds.erase(_pollfds.begin() + i);
@@ -110,24 +108,15 @@ void	socketsIO::eventListener()
 						continue ; // still not sure of this
 					}
 					_requests[_pollfds[i].fd].append(&buffer[0]);
-					std::cout << "fd: " << _pollfds[i].fd << " received: " << rc << " bytes" << std::endl;
+					std::cout << "fd: " << _pollfds[i].fd << "received: " << rc << " bytes" << std::endl;
 					try {
 						_requests[_pollfds[i].fd].parse();
 					}
 					catch (const std::exception &e){
-						if (_requests.find(_pollfds[i].fd)->second.getPort() == 0)
-							_responses[_pollfds[i].fd].setData(_socks[0]->getConfig(), _requests.find(_pollfds[i].fd)->second);
-						else
-						{
-							for (size_t j = 0; j < _socks.size(); j++)
-								if (_socks[j]->getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
-									_responses[_pollfds[i].fd].setData(_socks[j]->getConfig(), _requests.find(_pollfds[i].fd)->second);
-						}
 						_responses[_pollfds[i].fd].errorMsg(e.what());
-						isErrorResp = _responses[_pollfds[i].fd].isError();
 					}
 					// check if req complete and set event to pollout
-					if (_requests[_pollfds[i].fd].isComplete() || isErrorResp)
+					if (_requests[_pollfds[i].fd].isComplete())
 						_pollfds[i].events = POLLOUT;
 					std::cout << "===============REQUEST BEGIN FOR FD: " << _pollfds[i].fd << "===================\n";
 					std::cout << _requests[_pollfds[i].fd] << std::endl;
@@ -136,43 +125,8 @@ void	socketsIO::eventListener()
 				{
 					std::cout << "POLLOUT on fd" << _pollfds[i].fd << std::endl;
 					std::string content("");
-					if(isErrorResp){
-						if (_responses[_pollfds[i].fd].getHeaderStatus())
-							content = _responses[_pollfds[i].fd].getBodyContent();
-						else
-						{
-							content = _responses[_pollfds[i].fd].getHeaders();
-							std::cout << content << std::endl;
-						}
-						rc = send(_pollfds[i].fd, content.c_str(), content.length(), 0);
-						std::cout << "Content lenght of read data " << content.length() << std::endl;
-						if (rc >= 0)
-						{
-							bool headersStatus = _responses[_pollfds[i].fd].getHeaderStatus();
-							if (rc < static_cast<int>(content.length()) && headersStatus)
-							{
-								_responses[_pollfds[i].fd].offsetCursor(rc - content.length()); // check if headers sending might fail and set things accordingly
-								if (headersStatus)
-									_responses[_pollfds[i].fd].setBytesSent(rc);
-							}
-							else if (rc == static_cast<int>(content.length()) && !headersStatus)
-								_responses[_pollfds[i].fd].headersSent();
-							else if (headersStatus)
-								_responses[_pollfds[i].fd].setBytesSent(rc);
-							if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
-							{
-								_requests.erase(_pollfds[i].fd);
-								_responses.erase(_pollfds[i].fd);
-								std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after error response sent" << std::endl;
-								close(_pollfds[i].fd);
-								_pollfds.erase(_pollfds.begin() + i);
-								_nfds--;
-								isErrorResp = false;
-							}
-							continue;
-						}
-					}
 					bool connClose = _requests[_pollfds[i].fd].getHeaders().find("Connection")->second == "close";
+					bool isErrorResp = _responses[_pollfds[i].fd].isError();
 					if(_requests.find(_pollfds[i].fd)->second.getPort() == 0)
 						_responses[_pollfds[i].fd].setData(_socks[0]->getConfig(), _requests.find(_pollfds[i].fd)->second);
 					else {
@@ -180,8 +134,10 @@ void	socketsIO::eventListener()
 							if (_socks[j]->getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
 								_responses[_pollfds[i].fd].setData(_socks[j]->getConfig(), _requests.find(_pollfds[i].fd)->second);
 					}
-					if(/* !_responses[_pollfds[i].fd].isError() &&  */!_responses[_pollfds[i].fd].getHeaderStatus())
+					if(!_responses[_pollfds[i].fd].isError() && !_responses[_pollfds[i].fd].getHeaderStatus())
 						_responses[_pollfds[i].fd].serveRequest();
+					// std::cout << "Frist part" << std::endl;
+					//send chunked files as one request with continuous body sent over poll loops with one content lenght header instead of encoding literal chunks
 					if(_responses[_pollfds[i].fd].getHeaderStatus())
 						content = _responses[_pollfds[i].fd].getBodyContent();
 					else {
@@ -189,7 +145,7 @@ void	socketsIO::eventListener()
 						std::cout << content << std::endl;
 					}
 					rc = send(_pollfds[i].fd, content.c_str(), content.length(), 0);
-					std::cout << "Content lenght of read data" << content.length() << std::endl;
+					std::cout << "Content lenght" << content.length() << std::endl;
 					if(rc >= 0)
 					{
 						if (rc < static_cast<int>(content.length()) && _responses[_pollfds[i].fd].getHeaderStatus()){
@@ -203,7 +159,6 @@ void	socketsIO::eventListener()
 							_responses[_pollfds[i].fd].setBytesSent(rc);
 						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
 						{
-							std::cout << "client with fd: " << _pollfds[i].fd << " kept alive and reset to POLLIN" << std::endl;
 							_requests.erase(_pollfds[i].fd);
 							_responses.erase(_pollfds[i].fd);
 							_pollfds[i].events = POLLIN;
@@ -211,15 +166,15 @@ void	socketsIO::eventListener()
 						}
 					}
 					else{
-						std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after send error" << std::endl;
 						close(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
 						continue ;
 					}
+					std::cout << "sent: " << rc << " bytes"
+							  << " for a total of " << sentBytes << " bytes" << std::endl;
 					if ((connClosed && connClose) || isErrorResp)
 					{
-						std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after being served and Connection set to Close" << std::endl;
 						close(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;

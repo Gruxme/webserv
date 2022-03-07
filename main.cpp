@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/02 18:35:10 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/07 12:14:45 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ void	sigHandler(int sigNum)
 
 int	main(int argc, char **argv)
 {
+	Request req;
 	ConfigClass	confFile;
 	socketsIO	server;
 	if (argc > 2) {
@@ -44,7 +45,6 @@ int	main(int argc, char **argv)
 		std::cerr << "Config syntax error: " << e.what() << '\n';
 		return (EXIT_FAILURE);
 	}
-
 	signal(SIGPIPE, sigHandler);
 	for (size_t i = 0; i < confFile.getServerCount(); i++) {
 		//setter in socket to bind appropriate server config

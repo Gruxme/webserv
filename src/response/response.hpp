@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/03 10:16:51 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/07 13:05:05 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "../config/ConfigClass.hpp"
 #include "../request/Request.hpp"
+#include "../../CGI/cgi.hpp"
 #include "mimeTypes.hpp"
 #include <sys/stat.h>
 #include <ctime>
@@ -34,7 +35,6 @@ class response {
 		void		_postResrc( std::string absPath );
 		void		_deleteResrc( std::string absPath );
 		void		_autoindexModule( void );
-
 		void		_extractData( void );
 		
 	public:
@@ -49,11 +49,9 @@ class response {
 	public:
 		std::string	getHeaders( void ) const;
 		std::string	getBody( void ) const;
-		/* 
-			1/2 WRITE A COUPLE OF GETTERS FOR THE CONFIG / REQ PVT ATTRIBUTES 
-		*/
+		ServerConfigClass	getConfig( void) const;
+		Request		getRequest( void ) const;
 		std::string	getFileName( void ) const;
-		std::string	getPath( void ) const;
 		int			getPos( void ) const;
 		bool		getHeaderStatus( void ) const;
 		bool		getStatus( void ) const;
@@ -73,8 +71,9 @@ class response {
 		ServerConfigClass	_config;
 		Request				_req;
 		std::string			_fileName;
-		std::string			_path;
 		int					_pos; // should default to -1 if no location for said path
+		
+		cgi					_cgi;
 		
 };
 

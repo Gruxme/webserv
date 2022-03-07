@@ -3,18 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/04 10:10:03 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/07 11:06:24 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Request.hpp"
-
+#include <fcntl.h>
 /* ----- Constructors & Destructor respectively ----- */
 Request::Request() :
-    _dataGatherer(""),
+    _dataGatherer(),
     _method(""),
     _uri(""),
     _query(""),
@@ -72,15 +72,8 @@ void	Request::parse( void ) {
 	if (_headersComplete() == true) {
 		if (_headers.empty() == true) {
 			std::stringstream	iss(_dataGatherer);
-			try
-			{
-				_extractRequestLine(iss);
-				_extractHeaders(iss);
-			}
-			catch(const std::exception& e)
-			{
-				throw parseErr(e.what());
-			}
+			_extractRequestLine(iss);
+			_extractHeaders(iss);
             if (this->_method == "POST") {
                 std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
                 if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
@@ -91,14 +84,7 @@ void	Request::parse( void ) {
 						return ;
                     }
                 }
-				try
-				{
-					_handleBasicRequest(iss);
-				}
-				catch (const std::exception &e)
-				{
-					throw(e);
-				}
+                _handleBasicRequest(iss);
 				_status = true;
 				return ;
             }
@@ -117,10 +103,7 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     std::vector<std::string> myvec = _split(line, ' ');
-	if(myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE")
-		this->_method = myvec[0];
-	else
-		throw parseErr("405 Method Not Allowed");
+    myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE" ? this->_method = myvec[0] : throw parseErr("405 Method Not Allowed"); //generate a Allow header in response
     this->_uri = myvec[1];
     this->_path = this->_uri;
     size_t pos = this->_uri.find("?");
@@ -161,6 +144,13 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
     if (this->_headers.find("host") != this->_headers.end()) { throw parseErr("400 Bad Request"); } // ==?
 }
 
+template <class T>
+inline std::string Request::_toString( const T& t ) {
+    std::stringstream ss;
+    ss << t;
+    return ss.str();
+}
+
 void Request::_handleChunkedRequest( std::stringstream & iss ) {
     /* ------
         "Messages MUST NOT include both a Content-Length header field and a non-identity transfer-coding.
@@ -170,7 +160,7 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     std::ofstream f;
     std::string line;
     uint16_t n = 0;
-    this->_bodyFilename = "./src/request/bodyChunked.txt";
+    this->_bodyFilename = "./src/request/" + _toString(clock());
     f.open(this->_bodyFilename);
     while (std::getline(iss, line)) {
         line.erase(line.find_last_of('\r'));
@@ -205,21 +195,35 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     if (_checkContentLength() == _CONTENT_LENGTH_NOT_FOUND_ ||
             _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
-    std::ofstream f;
-    std::string line;
-    this->_bodyFilename = "./src/request/bodyX.txt";
-    f.open(this->_bodyFilename);
-    f << iss.rdbuf();
+    this->_bodyFilename = "./src/request/" + _toString(clock());
+    int fptr = open(this->_bodyFilename.c_str(), O_WRONLY);
+    struct pollfd fds = {};
+    fds.fd = fptr;
+    fds.events = POLLOUT;
+    // int rc = poll(&fds, 1, 0);
+    // if (rc < 1)
+    //     ;
+    // else if (rc == 1 && fds.events & POLLOUT) {
+        std::cout << _toString(iss.rdbuf()).c_str() << std::endl;
+        
+        int x = write(fptr, "HELLO", 5);
+        std::cout << x << std::endl;
+        // fptr << iss.rdbuf();
+    // }
+        
+    
+    // std::ofstream f;
+    // f.open(this->_bodyFilename);
+    // f << iss.rdbuf();
     /* ------
         IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW
     ------ */
-    if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
-		//test if precedency works only
+/*     if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
         f.close();
-        unlink("/src/request/bodyX.txt");
+        unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
-    }
-    f.close();
+    } */
+    close(fptr);
 }
 
 bool	Request::_headersComplete( void ) {
