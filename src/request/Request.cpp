@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/07 14:45:50 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/07 14:50:07 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,6 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
         If the message does include a non-identity transfer-coding, the Content-Length MUST be ignored."
         (RFC 2616, Section 4.4)
     ------ */
-    std::ofstream f;
     std::string line;
     uint16_t n = 0;
     this->_bodyFilename = "./src/request/" + _toString(clock());
@@ -166,10 +165,10 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     fds.fd = fileno(fptr);
     fds.events = POLLOUT;
     int rc = poll(&fds, 1, 0);
+    std::cout << "XXXXXXXXXXX" << std::endl;
     if (rc < 1)
         ;
     else if (rc == 1 && fds.events & POLLOUT) {
-        std::string vagn = "";
         while (std::getline(iss, line)) {
             line.erase(line.find_last_of('\r'));
             if (_isHexNotation(line))
@@ -186,12 +185,10 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
                         line += buffer + "\n";
                     }
                     line.erase(line.find_last_of('\n'));
-                    write(fds.fd, line, line.length());
-                    // f << line;
+                    write(fds.fd, line.c_str(), line.length());
                 }
                 else
-                    write(fds.fd, line, line.length());
-                    // f << line;
+                    write(fds.fd, line.c_str(), line.length());
             }  
         }
     }
