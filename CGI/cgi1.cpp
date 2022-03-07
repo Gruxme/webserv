@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/07 16:17:09 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/07 21:37:53 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,10 +120,6 @@ void cgi::setEnv(int getOrPost)
 		setenv("REQUEST_METHOD","get", 1);
 		setenv("REDIRECT_STATUS","200",1);
 		setenv("SCRIPT_FILENAME", "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php",1);
-		// std::map<std::string, std::string>::iterator it;
-		// for (it = request.getHeaders().begin(); it != request.getHeaders().end(); it++) {
-		// 	std::cout << it->first << " : " << it->second << std::endl;
-		// }
 		// setenv("SERVER_PROTOCOL", request.getProtocol().c_str(), 1);
 		// setenv("QUERY_STRING",request.getQuery().c_str(), 1);
 		// setenv("PATH_INFO", request.getPath().c_str(), 1);
@@ -188,7 +184,7 @@ void cgi::script_output(int *fd, int *fd1)
 {
     int status;
     ssize_t count;
-    char buffer[4096] = {0};
+    char buffer[100000] = {0};
 
 	// if (documentOrRedirection)
 	// 	handleResponse(200);
@@ -197,13 +193,23 @@ void cgi::script_output(int *fd, int *fd1)
     close(fd[1]);
     close(fd1[0]);
     close(fd1[1]);
-	bzero(buffer, 4096);
-	if ((count = read(fd[0], buffer, 4096)) > 0)
+	bzero(buffer, 100000);
+	std::map<std::string, std::string>::const_iterator it = request.getHeaders().begin();
+		for (; it != request.getHeaders().end(); it++) {
+			std::cout << it->first << " ::::::::: " << it->second << std::endl;
+			// if (it->first == "PATH_INFO"){
+			// 	std::cout << "---------------> Hello -------------->  : " << it->second << std::endl;
+			// 	std::cout << "fsefsefsefsef\n";}
+			
+		}
+	count = read(fd[0], buffer, 100000);
+	while (count > 0)
 	{
 		for (int i = 0; i < count; i++)
 			_body += buffer[i];
+		count = read(fd[0], buffer, 100000);
 	}
-	std::cout << _body << std::endl;
+	// std::cout << _body << std::endl;
     close(fd[0]);
     if (!WEXITSTATUS(status))
         exit(EXIT_SUCCESS);
