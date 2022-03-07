@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/07 09:51:59 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/07 13:25:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,9 @@ void	socketsIO::eventListener()
 			}
 			if (!_tryConnect(_pollfds[i].fd))
 			{
+
+
+				
 				if (_pollfds[i].revents == POLLIN)
 				{
 					std::cout << "POLLIN on: " << _pollfds[i].fd << std::endl;
@@ -121,6 +124,9 @@ void	socketsIO::eventListener()
 					std::cout << "===============REQUEST BEGIN FOR FD: " << _pollfds[i].fd << "===================\n";
 					std::cout << _requests[_pollfds[i].fd] << std::endl;
 				}
+
+
+
 				else if (_pollfds[i].revents == POLLOUT)
 				{
 					std::cout << "POLLOUT on fd" << _pollfds[i].fd << std::endl;
