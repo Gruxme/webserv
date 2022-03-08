@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/08 14:36:11 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/08 18:54:43 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ cgi::cgi()
     this->queryString = "fname=heyyyyyyy";
     // std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.py";
 	// std::string scriptType = "/usr/bin/python";
-    this->arg = "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php";
+    this->arg = "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php";  
     // this->arg = "/Users/sel-fadi/Desktop/OurWebserv/CGI/test1.php";
-	if (_request.getUriExtension() == 2)
+	// if (_request.getUriExtension() == 2)
 		this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
 	// else
 	// 	this->scriptType = "/usr/bin/python";
@@ -111,8 +111,10 @@ std::string cgi::getDate()
 void cgi::setEnv(int getOrPost)
 {
 	getOrPost = 0;
+	std::cout << _request.getMethod().c_str() << std::endl;
 	if (_request.getMethod() == "POST")
 	{
+		std::cout << "--------------- ||| --- POST --- ||| ---------------\n";
 		setenv("CONTENT_LENGTH","15", 1);
 		setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
 		setenv("QUERY_STRING","fname=hey", 1);
@@ -123,12 +125,13 @@ void cgi::setEnv(int getOrPost)
 	}
 	else if (_request.getMethod() == "GET")
 	{
+		std::cout << "--------------- ||| ----- GET ----- ||| ---------------\n";
 		setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
 		setenv("QUERY_STRING","fname=hey", 1);
 		setenv("PATH_INFO", _request.getPath().c_str(), 1);
 		setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
 		setenv("REDIRECT_STATUS","200",1);
-		setenv("SCRIPT_FILENAME", "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php",1);
+		setenv("SCRIPT_FILENAME", "/Users/sel-fadi/Desktop/OurWebserv/CGI/test1.php",1);
 		// setenv("SERVER_PROTOCOL", request.getProtocol().c_str(), 1);
 		// setenv("QUERY_STRING",request.getQuery().c_str(), 1);
 		// setenv("PATH_INFO", request.getPath().c_str(), 1);
@@ -147,7 +150,7 @@ void cgi::exec_script(int *fd, int *fd1)
 	tmp[1] = (char*)arg.c_str();
 	tmp[2] = NULL;
 
-    if (this->getOrPost)
+    if (_request.getMethod() == "POST")
     { 
 		setEnv(getOrPost);
         dup2(fd1[0], 0);
@@ -204,16 +207,16 @@ void cgi::script_output(int *fd, int *fd1)
     close(fd1[1]);
 	bzero(buffer, 100000);
 	
-	// std::cout << "URI : " << _request << std::endl;
+	std::cout << "URI : " << _request.getQuery().c_str() << std::endl;
 	// std::cout << _request.getHeaders().find("CONTENT_TYPE") << std::endl;
-	std::map<std::string, std::string>::const_iterator it = _request.getHeaders().begin();
-		for (; it != _request.getHeaders().end(); it++) {
-			std::cout << it->first << " -:- " << it->second << std::endl;
-			if (it->first == "CONTENT_TYPE")
-				std::cout << "--> " << it->second << std::endl;
-			// 	std::cout << "fsefsefsefsef\n";
-			
-		}
+	// std::map<std::string, std::string>::const_iterator it = _request.getHeaders().begin();
+	// for (; it != _request.getHeaders().end(); it++) {
+	// 	std::cout << it->first << " -:- " << it->second << std::endl;
+	// 	if (it->first == "CONTENT_TYPE")
+	// 		std::cout << "--> " << it->second << std::endl;
+	// 	// 	std::cout << "fsefsefsefsef\n";
+		
+	// }
 	count = read(fd[0], buffer, 100000);
 	while (count > 0)
 	{
@@ -221,7 +224,7 @@ void cgi::script_output(int *fd, int *fd1)
 			_body += buffer[i];
 		count = read(fd[0], buffer, 100000);
 	}
-	// std::cout << _body << std::endl;
+	std::cout << _body << std::endl;
     close(fd[0]);
     if (!WEXITSTATUS(status))
         exit(EXIT_SUCCESS);
