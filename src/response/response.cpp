@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/07 22:14:38 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/08 08:32:15 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ void	response::errorMsg( std::string type){
 	char	*date = new char[30]();
 	strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
 	errRes << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
-	free(date);
+	delete[] date;
 	if(statusCode == "405"){
 		std::string allowedMethods;
 		//check allowed method in location if any first
@@ -120,8 +120,11 @@ void	response::errorMsg( std::string type){
 	errRes << "Content-Type: text/html\r\n";
 	std::cout << errorFile << std::endl;
 	if(stat(errorFile.c_str(), &status) < 0){
-		errorFile = "/Users/abiari/Desktop/webserv/errorPages/" + statusCode + ".html";
+		char *cwd = getcwd(NULL, 0);
+		errorFile = cwd;
+		errorFile += "/errorPages/" + statusCode + ".html";
 		stat(errorFile.c_str(), &status);
+		delete(cwd);
 	}
 	errRes << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
 	errRes << "Connection: closed\r\n\r\n";
