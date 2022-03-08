@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/07 15:47:12 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/08 13:58:13 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,13 @@
 #include <signal.h>
 #include <string>
 #include "../src/request/Request.hpp"
+#include "../src/config/LocationClass.hpp"
 
 class cgi
 {
 	public:
-		Request request;
+		Request _request;
+		LocationClass _location;
 		bool getOrPost;
 		bool documentOrRedirection;
 		std::string queryString;
@@ -47,13 +49,15 @@ class cgi
 		cgi( cgi const &obj );
 		cgi& operator=( cgi const &rhs );
 
-		void processing_cgi();
+		void processing_cgi(Request request);
 		void exec_script(int *fd, int *fd1);
 		void script_output(int *fd, int *fd1);
 		
 		std::string getDate();
 		const char* getErrorMessage(int error);
 		std::string getOsName();
+
+		void setHeaders(Request request);
 		
 		std::vector<std::string> setEnvInVector(Request &request);
 		std::vector<std::string> setEnvInVectorPost(Request &request);
