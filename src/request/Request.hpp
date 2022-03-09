@@ -73,6 +73,7 @@ class Request {
 
         /* -- PUBLIC METHODS */
         void    append( const char * recvBuffer );
+        void    reset( void );
 
     private:
         /* PVT -- THESE SHOULD CHECK FOR STANDARDS LATER -- */

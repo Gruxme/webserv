@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/09 16:37:07 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 17:36:59 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,15 +114,7 @@ void	socketsIO::eventListener()
 					}
 					_requests[_pollfds[i].fd].append(&buffer[0]);
 					std::cout << "fd: " << _pollfds[i].fd << " received: " << rc << " bytes" << std::endl;
-
-					
 					try {
-						// for (size_t j = 0; j < _socks.size(); j++) {
-						// 	if (_pollfds[i].fd == _socks[j]->getMainSock()) {
-						// 		_requests[_pollfds[i].fd].setData(_socks[j]->getConfig());
-						// 		break ;
-						// 	}
-						// }
 						_requests[_pollfds[i].fd].parse();
 					}
 					catch (const std::exception &e) {
@@ -213,7 +205,8 @@ void	socketsIO::eventListener()
 						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
 						{
 							std::cout << "client with fd: " << _pollfds[i].fd << " kept alive and reset to POLLIN" << std::endl;
-							_requests.erase(_pollfds[i].fd);
+							// _requests.erase(_pollfds[i].fd));
+							_requests[_pollfds[i].fd].reset();
 							_responses.erase(_pollfds[i].fd);
 							_pollfds[i].events = POLLIN;
 							connClosed = true;

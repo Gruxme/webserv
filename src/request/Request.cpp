@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/09 16:44:08 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 17:36:42 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,17 +72,20 @@ void		Request::setData( ServerConfigClass config ){
 	this->_config = config;
 }
 
-// void    Request::_extractData( void ) {
-//     std::string tmp = this->_path;
-//     while (1) {
-//         for (size_t i = 0; i < _config.getLocationCount(); i++) {
-//             if (tmp == _config.getLocationClass()[i].getPath()) {
-//                 std::cout << "I FOUND IT BITCH"        << std::endl;
-//             }
-//         }
-//         tmp = tmp.substr(0, tmp.find_last_of("/"));
-//     }
-// }
+void    Request::reset( void ) {
+    this->_dataGatherer = "";
+    this->_method = "";
+    this->_uri = "";
+    this->_query = "";
+    this->_path = "";
+    this->_protocol = "";
+    this->_uriExtension = 0;
+    this->_headers.clear();
+    this->_port = 0;
+    this->_bodyFilename = "";
+    this->_status = false;
+    this->_fileName = "";
+}
 
 void	Request::_extractData( void ) {
 	std::string	tmp = this->_path;
@@ -139,6 +142,7 @@ void	Request::parse( void ) {
 			{
 				throw parseErr(e.what());
 			}
+            /* --  IF YOU HAVE STH ELSE OTHER THAN CHUNKED AND CONTENT-LENGTH THROW NOT IMPLEMENTED */
             if (this->_method == "POST") {
                 std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
                 if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
