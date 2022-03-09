@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/09 17:40:34 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 18:06:45 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,7 +245,7 @@ bool	response::isError( void ) const{
 void response::serveRequest( void ) {
 	if (_req.getMethod() == "GET")
 		_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
-	else if (_req.getMethod() == "POST")
+	else if (_req.getMethod() == "POST") // take upload path and upload filename instead
 		_postResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 	else if(_req.getMethod() == "DELETE")
 		_deleteResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());

@@ -6,14 +6,21 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/05 15:09:41 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 18:06:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "LocationClass.hpp"
 
 /* ----- Constructors & Destructor respectively ----- */
-LocationClass::LocationClass() : _path(""), _root(""), _method(""), _redirect(""), _cgiExt(""), _autoindex(_AUTOINDEX_OFF_) {}
+LocationClass::LocationClass() :
+    _path(""),
+    _root(""),
+    _method(""),
+    _redirect(""),
+    _upload(""),
+    _cgiExt(""),
+    _autoindex(_AUTOINDEX_OFF_) {}
 LocationClass::~LocationClass() {}
 LocationClass::LocationClass( LocationClass const &x ) { *this = x; }
 LocationClass & LocationClass::operator=( LocationClass const &rhs ) {
@@ -22,6 +29,7 @@ LocationClass & LocationClass::operator=( LocationClass const &rhs ) {
         this->_root = rhs._root;
         this->_method = rhs._method;
         this->_redirect = rhs._redirect;
+        this->_upload = rhs._upload;
         this->_cgiExt = rhs._cgiExt;
         this->_autoindex = rhs._autoindex;
     }
@@ -71,6 +79,12 @@ void    LocationClass::parseLocation( std::string buffer ) {
                     break ;
                 }
                 throw parseErr("SyntaxError || Loc 5");
+            case 'u':
+                if (std::strncmp("upload = ", buffer.c_str(), 0) == 0) {
+                    this->_upload = buffer.substr(buffer.find("upload = ") + strlen("upload = "));
+                    break ;
+                }
+                throw parseErr("SyntaxError || Loc 6");
             default:
                 if (buffer.empty()) break ;
                 throw parseErr("SyntaxError || LOCATION SIDE");
@@ -102,5 +116,6 @@ std::string LocationClass::getPath( void ) const { return this->_path; }
 std::string LocationClass::getRoot( void ) const { return this->_root; }
 std::string LocationClass::getMethod( void ) const { return this->_method; }
 std::string LocationClass::getRedirect( void ) const { return this->_redirect; }
+std::string LocationClass::getUpload( void) const { return this->_upload; }
 std::string LocationClass::getCgiExt( void ) const { return this->_cgiExt; }
 bool        LocationClass::getAutoIndex( void ) const { return this->_autoindex; }

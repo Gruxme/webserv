@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/09 17:54:24 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 18:07:19 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,6 +147,14 @@ void	Request::parse( void ) {
 			}
             /* --  IF YOU HAVE STH ELSE OTHER THAN CHUNKED AND CONTENT-LENGTH THROW NOT IMPLEMENTED */
             if (this->_method == "POST") {
+                /* -- MAENDISH SCRIPT URIEXTENSION == 0 */
+                /* YA3NI HADCHI UPLOAD BUT... BEFORE CHECK WITH CONFIG*/
+                if (this->_uriExtension == 0) {
+                    if (!this->_config.getLocationClass()[this->_pos].getUpload().empty()) {
+                        
+                    }
+                }
+                
                 std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
                 if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
                     if (_bodyComplete() == true) {
@@ -156,15 +164,10 @@ void	Request::parse( void ) {
 						return ;
                     }
                 }
-				try
-				{
-                    if (this->_uriExtension != 0) {
-                        /* -- PUT BODY IN A STRING */
-                    }
+				try {
 					_handleBasicRequest(iss);
 				}
-				catch (const std::exception &e)
-				{
+				catch (const std::exception &e) {
 					throw(e);
 				}
 				_status = true;
