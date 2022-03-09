@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/09 18:06:45 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 19:02:21 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,7 @@ void response::_getResrc( std::string absPath ) {
 			char *date = new char[30]();
 			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
 			res << "HTTP/1.1 200 OK\r\nDate: " << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
-			free(date);
+			delete[] date;
 			stat(absPath.c_str(), &status);
 			if (S_ISDIR(status.st_mode)){
 				if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex()) {
@@ -193,6 +193,25 @@ void response::_getResrc( std::string absPath ) {
 
 void		response::_postResrc( std::string absPath ){
 	(void)absPath;
+	if (_req.getUriExtension() == PHP){
+
+	}
+	else if (_req.getUriExtension() == PY){
+		
+	}
+	
+	else {
+		std::ostringstream	res;
+
+		time_t now = time(0);
+		char *date = new char[30]();
+		strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+		res << "HTTP/1.1 201 CREATED\r\nDate: " << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
+		delete[] date;
+		res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
+		_headers = res.str();
+		_bodySize = 0;
+	}
 }
 void		response::_deleteResrc( std::string absPath ){
 	(void)absPath;
@@ -220,6 +239,9 @@ std::string	response::getBodyContent( void ){
 	char				buff[2028*100];
 	std::string			content("");
 	int					rc = 0;
+
+	if(_req.getMethod() != "GET" && !_error)
+		return "";
 	if(_bodyFd == -1)
 	{
 		_bodyFd = open(_body.c_str(), O_RDONLY); // make it non block
@@ -246,7 +268,7 @@ void response::serveRequest( void ) {
 	if (_req.getMethod() == "GET")
 		_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 	else if (_req.getMethod() == "POST") // take upload path and upload filename instead
-		_postResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
+		_postResrc(_req.getBodyFilename());
 	else if(_req.getMethod() == "DELETE")
 		_deleteResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 	else

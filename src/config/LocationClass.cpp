@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/09 18:06:43 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 19:07:27 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,8 @@ void    LocationClass::parseLocation( std::string buffer ) {
             case 'u':
                 if (std::strncmp("upload = ", buffer.c_str(), 0) == 0) {
                     this->_upload = buffer.substr(buffer.find("upload = ") + strlen("upload = "));
+                    if (this->_upload[this->_upload.size() - 1] == '/')
+                        this->_upload.resize(this->_upload.size() - 1);
                     break ;
                 }
                 throw parseErr("SyntaxError || Loc 6");

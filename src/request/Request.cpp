@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/09 18:07:19 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 19:10:14 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,11 +150,10 @@ void	Request::parse( void ) {
                 /* -- MAENDISH SCRIPT URIEXTENSION == 0 */
                 /* YA3NI HADCHI UPLOAD BUT... BEFORE CHECK WITH CONFIG*/
                 if (this->_uriExtension == 0) {
-                    if (!this->_config.getLocationClass()[this->_pos].getUpload().empty()) {
-                        
+                    if (this->_config.getLocationClass()[this->_pos].getUpload().empty()) {
+                        throw parseErr("403 Forbidden");
                     }
                 }
-                
                 std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
                 if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
                     if (_bodyComplete() == true) {
@@ -247,7 +246,7 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     ------ */
     std::string line;
     uint16_t n = 0;
-    this->_bodyFilename = "./src/request/" + _toString(clock());
+    this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName;
     FILE * fptr = fopen(this->_bodyFilename.c_str(), "w");
     struct pollfd fds = {};
     fds.fd = fileno(fptr);
@@ -281,7 +280,7 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
             }  
         }
     }
-    // fclose(fptr);
+    fclose(fptr);
 }
 
 # include <fcntl.h>
@@ -294,8 +293,9 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     if (_checkContentLength() == _CONTENT_LENGTH_NOT_FOUND_ ||
             _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
-    this->_bodyFilename = "./src/request/" + _toString(clock());
+    this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName;
     FILE *fptr = fopen(this->_bodyFilename.c_str(), "w");
+    std::cout << strerror(errno) << std::endl;
     struct pollfd fds = {};
     fds.fd = fileno(fptr);
     fds.events = POLLOUT;
@@ -319,7 +319,7 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
         unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
     } */
-    // fclose(fptr);
+    fclose(fptr);
 }
 
 bool	Request::_headersComplete( void ) {
