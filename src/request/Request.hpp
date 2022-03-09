@@ -20,6 +20,7 @@
 # include <map>
 # include <poll.h>
 # include <algorithm>
+# include <fcntl.h>
 # include "../config/ServerConfigClass.hpp"
 
 # define PY 1
@@ -73,7 +74,7 @@ class Request {
         void    setData( ServerConfigClass config );
 
         /* -- PUBLIC METHODS */
-        void    append( const char * recvBuffer );
+        void    append( const char * recvBuffer, int size );
         void    reset( void );
 
     private:

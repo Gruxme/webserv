@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/09 19:10:14 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 20:55:33 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,9 +124,12 @@ void	Request::_extractData( void ) {
 }
 
 /* -- PUBLIC METHODS */
-void    Request::append( const char * recvBuffer ) {
-    std::string x(recvBuffer);
-    _dataGatherer.append(x);
+void    Request::append( const char * recvBuffer, int size ) {
+    for (int i = 0; i < size; i++) {
+        _dataGatherer += recvBuffer[i];
+    }
+    // std::string x(recvBuffer);
+    // _dataGatherer.append(x);
     return ;
 }
 
@@ -283,7 +286,17 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     fclose(fptr);
 }
 
-# include <fcntl.h>
+inline std::string left( std::stringstream &ss, uint32_t count ) {
+    std::string str;
+    str.reserve(count);
+    uint32_t i;
+    for(i = 0; i < count; i++) {
+        // int c = ss.get();
+        ss.read(&str[i], count);
+    }
+    // str[i] = '\0';
+    return str;
+}
 
 void    Request::_handleBasicRequest( std::stringstream & iss ) {
     /* ------
@@ -294,17 +307,30 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
             _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
     this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName;
-    FILE *fptr = fopen(this->_bodyFilename.c_str(), "w");
-    std::cout << strerror(errno) << std::endl;
+    int fd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     struct pollfd fds = {};
-    fds.fd = fileno(fptr);
+    fds.fd = fd;
     fds.events = POLLOUT;
     int rc = poll(&fds, 1, 0);
     if (rc < 1)
         ;
     else if (rc == 1 && fds.events & POLLOUT) {
+        std::cout << _dataGatherer.size() << std::endl;
         std::string str = _toString(iss.rdbuf());
-        write(fds.fd, str.c_str(), str.length());
+        size_t contentLen = std::stoi(this->_headers.find("Content-Length")->second);
+        size_t l = str.length();
+        std::cout << contentLen << " " << l << std::endl;
+        // exit(0);
+        for (size_t i = 0; i < l; i++) {
+            write(fds.fd, &str[i], i);        
+        }
+        // std::string content = left(iss, contentLen);
+        
+        // std::string content = "";
+        // for (size_t i = 0; i < contentLen; i++) {
+        //     content += str[i];
+        //     // write(fds.fd, str[i], 1);
+        // }
     }
         
     
@@ -319,7 +345,7 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
         unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
     } */
-    fclose(fptr);
+    close(fd);
 }
 
 bool	Request::_headersComplete( void ) {

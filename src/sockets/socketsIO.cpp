@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/09 17:36:59 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 20:59:13 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ void	socketsIO::eventListener()
 	char buffer[4096];
 	int rc;
 	bool connClosed;
-	bool isErrorResp;
+	bool isErrorResp = false;
 	while (1)
 	{
 		// isErrorResp = false;
@@ -112,7 +112,7 @@ void	socketsIO::eventListener()
 						_nfds--;
 						continue ; // still not sure of this
 					}
-					_requests[_pollfds[i].fd].append(&buffer[0]);
+					_requests[_pollfds[i].fd].append(&buffer[0], rc);
 					std::cout << "fd: " << _pollfds[i].fd << " received: " << rc << " bytes" << std::endl;
 					try {
 						_requests[_pollfds[i].fd].parse();
