@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/07 22:14:38 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/09 16:43:22 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,8 @@
 response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
-	_error(false), _autoIndex(false), _config(), _req(), _fileName(""),
-	_pos(-1)
-	{}
+	_error(false), _autoIndex(false), _req() {}
+
 response::~response() {
 	//check if sigpipe would need close of fd here
 }
@@ -37,10 +36,7 @@ response	&response::operator=(const response &x){
 	_headersSent = x._headersSent;
 	_error = x._error;
 	_autoIndex = x._autoIndex;
-	_config = x._config;
 	_req = x._req;
-	_fileName = x._fileName;
-	_pos = x._pos;
 	return *this;
 }
 
@@ -100,10 +96,7 @@ void	response::errorMsg( std::string type){
 	std::string			errorFile;
 	std::string			statusCode = type.substr(0, 3);
 
-	// if(*(_config.getErrorPage().rbegin().base()) == '/')
-	// 	errorFile = _config.getErrorPage() + statusCode + ".html"; // Maybe do this in config parsing
-	// else
-	errorFile = _config.getErrorPage() + statusCode + ".html";
+	errorFile = _req.getConfig().getErrorPage() + statusCode + ".html";
 	errRes << "HTTP/1.1 " << type << "\r\nDate: ";
 	time_t	now = time(0);
 	char	*date = new char[30]();
@@ -113,7 +106,8 @@ void	response::errorMsg( std::string type){
 	if(statusCode == "405"){
 		std::string allowedMethods;
 		//check allowed method in location if any first
-		if(_pos != -1 && (allowedMethods = _config.getLocationClass()[_pos].getMethod()).empty() == false )
+		int pos = _req.getPos();
+		if (pos != -1 && (allowedMethods = _req.getConfig().getLocationClass()[pos].getMethod()).empty() == false )
 			errRes << "Allow: " << allowedMethods << "\r\n";
 		errRes << "Allow: GET, POST, DELETE\r\n";
 	}
@@ -162,11 +156,11 @@ void response::_getResrc( std::string absPath ) {
 			res << "HTTP/1.1 200 OK\r\nDate: " << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
 			free(date);
 			stat(absPath.c_str(), &status);
-			if(S_ISDIR(status.st_mode)){
-				/* if(!_config.getAutoIndex()){
+			if (S_ISDIR(status.st_mode)){
+				if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex()) {
 					errorMsg("403 Forbidden");
 					return ;
-				} */
+				}
 				_autoIndex = true;
 				if(!_autoindexModule(absPath)){
 					errorMsg("500 Internal Server Error");
@@ -241,66 +235,26 @@ std::string	response::getBodyContent( void ){
 	return content;
 }
 
-void	response::_extractData( void ) {
-	std::string	tmp = this->_req.getPath();
-	if (std::count(tmp.begin(), tmp.end(), '/') == 1) {
-		for (size_t i = 0; i < _config.getLocationCount(); i++) {
-			if ("/" == _config.getLocationClass()[i].getPath()) {
-				this->_fileName = tmp;
-				this->_pos = i;
-				return ;
-			}
-		}
-	}
-	while (420) {
-		for (size_t i = 0; i < _config.getLocationCount(); i++) {
-			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath()) &&
-				this->_req.getMethod() == _config.getLocationClass()[i].getMethod()) {
-				try {
-					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
-					this->_pos = i;
-					return ;
-				} catch (...) {
-					return ;
-				}
-			}
-		}
-		try {
-			this->_fileName = tmp.substr(tmp.find_last_of("/"), tmp.length()) + _fileName;	
-			tmp = tmp.substr(0, tmp.find_last_of("/"));
-		} catch ( std::exception &e ) {
-			return ;
-		}
-	}
-}
-
-
 bool	response::isError( void ) const{
 	return _error;
 }
 
 void response::serveRequest( void ) {
-	this->_extractData();
-	std::string absolutePath = _config.getLocationClass()[this->_pos].getRoot() + _fileName;
-	if(_req.getMethod() == "GET")
-		_getResrc(absolutePath);
+	if (_req.getMethod() == "GET")
+		_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 	else if (_req.getMethod() == "POST")
-		_postResrc(absolutePath);
+		_postResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 	else if(_req.getMethod() == "DELETE")
-		_deleteResrc(absolutePath);
+		_deleteResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 	else
 		errorMsg("405 Method Not Allowed");
     return ; 
 }
 
-void		response::setData( ServerConfigClass config, Request req ){
-	_config = config;
+void		response::setData( Request req ){
 	_req = req;
 }
 
 std::string	response::getHeaders( void ) const { return this->_headers; }
 std::string	response::getBody( void ) const { return this->_body; }
-ServerConfigClass	response::getConfig( void ) const { return this->_config; }
 Request	response::getRequest( void ) const { return this->_req; }
-std::string	response::getFileName( void ) const { return this->_fileName; }
-int			response::getPos( void ) const { return this->_pos; }

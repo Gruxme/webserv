@@ -43,6 +43,10 @@ class Request {
 		size_t		_port;
         std::string _bodyFilename;
 		bool		_status;
+        ServerConfigClass   _config;
+
+        std::string _fileName;
+        short       _pos;
         
     public:
         Request();
@@ -61,6 +65,11 @@ class Request {
 		size_t 		getPort( void ) const;
         std::string getBodyFilename( void ) const;
 		bool		isComplete( void ) const;
+        std::string getFileName( void ) const;
+        short       getPos( void) const;
+
+        ServerConfigClass getConfig( void ) const;
+        void    setData( ServerConfigClass config );
 
         /* -- PUBLIC METHODS */
         void    append( const char * recvBuffer );
@@ -92,6 +101,7 @@ class Request {
         int     _hexadecimalToDecimal( std::string hexVal );
         bool    _checkContentLength( void );
         short   _compareContentLengthWithBody( std::ofstream &f );
+        void    _extractData( void );
 
 
         /* ----- Exceptions ----- */

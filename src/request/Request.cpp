@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/07 22:16:58 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/09 16:44:08 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,10 @@ Request::Request() :
     _uriExtension(0),
 	_port(0), // to be filled with default port of default server
     _bodyFilename(""),
-	_status(false) {}
+	_status(false),
+    _config(),
+    _fileName(""),
+    _pos(-1) {}
 
 Request::~Request() {}
 
@@ -42,6 +45,9 @@ Request& Request::operator=( Request const &rhs ) {
         this->_port = rhs._port;
         this->_bodyFilename = rhs._bodyFilename;
         this->_status = rhs._status;
+        this->_config = rhs._config;
+        this->_fileName = rhs._fileName;
+        this->_pos = rhs._pos;
     }
     return *this;
 }
@@ -59,6 +65,57 @@ std::string Request::getBodyFilename( void ) const { return this->_bodyFilename;
 bool		Request::isComplete( void ) const { return _status; }
 std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->_headers; }
 size_t 		Request::getPort( void ) const { return this->_port; }
+ServerConfigClass   Request::getConfig( void ) const { return this->_config; }
+std::string Request::getFileName( void) const { return this->_fileName; }
+short       Request::getPos( void ) const { return this->_pos; }
+void		Request::setData( ServerConfigClass config ){
+	this->_config = config;
+}
+
+// void    Request::_extractData( void ) {
+//     std::string tmp = this->_path;
+//     while (1) {
+//         for (size_t i = 0; i < _config.getLocationCount(); i++) {
+//             if (tmp == _config.getLocationClass()[i].getPath()) {
+//                 std::cout << "I FOUND IT BITCH"        << std::endl;
+//             }
+//         }
+//         tmp = tmp.substr(0, tmp.find_last_of("/"));
+//     }
+// }
+
+void	Request::_extractData( void ) {
+	std::string	tmp = this->_path;
+	if (std::count(tmp.begin(), tmp.end(), '/') == 1) {
+		for (size_t i = 0; i < _config.getLocationCount(); i++) {
+			if ("/" == _config.getLocationClass()[i].getPath()) {
+				this->_fileName = tmp;
+				this->_pos = i;
+				return ;
+			}
+		}
+	}
+	while (420) {
+		for (size_t i = 0; i < _config.getLocationCount(); i++) {
+			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath()) &&
+				this->_method == _config.getLocationClass()[i].getMethod()) {
+				try {
+					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
+					this->_pos = i;
+					return ;
+				} catch (...) {
+					return ;
+				}
+			}
+		}
+		try {
+			this->_fileName = tmp.substr(tmp.find_last_of("/"), tmp.length()) + _fileName;	
+			tmp = tmp.substr(0, tmp.find_last_of("/"));
+		} catch ( std::exception &e ) {
+			return ;
+		}
+	}
+}
 
 /* -- PUBLIC METHODS */
 void    Request::append( const char * recvBuffer ) {
@@ -67,8 +124,8 @@ void    Request::append( const char * recvBuffer ) {
     return ;
 }
 
-
 void	Request::parse( void ) {
+    
 	if (_headersComplete() == true) {
 		if (_headers.empty() == true) {
 			std::stringstream	iss(_dataGatherer);
@@ -76,6 +133,7 @@ void	Request::parse( void ) {
 			{
 				_extractRequestLine(iss);
 				_extractHeaders(iss);
+                _extractData();
 			}
 			catch(const std::exception& e)
 			{
@@ -242,7 +300,7 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     /* ------
         IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW
     ------ */
-    /* if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
+ /*    if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
         f.close();
         unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");

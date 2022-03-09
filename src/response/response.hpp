@@ -40,7 +40,7 @@ class response {
 	public:
 		void		errorMsg( std::string type );
 		void		serveRequest( void );
-		void		setData(ServerConfigClass config, Request req);
+		void		setData( Request req );
 		void		setBytesSent(size_t bytesSent);
 		void		offsetCursor(off_t offset);
 		std::string	getBodyContent( void );
@@ -49,7 +49,6 @@ class response {
 	public:
 		std::string	getHeaders( void ) const;
 		std::string	getBody( void ) const;
-		ServerConfigClass	getConfig( void ) const;
 		Request	getRequest( void ) const;
 		std::string	getFileName( void ) const;
 		std::string	getPath( void ) const;
@@ -73,10 +72,7 @@ class response {
 		bool				_headersSent;
 		bool				_error;
 		bool				_autoIndex;
-		ServerConfigClass	_config;
 		Request				_req;
-		std::string			_fileName;
-		int					_pos; // should default to -1 if no location for said path	
 };
 
 #endif // WEBSERV_RESPONSE_HPP
