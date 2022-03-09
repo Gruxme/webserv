@@ -47,6 +47,7 @@ class Request {
 
         std::string _fileName;
         short       _pos;
+        int         _bodyFd;
         
     public:
         Request();
@@ -67,7 +68,7 @@ class Request {
 		bool		isComplete( void ) const;
         std::string getFileName( void ) const;
         short       getPos( void) const;
-
+        int         getBodyFd( void ) const;
         ServerConfigClass getConfig( void ) const;
         void    setData( ServerConfigClass config );
 

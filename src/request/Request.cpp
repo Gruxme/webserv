@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/09 17:36:42 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/09 17:54:24 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@ Request::Request() :
 	_status(false),
     _config(),
     _fileName(""),
-    _pos(-1) {}
+    _pos(-1),
+    _bodyFd(-1) {}
 
 Request::~Request() {}
 
@@ -48,6 +49,7 @@ Request& Request::operator=( Request const &rhs ) {
         this->_config = rhs._config;
         this->_fileName = rhs._fileName;
         this->_pos = rhs._pos;
+        this->_bodyFd = rhs._bodyFd;
     }
     return *this;
 }
@@ -68,6 +70,7 @@ size_t 		Request::getPort( void ) const { return this->_port; }
 ServerConfigClass   Request::getConfig( void ) const { return this->_config; }
 std::string Request::getFileName( void) const { return this->_fileName; }
 short       Request::getPos( void ) const { return this->_pos; }
+int         Request::getBodyFd( void) const { return this->_bodyFd; }
 void		Request::setData( ServerConfigClass config ){
 	this->_config = config;
 }
@@ -155,6 +158,9 @@ void	Request::parse( void ) {
                 }
 				try
 				{
+                    if (this->_uriExtension != 0) {
+                        /* -- PUT BODY IN A STRING */
+                    }
 					_handleBasicRequest(iss);
 				}
 				catch (const std::exception &e)
@@ -242,6 +248,7 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     FILE * fptr = fopen(this->_bodyFilename.c_str(), "w");
     struct pollfd fds = {};
     fds.fd = fileno(fptr);
+    this->_bodyFd = fds.fd;
     fds.events = POLLOUT;
     int rc = poll(&fds, 1, 0);
     std::cout << "XXXXXXXXXXX" << std::endl;
@@ -271,7 +278,7 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
             }  
         }
     }
-    fclose(fptr);
+    // fclose(fptr);
 }
 
 # include <fcntl.h>
@@ -309,7 +316,7 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
         unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
     } */
-    fclose(fptr);
+    // fclose(fptr);
 }
 
 bool	Request::_headersComplete( void ) {
@@ -319,7 +326,6 @@ bool	Request::_headersComplete( void ) {
 bool    Request::_bodyComplete( void ) {
     return _dataGatherer.find("0\r\n\r\n") != std::string::npos;
 }
-
 
 /* ----- Utils ------ */
 /* -- PVT METHODS */
