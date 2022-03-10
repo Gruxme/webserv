@@ -20,6 +20,7 @@
 # include <map>
 # include <poll.h>
 # include <algorithm>
+# include <fcntl.h>
 # include "../config/ServerConfigClass.hpp"
 
 # define PY 1
@@ -43,6 +44,12 @@ class Request {
 		size_t		_port;
         std::string _bodyFilename;
 		bool		_status;
+        ServerConfigClass   _config;
+        std::string _fileName;
+        short       _pos;
+        int         _bodyFd;
+        ssize_t     _totalBytesRead;
+        bool        _headersPassed;
         
     public:
         Request();
@@ -61,9 +68,16 @@ class Request {
 		size_t 		getPort( void ) const;
         std::string getBodyFilename( void ) const;
 		bool		isComplete( void ) const;
+        std::string getFileName( void ) const;
+        short       getPos( void) const;
+        int         getBodyFd( void ) const;
+        int         getTotalBytesRead( void ) const;
+        ServerConfigClass getConfig( void ) const;
+        void    setConfig( ServerConfigClass config );
 
         /* -- PUBLIC METHODS */
-        void    append( const char * recvBuffer );
+        void    append( const char * recvBuffer, int size );
+        void    reset( void );
 
     private:
         /* PVT -- THESE SHOULD CHECK FOR STANDARDS LATER -- */
@@ -87,11 +101,12 @@ class Request {
         std::string _ltrim( const std::string &s, const std::string &delim );
         bool    _checkHeadersKeySyntax( std::string key );
         bool    _hasEnding( std::string const &fullString, std::string const &ending );
-        int     _findFileSize( std::ofstream &file );
+        int     _findFileSize( int fd );
         bool    _isHexNotation( std::string const& s );
         int     _hexadecimalToDecimal( std::string hexVal );
         bool    _checkContentLength( void );
-        short   _compareContentLengthWithBody( std::ofstream &f );
+        short   _compareContentLengthWithBody( int fd );
+        void    _extractData( void );
 
 
         /* ----- Exceptions ----- */

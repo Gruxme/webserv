@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/07 17:27:01 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/10 17:21:02 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ bool	socketsIO::_tryConnect( int fd ){
 		try
 		{
 			fds.fd = _socks[j]->acceptClient();
+			_requests[fds.fd].setConfig(_socks[j]->getConfig());
 		}
 		catch (const std::exception &e)
 		{
@@ -72,13 +73,19 @@ void	socketsIO::eventListener()
 	char buffer[4096];
 	int rc;
 	bool connClosed;
-	bool isErrorResp;
+	bool isErrorResp = false;
+	
 	while (1)
 	{
-		// isErrorResp = false;
+		isErrorResp = false;
 		connClosed = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
+		std::cout << "Hamzaaaaaaaaaaa" << std::endl;
+
+		for (size_t i = 0 ; i < _pollfds.size() ; i++) {
+			std::cout << _pollfds[i].fd << std::endl;
+		}
 		if (rc < 0)
 			throw socketIOErr("poll: ");
 		for (int i = 0; i < _nfds; i++)
@@ -94,6 +101,8 @@ void	socketsIO::eventListener()
 				_nfds--;
 				continue;
 			}
+
+			
 			if (!_tryConnect(_pollfds[i].fd))
 			{
 				if (_pollfds[i].revents == POLLIN)
@@ -109,29 +118,36 @@ void	socketsIO::eventListener()
 						_nfds--;
 						continue ; // still not sure of this
 					}
-					_requests[_pollfds[i].fd].append(&buffer[0]);
+					_requests[_pollfds[i].fd].append(&buffer[0], rc);
 					std::cout << "fd: " << _pollfds[i].fd << " received: " << rc << " bytes" << std::endl;
 					try {
 						_requests[_pollfds[i].fd].parse();
-					}
-					catch (const std::exception &e){
-						if (_requests.find(_pollfds[i].fd)->second.getPort() == 0)
-							_responses[_pollfds[i].fd].setData(_socks[0]->getConfig(), _requests.find(_pollfds[i].fd)->second);
-						else
-						{
-							for (size_t j = 0; j < _socks.size(); j++)
-								if (_socks[j]->getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
-									_responses[_pollfds[i].fd].setData(_socks[j]->getConfig(), _requests.find(_pollfds[i].fd)->second);
+						if (g_sigpipe) {
+							_requests.erase(_pollfds[i].fd);
+							_responses.erase(_pollfds[i].fd);
+							std::cout << "client with fd: " << _pollfds[i].fd << " closed and AFTER ERROOR IN UPLOAD" << std::endl;
+							close(_pollfds[i].fd);
+							_pollfds.erase(_pollfds.begin() + i);
+							_nfds--;
+							isErrorResp = false;
+							g_sigpipe = false;
+							continue ;
 						}
+					}
+					catch (const std::exception &e) {
+						_responses[_pollfds[i].fd].setData( _requests.find(_pollfds[i].fd)->second);
 						_responses[_pollfds[i].fd].errorMsg(e.what());
 						isErrorResp = _responses[_pollfds[i].fd].isError();
 					}
+					
 					// check if req complete and set event to pollout
 					if (_requests[_pollfds[i].fd].isComplete() || isErrorResp)
 						_pollfds[i].events = POLLOUT;
 					std::cout << "===============REQUEST BEGIN FOR FD: " << _pollfds[i].fd << "===================\n";
 					std::cout << _requests[_pollfds[i].fd] << std::endl;
 				}
+
+				
 				else if (_pollfds[i].revents == POLLOUT)
 				{
 					// response	currRes = _responses[_pollfds[i].fd];
@@ -170,18 +186,16 @@ void	socketsIO::eventListener()
 								_pollfds.erase(_pollfds.begin() + i);
 								_nfds--;
 								isErrorResp = false;
+								g_sigpipe = false;
 							}
 							continue;
 						}
 					}
+
+
+					
 					bool connClose = currReq.getHeaders().find("Connection")->second == "close";
-					if(currReq.getPort() == 0)
-						_responses[_pollfds[i].fd].setData(_socks[0]->getConfig(), currReq);
-					else {
-						for (size_t j = 0; j < _socks.size(); j++)
-							if (_socks[j]->getConfig().getPort() == currReq.getPort())
-								_responses[_pollfds[i].fd].setData(_socks[j]->getConfig(), currReq);
-					}
+					_responses[_pollfds[i].fd].setData(currReq);
 					if(/* !_responses[_pollfds[i].fd].isError() &&  */!_responses[_pollfds[i].fd].getHeaderStatus())
 						_responses[_pollfds[i].fd].serveRequest();
 					if(_responses[_pollfds[i].fd].getHeaderStatus())
@@ -209,7 +223,8 @@ void	socketsIO::eventListener()
 						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
 						{
 							std::cout << "client with fd: " << _pollfds[i].fd << " kept alive and reset to POLLIN" << std::endl;
-							_requests.erase(_pollfds[i].fd);
+							// _requests.erase(_pollfds[i].fd));
+							_requests[_pollfds[i].fd].reset();
 							_responses.erase(_pollfds[i].fd);
 							_pollfds[i].events = POLLIN;
 							connClosed = true;
@@ -218,6 +233,8 @@ void	socketsIO::eventListener()
 					else{
 						std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after send error" << std::endl;
 						close(_pollfds[i].fd);
+						_requests.erase(_pollfds[i].fd);
+						_responses.erase(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
 						continue ;
@@ -226,6 +243,8 @@ void	socketsIO::eventListener()
 					{
 						std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after being served and Connection set to Close" << std::endl;
 						close(_pollfds[i].fd);
+						_requests.erase(_pollfds[i].fd);
+						_responses.erase(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
 					}

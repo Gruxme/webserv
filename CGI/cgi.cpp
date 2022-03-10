@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cgi1.cpp                                           :+:      :+:    :+:   */
+/*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/08 18:54:43 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/10 17:48:30 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,12 @@ cgi::cgi()
 {
     // this->getOrPost = 1;
 	// this->documentOrRedirection = 1;
-    this->queryString = "fname=heyyyyyyy";
+    // this->queryString = "fname=heyyyyyyy";
     // std::string arg = "/Users/sel-fadi/Desktop/webserv/cgi/test.py";
 	// std::string scriptType = "/usr/bin/python";
-    this->arg = "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php";  
-    // this->arg = "/Users/sel-fadi/Desktop/OurWebserv/CGI/test1.php";
+    // this->arg = "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php";
 	// if (_request.getUriExtension() == 2)
-		this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
+	this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
 	// else
 	// 	this->scriptType = "/usr/bin/python";
 }
@@ -50,9 +49,11 @@ cgi& cgi::operator=( cgi const &rhs )
     return *this;
 }
 
-void cgi::setHeaders(Request request)
+void cgi::setRequest(Request request, std::string absPath)
 {
 	this->_request = request;
+	this->arg = absPath;
+	std::cout << "--------------- [ " << arg << " ] ------------------\n";
 }
 
 const char* cgi::getErrorMessage(int codeError)
@@ -108,61 +109,47 @@ std::string cgi::getDate()
 	return std::string(buf);
 }
 
-void cgi::setEnv(int getOrPost)
+void cgi::setEnv()
 {
-	getOrPost = 0;
 	std::cout << _request.getMethod().c_str() << std::endl;
 	if (_request.getMethod() == "POST")
 	{
 		std::cout << "--------------- ||| --- POST --- ||| ---------------\n";
-		setenv("CONTENT_LENGTH","15", 1);
+		setenv("CONTENT_LENGTH","178", 1);
 		setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
-		setenv("QUERY_STRING","fname=hey", 1);
+		setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
 		setenv("REQUEST_METHOD",_request.getMethod().c_str(), 1);
 		setenv("REDIRECT_STATUS","200",1);
 		setenv("CONTENT_TYPE", "application/x-www-form-urlencoded",1);
-		setenv("SCRIPT_FILENAME", "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php",1);
+		setenv("SCRIPT_FILENAME", arg.c_str(), 1);
 	}
 	else if (_request.getMethod() == "GET")
 	{
 		std::cout << "--------------- ||| ----- GET ----- ||| ---------------\n";
 		setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
-		setenv("QUERY_STRING","fname=hey", 1);
+		setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
 		setenv("PATH_INFO", _request.getPath().c_str(), 1);
 		setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
 		setenv("REDIRECT_STATUS","200",1);
-		setenv("SCRIPT_FILENAME", "/Users/sel-fadi/Desktop/OurWebserv/CGI/test1.php",1);
-		// setenv("SERVER_PROTOCOL", request.getProtocol().c_str(), 1);
-		// setenv("QUERY_STRING",request.getQuery().c_str(), 1);
-		// setenv("PATH_INFO", request.getPath().c_str(), 1);
-		// setenv("REQUEST_METHOD", request.getMethod().c_str(), 1);
-		// setenv("REDIRECT_STATUS","200",1);
-		// setenv("SCRIPT_FILENAME", "/Users/sel-fadi/Desktop/OurWebserv/CGI/test.php",1);
+		setenv("SCRIPT_FILENAME", arg.c_str(), 1);
 	}
 }
 
-void cgi::exec_script(int *fd, int *fd1)
+void cgi::exec_script(int fd)
 {
     int ret;
     char *tmp[3];
+	int fd1;
 
 	tmp[0] = (char*)scriptType.c_str();
 	tmp[1] = (char*)arg.c_str();
 	tmp[2] = NULL;
 
-    if (_request.getMethod() == "POST")
-    { 
-		setEnv(getOrPost);
-        dup2(fd1[0], 0);
-        write(fd1[1], queryString.c_str(), queryString.length());
-    }
-    else
-		setEnv(getOrPost);
-	dup2(fd[1], STDOUT_FILENO); 
-    close(fd[0]);
-    close(fd1[0]);
-    close(fd[1]);
-    close(fd1[1]);
+	setEnv();
+	std::cout << "[ " << _request.getBodyFd() << " ]\n";
+	fd1 = open(_request.getBodyFilename().c_str() , O_WRONLY | O_CREAT, 0777);
+	dup2(fd1, 0);
+	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
     if (ret == -1)
         exit(EXIT_FAILURE);
@@ -192,63 +179,61 @@ void cgi::handleRedirectResponse()
 	this->_buffer.insert(0, "HTTP/1.1 \r\n");
 }
 
-void cgi::script_output(int *fd, int *fd1)
-{
-    int status;
-    ssize_t count;
-    char buffer[100000] = {0};
-
-	// if (documentOrRedirection)
-	// 	handleResponse(200);
-	// else
-	// 	handleRedirectResponse();
-    close(fd[1]);
-    close(fd1[0]);
-    close(fd1[1]);
-	bzero(buffer, 100000);
+// void cgi::script_output(int fd)
+// {
+//     int status;
+//     // ssize_t count;
+//     // char buffer[100000] = {0};
+// 	// lseek(fd, 0, SEEK_SET);
 	
-	std::cout << "URI : " << _request.getQuery().c_str() << std::endl;
-	// std::cout << _request.getHeaders().find("CONTENT_TYPE") << std::endl;
-	// std::map<std::string, std::string>::const_iterator it = _request.getHeaders().begin();
-	// for (; it != _request.getHeaders().end(); it++) {
-	// 	std::cout << it->first << " -:- " << it->second << std::endl;
-	// 	if (it->first == "CONTENT_TYPE")
-	// 		std::cout << "--> " << it->second << std::endl;
-	// 	// 	std::cout << "fsefsefsefsef\n";
+// 	// if (documentOrRedirection)
+// 	// 	handleResponse(200);
+// 	// else
+// 	// 	handleRedirectResponse();
+//     // close(fd[1]);
+//     // close(fd1[0]);
+//     // close(fd1[1]);
+// 	// bzero(buffer, 100000);
+	
+// 	// std::cout << "[ -------- ] : " << _request.getQuery().c_str() << std::endl;
+// 	// std::cout << _request.getHeaders().find("CONTENT_TYPE") << std::endl;
+// 	// std::map<std::string, std::string>::const_iterator it = _request.getHeaders().begin();
+// 	// for (; it != _request.getHeaders().end(); it++) {
+// 	// 	std::cout << it->first << " -:- " << it->second << std::endl;
+// 	// 	if (it->first == "CONTENT_TYPE")
+// 	// 		std::cout << "--> " << it->second << std::endl;
+// 	// 	// 	std::cout << "fsefsefsefsef\n";
 		
-	// }
-	count = read(fd[0], buffer, 100000);
-	while (count > 0)
-	{
-		for (int i = 0; i < count; i++)
-			_body += buffer[i];
-		count = read(fd[0], buffer, 100000);
-	}
-	std::cout << _body << std::endl;
-    close(fd[0]);
-    if (!WEXITSTATUS(status))
-        exit(EXIT_SUCCESS);
-    else
-        exit(EXIT_FAILURE);
-}
+// 	// }
+// 	// count = read(fd[0], buffer, 100000);
+// 	// while (count > 0)
+// 	// {
+// 	// 	for (int i = 0; i < count; i++)
+// 	// 		_body += buffer[i];
+// 	// 	count = read(fd[0], buffer, 100000);
+// 	// }
+// 	// std::cout << _body << std::endl;
+//     // close(fd[0]);
+//     if (!WEXITSTATUS(status))
+//         exit(EXIT_SUCCESS);
+//     else
+//         exit(EXIT_FAILURE);
+// }
 
-void cgi::processing_cgi(Request request)
+void cgi::processing_cgi(Request request, std::string absPath)
 {
-	int fd[2];
-	int fd1[2];
+	int fd;
     pid_t pid;
+	std::string filename = "response.txt";
 
-	setHeaders(request);
-	if (pipe(fd) == -1)
-		exit(EXIT_FAILURE);
-	if (pipe(fd1) == -1)
-		exit(EXIT_FAILURE);
+	fd = open(filename.c_str() , O_WRONLY | O_CREAT, 0777);
+	setRequest(request, absPath);
+	std::cout << "[ -------- ] : " << _request.getQuery().c_str() << std::endl;
 	pid = fork();
 	if (pid == -1)
 		exit(EXIT_FAILURE);
 	else if (pid == 0)
-		exec_script(fd, fd1);
-    else
-        script_output(fd, fd1);
+		exec_script(fd);
+	close(fd);
 	wait(NULL);
 }
