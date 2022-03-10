@@ -6,7 +6,7 @@ SRC := main.cpp \
 ./src/config/ConfigClass.cpp ./src/config/ServerConfigClass.cpp ./src/config/LocationClass.cpp \
 ./src/request/Request.cpp \
 ./src/response/response.cpp ./src/response/mimeTypes.cpp \
-./src/sockets/sockets.cpp ./src/sockets/socketsIO.cpp
+./src/sockets/sockets.cpp ./src/sockets/socketsIO.cpp ./CGI/cgi.cpp
 
 all: $(NAME)
 

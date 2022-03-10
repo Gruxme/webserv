@@ -15,6 +15,7 @@
 
 #include "../config/ConfigClass.hpp"
 #include "../request/Request.hpp"
+#include "../../CGI/cgi.hpp"
 #include "mimeTypes.hpp"
 #include <sys/stat.h>
 #include <ctime>
@@ -73,6 +74,7 @@ class response {
 		bool				_error;
 		bool				_autoIndex;
 		Request				_req;
+		cgi					_cgi;
 };
 
 #endif // WEBSERV_RESPONSE_HPP
