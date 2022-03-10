@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 11:26:34 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/07 10:52:53 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/10 11:14:23 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,18 +128,6 @@ int main( void ) {
             req.parse();
             std::cout << req << std::endl;
 
-            // std::cout << req << std::endl;
-// 
-            // res.setData(config.getServerConfigClass()[0], req);
-            // res.serveRequest();
-
-            // std::cout << res.getFileName() << std::endl;
-            // std::cout << res.getPath() << std::endl;
-            // std::cout << res.getPos() << std::endl;
-
-            /* ------------------------------ */
-            // std::cout << "------------------ Message sent -------------------" << std::endl;
-            // write(newSocket, str.c_str(), str.length());
             close(newSocket);
         }
     } catch (std::exception &e) {

@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/09 20:59:13 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/10 11:13:58 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ bool	socketsIO::_tryConnect( int fd ){
 		try
 		{
 			fds.fd = _socks[j]->acceptClient();
-			_requests[fds.fd].setData(_socks[j]->getConfig());
+			_requests[fds.fd].setConfig(_socks[j]->getConfig());
 		}
 		catch (const std::exception &e)
 		{

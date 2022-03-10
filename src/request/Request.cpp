@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/09 20:55:33 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/10 12:36:57 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,13 @@ Request::Request() :
     _config(),
     _fileName(""),
     _pos(-1),
-    _bodyFd(-1) {}
+    _bodyFd(-1),
+    _totalBytesRead(0),
+    _headersPassed(false) {}
 
-Request::~Request() {}
+Request::~Request() {
+    close(this->_bodyFd);
+}
 
 Request::Request( Request const &x ) { *this = x; }
 
@@ -50,6 +54,7 @@ Request& Request::operator=( Request const &rhs ) {
         this->_fileName = rhs._fileName;
         this->_pos = rhs._pos;
         this->_bodyFd = rhs._bodyFd;
+        this->_totalBytesRead = rhs._totalBytesRead;
     }
     return *this;
 }
@@ -71,9 +76,8 @@ ServerConfigClass   Request::getConfig( void ) const { return this->_config; }
 std::string Request::getFileName( void) const { return this->_fileName; }
 short       Request::getPos( void ) const { return this->_pos; }
 int         Request::getBodyFd( void) const { return this->_bodyFd; }
-void		Request::setData( ServerConfigClass config ){
-	this->_config = config;
-}
+int         Request::getTotalBytesRead( void ) const { return this->_totalBytesRead; }
+void		Request::setConfig( ServerConfigClass config ){ this->_config = config; }
 
 void    Request::reset( void ) {
     this->_dataGatherer = "";
@@ -88,6 +92,8 @@ void    Request::reset( void ) {
     this->_bodyFilename = "";
     this->_status = false;
     this->_fileName = "";
+    close(this->_bodyFd);
+    this->_bodyFd = -1;
 }
 
 void	Request::_extractData( void ) {
@@ -125,61 +131,59 @@ void	Request::_extractData( void ) {
 
 /* -- PUBLIC METHODS */
 void    Request::append( const char * recvBuffer, int size ) {
+    _dataGatherer = "";
     for (int i = 0; i < size; i++) {
         _dataGatherer += recvBuffer[i];
     }
-    // std::string x(recvBuffer);
-    // _dataGatherer.append(x);
     return ;
 }
 
 void	Request::parse( void ) {
     
-	if (_headersComplete() == true) {
+	if (_headersComplete() == true || _headersPassed == true) {
+        std::stringstream	iss(_dataGatherer);
 		if (_headers.empty() == true) {
-			std::stringstream	iss(_dataGatherer);
-			try
-			{
-				_extractRequestLine(iss);
-				_extractHeaders(iss);
+            
+            try {
+                _extractRequestLine(iss);
+                _extractHeaders(iss);
+                _headersPassed = true;
                 _extractData();
-			}
-			catch(const std::exception& e)
-			{
-				throw parseErr(e.what());
-			}
-            /* --  IF YOU HAVE STH ELSE OTHER THAN CHUNKED AND CONTENT-LENGTH THROW NOT IMPLEMENTED */
-            if (this->_method == "POST") {
-                /* -- MAENDISH SCRIPT URIEXTENSION == 0 */
-                /* YA3NI HADCHI UPLOAD BUT... BEFORE CHECK WITH CONFIG*/
-                if (this->_uriExtension == 0) {
-                    if (this->_config.getLocationClass()[this->_pos].getUpload().empty()) {
-                        throw parseErr("403 Forbidden");
-                    }
-                }
-                std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
-                if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
-                    if (_bodyComplete() == true) {
-                        /* -- CHECK THAT WE DONT HAVE A DUPLICATE FILE */
-                        _handleChunkedRequest(iss);
-						_status = true;
-						return ;
-                    }
-                }
-				try {
-					_handleBasicRequest(iss);
-				}
-				catch (const std::exception &e) {
-					throw(e);
-				}
-				_status = true;
-				return ;
             }
-            else {
-				_status = true;
-				return ;
-			}
-		}
+            catch(const std::exception& e) {
+                throw parseErr(e.what());
+            }
+        }
+        if (this->_method == "POST") {
+            if (this->_uriExtension == 0) {
+                if (this->_config.getLocationClass()[this->_pos].getUpload().empty()) {
+                    throw parseErr("403 Forbidden");
+                }
+            }
+            std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
+            if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
+                if (_bodyComplete() == true) {
+                    _handleChunkedRequest(iss);
+                    _status = true;
+                    return ;
+                }
+            }
+            try {
+                _handleBasicRequest(iss);
+            }
+            catch ( const std::exception &e ) {
+                throw (e);
+            }
+            std::cout << _totalBytesRead << " " << std::stoi(_headers.find("Content-Length")->second) << std::endl;
+            if (_totalBytesRead == std::stoi(_headers.find("Content-Length")->second)) {
+                _status = true;
+            }
+            return ;
+        }
+        else {
+            _status = true;
+            return ;
+        }
 	}
     _status  = false;
 }
@@ -250,13 +254,13 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     std::string line;
     uint16_t n = 0;
     this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName;
-    FILE * fptr = fopen(this->_bodyFilename.c_str(), "w");
+    // FILE * fptr = fopen(this->_bodyFilename.c_str(), "w");
+    int fd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     struct pollfd fds = {};
-    fds.fd = fileno(fptr);
+    fds.fd = fd;
     this->_bodyFd = fds.fd;
     fds.events = POLLOUT;
     int rc = poll(&fds, 1, 0);
-    std::cout << "XXXXXXXXXXX" << std::endl;
     if (rc < 1)
         ;
     else if (rc == 1 && fds.events & POLLOUT) {
@@ -283,19 +287,7 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
             }  
         }
     }
-    fclose(fptr);
-}
-
-inline std::string left( std::stringstream &ss, uint32_t count ) {
-    std::string str;
-    str.reserve(count);
-    uint32_t i;
-    for(i = 0; i < count; i++) {
-        // int c = ss.get();
-        ss.read(&str[i], count);
-    }
-    // str[i] = '\0';
-    return str;
+    // close(fd);
 }
 
 void    Request::_handleBasicRequest( std::stringstream & iss ) {
@@ -307,45 +299,30 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
             _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
     this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName;
-    int fd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    if(_bodyFd == -1)
+        _bodyFd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     struct pollfd fds = {};
-    fds.fd = fd;
+    fds.fd = _bodyFd;
     fds.events = POLLOUT;
     int rc = poll(&fds, 1, 0);
     if (rc < 1)
         ;
     else if (rc == 1 && fds.events & POLLOUT) {
-        std::cout << _dataGatherer.size() << std::endl;
         std::string str = _toString(iss.rdbuf());
-        size_t contentLen = std::stoi(this->_headers.find("Content-Length")->second);
+        /* size_t contentLen = std::stoi(this->_headers.find("Content-Length")->second);
         size_t l = str.length();
-        std::cout << contentLen << " " << l << std::endl;
-        // exit(0);
         for (size_t i = 0; i < l; i++) {
-            write(fds.fd, &str[i], i);        
-        }
-        // std::string content = left(iss, contentLen);
-        
-        // std::string content = "";
-        // for (size_t i = 0; i < contentLen; i++) {
-        //     content += str[i];
-        //     // write(fds.fd, str[i], 1);
-        // }
+            write(fds.fd, &str[i], 1);        
+        } */
+        // std::cout << str.length() << std::endl;
+        this->_totalBytesRead += write(fds.fd, str.c_str(), str.length());
     }
-        
-    
-    // std::ofstream f;
-    // f.open(this->_bodyFilename);
-    // f << iss.rdbuf();
-    /* ------
-        IF BODY SIZE AND CONTENT-LENGTH DON'T MATCH A BAD REQUEST SHOULD BE THROW
-    ------ */
- /*    if (_compareContentLengthWithBody(f) != _BODY_COMPLETE_) {
-        f.close();
+    /* if (_compareContentLengthWithBody(fd) != _BODY_COMPLETE_) {
+        close(fd);
         unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
     } */
-    close(fd);
+    // close(fd);
 }
 
 bool	Request::_headersComplete( void ) {
@@ -406,10 +383,10 @@ bool    Request::_hasEnding( std::string const &fullString, std::string const &e
     return false;
 }
 
-int     Request::_findFileSize( std::ofstream &file ) {
-    file.seekp(0, std::ios::end);
-    int size = file.tellp();
-    return size;
+int     Request::_findFileSize( int fd ) {
+    off_t fsize;
+    fsize = lseek(fd, 0, SEEK_END);
+    return fsize;
 }
 
 bool    Request::_isHexNotation( std::string const& s ) {
@@ -446,8 +423,8 @@ bool    Request::_checkContentLength( void ) {
     return _CONTENT_LENGTH_NOT_FOUND_;
 }
 
-short   Request::_compareContentLengthWithBody( std::ofstream &f ) {
-    if (std::stoi(this->_headers.find("Content-Length")->second) == _findFileSize(f)) { return _BODY_COMPLETE_; }
+short   Request::_compareContentLengthWithBody( int fd ) {
+    if (std::stoi(this->_headers.find("Content-Length")->second) == _findFileSize(fd)) { return _BODY_COMPLETE_; }
     return _BODY_INCOMPLETE_;
 }
 
@@ -462,9 +439,9 @@ std::ostream & operator<<( std::ostream & o, Request const & req ) {
 		o << it->first << ": " << it->second << std::endl;
 	}
 	std::cout << std::endl;
-	std::ifstream	body(req.getBodyFilename());
-	std::string line;
-	while (getline(body, line))
-		std::cout << line << std::endl;
+	// std::ifstream	body(req.getBodyFilename());
+	// std::string line;
+	// while (getline(body, line))
+	// 	std::cout << line << std::endl;
 	return o;
 }
