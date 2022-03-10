@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 17:21:02 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/10 19:22:10 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,6 @@ void	socketsIO::eventListener()
 		connClosed = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
-		std::cout << "Hamzaaaaaaaaaaa" << std::endl;
-
 		for (size_t i = 0 ; i < _pollfds.size() ; i++) {
 			std::cout << _pollfds[i].fd << std::endl;
 		}

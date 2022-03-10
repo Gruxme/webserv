@@ -1,5 +1,5 @@
 <?php
 
-    phpinfo(10);
-    // while(1);
+header("Location:  http://www.google.com/", TRUE, 301);
+
 ?>

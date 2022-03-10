@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   sockets.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/02 17:57:47 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/10 18:23:46 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,12 @@ sockets::sockets(ServerConfigClass conf, int maxLoad): _clients(), _config(conf)
 		throw socketErr("setsockopt: ");
 	if (fcntl(_mainSd, F_SETFL, O_NONBLOCK) < 0)
 		throw socketErr("fcntl: ");
-	_bindSock();
+	try {
+		_bindSock();	
+	} catch ( std::exception &e ) {
+		std::cout << e.what();
+		exit(-1);
+	}
 	_listener(maxLoad);
 	_nsds = 1;
 }
@@ -52,8 +57,8 @@ void	sockets::_bindSock(){
 	_address.sin_addr.s_addr = INADDR_ANY;
 	_address.sin_port = htons(_config.getPort());
 	_address.sin_family = AF_INET;
-	if(bind(_mainSd, (SA *)&_address, sizeof(_address)) < 0)
-		throw socketErr("bind: ");
+	if (bind(_mainSd, (SA *)&_address, sizeof(_address)) < 0)
+		throw socketErr("bind");
 }
 
 void	sockets::_listener(int maxLoad){

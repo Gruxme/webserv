@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 16:24:24 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/10 18:48:56 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,14 +193,12 @@ void response::_getResrc( std::string absPath ) {
 
 
 void		response::_postResrc( std::string absPath ){
-	(void)absPath;
 	if (_req.getUriExtension() == PHP){
-
+		_cgi.processing_cgi(_req, absPath);
 	}
-	else if (_req.getUriExtension() == PY){
-		
+	else if(_req.getUriExtension() == PY){
+		_cgi.processing_cgi(_req, absPath);
 	}
-	
 	else {
 		std::ostringstream	res;
 

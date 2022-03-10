@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/10 17:48:30 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/10 19:10:14 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,7 @@ void cgi::exec_script(int fd)
 
 	setEnv();
 	std::cout << "[ " << _request.getBodyFd() << " ]\n";
-	fd1 = open(_request.getBodyFilename().c_str() , O_WRONLY | O_CREAT, 0777);
+	fd1 = open(_request.getBodyFilename().c_str() , O_WRONLY | O_CREAT | O_TRUNC, 0777);
 	dup2(fd1, 0);
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
@@ -226,7 +226,7 @@ void cgi::processing_cgi(Request request, std::string absPath)
     pid_t pid;
 	std::string filename = "response.txt";
 
-	fd = open(filename.c_str() , O_WRONLY | O_CREAT, 0777);
+	fd = open(filename.c_str() , O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	setRequest(request, absPath);
 	std::cout << "[ -------- ] : " << _request.getQuery().c_str() << std::endl;
 	pid = fork();
