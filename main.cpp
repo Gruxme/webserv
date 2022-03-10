@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 17:04:42 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/10 18:27:33 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int	main(int argc, char **argv)
 	signal(SIGPIPE, sigHandler);
 	for (size_t i = 0; i < confFile.getServerCount(); i++) {
 		//setter in socket to bind appropriate server config
-		server.setSock(new sockets(confFile.getServerConfigClass()[i], 1024));
+		server.setSock(new sockets(confFile.getServerConfigClass()[i], SOMAXCONN));
 	}
 	server.eventListener();
 	return (EXIT_SUCCESS);
