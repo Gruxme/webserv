@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/10 18:48:02 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/10 22:38:26 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,7 +194,7 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     std::vector<std::string> myvec = _split(line, ' ');
-	if(myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE")
+	if (myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE")
 		this->_method = myvec[0];
 	else
 		throw parseErr("405 Method Not Allowed");
@@ -281,6 +281,7 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
                         line += buffer + "\n";
                     }
                     line.erase(line.find_last_of('\n'));
+                    
                     write(fds.fd, line.c_str(), line.length());
                 }
                 else
