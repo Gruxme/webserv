@@ -1,0 +1,5 @@
+Status: 301 Moved Permanently
+X-Powered-By: PHP/8.1.2
+Location:  http://www.google.com/
+Content-type: text/html; charset=UTF-8
+
