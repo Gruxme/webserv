@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <dirent.h>
+#include <stdio.h>
 
 class response {
 	public:
