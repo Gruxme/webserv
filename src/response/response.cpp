@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 14:05:43 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/10 18:48:56 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
-	_error(false), _autoIndex(false), _req() {}
+	_error(false), _autoIndex(false), _req(){}
 
 response::~response() {
 	//check if sigpipe would need close of fd here
@@ -133,10 +133,10 @@ std::string		response::indexListContent( void ) const{
 
 void response::_getResrc( std::string absPath ) {
 	if (_req.getUriExtension() == PHP){
-
+		_cgi.processing_cgi(_req, absPath);
 	}
 	else if(_req.getUriExtension() == PY){
-		
+		_cgi.processing_cgi(_req, absPath);
 	}
 	else{
 		int	fd = -1;
@@ -193,14 +193,12 @@ void response::_getResrc( std::string absPath ) {
 
 
 void		response::_postResrc( std::string absPath ){
-	(void)absPath;
 	if (_req.getUriExtension() == PHP){
-
+		_cgi.processing_cgi(_req, absPath);
 	}
-	else if (_req.getUriExtension() == PY){
-		
+	else if(_req.getUriExtension() == PY){
+		_cgi.processing_cgi(_req, absPath);
 	}
-	
 	else {
 		std::ostringstream	res;
 
