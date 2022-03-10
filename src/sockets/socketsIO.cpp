@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 19:22:10 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/10 23:56:39 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,16 +189,16 @@ void	socketsIO::eventListener()
 							continue;
 						}
 					}
-
-
 					
 					bool connClose = currReq.getHeaders().find("Connection")->second == "close";
 					_responses[_pollfds[i].fd].setData(currReq);
-					if(/* !_responses[_pollfds[i].fd].isError() &&  */!_responses[_pollfds[i].fd].getHeaderStatus())
+					if(!_responses[_pollfds[i].fd].getHeaderStatus())
 						_responses[_pollfds[i].fd].serveRequest();
-					if(_responses[_pollfds[i].fd].getHeaderStatus())
+					if(_responses[_pollfds[i].fd].getHeaderStatus() || _requests[_pollfds[i].fd].getUriExtension() != 0)
 						if(_responses[_pollfds[i].fd].isAutoIndex())
 							content = _responses[_pollfds[i].fd].indexListContent();
+						else if (_requests[_pollfds[i].fd].getUriExtension() != 0)
+							content = _responses[_pollfds[i].fd].getCgi().getContent();
 						else
 							content = _responses[_pollfds[i].fd].getBodyContent();
 					else {

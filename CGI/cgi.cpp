@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/10 20:59:29 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/11 00:11:49 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,15 @@
 
 extern char **environ;
 
-cgi::cgi() {
+cgi::cgi() : _status(""), _location(""), _contentLength(0), _output("") {
+/* 	std::cout << "POS = " << _request.getPos() << std::endl;
+	exit(0);
 	std::string	s = _request.getConfig().getLocationClass()[_request.getPos()].getCgiExt();
 	std::vector<std::string> myvec = _request.getConfig().getLocationClass()[_request.getPos()].split(s, ' ');
-	this->scriptType = myvec[1];
+	this->scriptType = myvec[1]; */
+
+	/* -- FOOKING INITIALIZE YOUR PRIVATE ATTRIBUTES */
+	this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
 }
 
 cgi::~cgi() {
@@ -35,6 +40,10 @@ cgi& cgi::operator=( cgi const &rhs ) {
         this->arg = rhs.arg;
         this->scriptType = rhs.scriptType;
         this->_buffer = rhs._buffer;
+		this->_status = rhs._status;
+		this->_location = rhs._location;
+		this->_contentLength = rhs._contentLength;
+		this->_output = rhs._output;
     }
     return *this;
 }
@@ -110,7 +119,7 @@ void cgi::exec_script(int fd)
 
 	setEnv();
 	std::cout << "[ " << _request.getBodyFd() << " ]\n";
-	fd1 = open(_request.getBodyFilename().c_str() , O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	fd1 = open(_request.getBodyFilename().c_str() , O_RDWR| O_CREAT | O_TRUNC, 0777);
 	dup2(fd1, 0);
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
@@ -131,7 +140,7 @@ void cgi::handleResponse(int code)
 	this->_buffer.insert(0, "Accept-Ranges: none\r\n");
 	this->_buffer.insert(0, "Server: webserv/1.1 " + getOsName() + "\r\n");
 	this->_buffer.insert(0, "Date: " + getDate() + "\r\n");
-	this->_buffer.insert(0, "HTTP/1.1 " + std::to_string(code) + " " + getErrorMessage(200) + "\r\n");
+	this->_buffer.insert(0, "HTTP/1.1 " + std::to_string(code) + " " + "OK" + "\r\n");
 	std::cout << _buffer;
 }
 
@@ -149,7 +158,7 @@ void cgi::processing_cgi(Request request, std::string absPath)
     pid_t pid;
 	std::string filename = "response.txt";
 
-	fd = open(filename.c_str() , O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	fd = open(filename.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 	setRequest(request, absPath);
 	std::cout << "[ -------- ] : " << _request.getQuery().c_str() << std::endl;
 	pid = fork();
@@ -157,7 +166,62 @@ void cgi::processing_cgi(Request request, std::string absPath)
 		exit(EXIT_FAILURE);
 	else if (pid == 0)
 		exec_script(fd);
-	_parseOutput(fd);
-	close(fd);
 	wait(NULL);
+	close(fd);
+	int fd2 = open(filename.c_str(), O_RDONLY);
+	parseOutput(fd2);
+	close(fd2);
+}
+
+
+
+
+/* ABOUNAK SHIT */
+
+std::string	cgi::_generateTmp( int fd ) {
+	std::string tmp = "";
+	struct pollfd  fds = {};
+	char buffer[4096];
+	bzero(&buffer, 4096);
+	int count = 0;
+	fds.fd = fd;
+	fds.events = POLLIN;
+	int rc = poll(&fds, 1, 0);
+	if (rc == 1 && fds.events & POLLIN ) {
+		while ((count = read(fds.fd, buffer, 4096)) > 0) {
+			for (int i = 0; i < count; i++) {
+				tmp += buffer[i];
+				if (tmp.find("\r\n\r\n") != std::string::npos) {
+					_contentLength++;
+				}	
+			}
+		}
+	}
+	return tmp;
+}
+
+void	cgi::parseOutput( int fd ) {
+	std::string tmp = this->_generateTmp(fd);
+	std::cout << std::endl;
+	std::cout << "#### DEBUGGGGOU {TMP} ####" << std::endl;
+	std::stringstream ss(tmp);
+	std::string buffer;
+	std::getline(ss, buffer);
+	if (std::strncmp("Status: ", buffer.c_str(), 8) == 0) {
+		this->_status = buffer.substr(buffer.find("Status: ") + strlen("Status: "));
+		tmp.erase(tmp.begin(), tmp.begin() + buffer.length());
+	}
+	_output += "HTTP/1.1 " + _status + "\r\nDate: ";
+	time_t now = time(0);
+	char *date = new char[30]();
+	strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+	_output += date;
+	_output += "\r\nServer: Webserv/4.2.0 \r\n";
+	delete[] date;
+	std::cout << _contentLength << std::endl;
+	_output += "Content-Length: " + std::to_string(_contentLength) + "\r\nConnection: " + _request.getHeaders().find("Connection")->second + tmp;
+}
+
+std::string	cgi::getContent( void ) const {
+	return this->_output;
 }

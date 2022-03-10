@@ -61,6 +61,7 @@ class response {
 		bool		isAutoIndex( void ) const;
 		size_t		getBodySize( void ) const;
 		bool		bodyEof( void ) const;
+		cgi			getCgi( void ) const;
 		
 	
 	private:

@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 18:48:56 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 00:04:07 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
-	_error(false), _autoIndex(false), _req(){}
+	_error(false), _autoIndex(false), _req(), _cgi() {}
 
 response::~response() {
 	//check if sigpipe would need close of fd here
@@ -37,6 +37,7 @@ response	&response::operator=(const response &x){
 	_error = x._error;
 	_autoIndex = x._autoIndex;
 	_req = x._req;
+	_cgi = x._cgi;
 	return *this;
 }
 
@@ -132,11 +133,9 @@ std::string		response::indexListContent( void ) const{
 }
 
 void response::_getResrc( std::string absPath ) {
-	if (_req.getUriExtension() == PHP){
+	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
 		_cgi.processing_cgi(_req, absPath);
-	}
-	else if(_req.getUriExtension() == PY){
-		_cgi.processing_cgi(_req, absPath);
+		_headersSent = true;
 	}
 	else{
 		int	fd = -1;
@@ -193,11 +192,9 @@ void response::_getResrc( std::string absPath ) {
 
 
 void		response::_postResrc( std::string absPath ){
-	if (_req.getUriExtension() == PHP){
+	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
 		_cgi.processing_cgi(_req, absPath);
-	}
-	else if(_req.getUriExtension() == PY){
-		_cgi.processing_cgi(_req, absPath);
+		_headersSent = true;
 	}
 	else {
 		std::ostringstream	res;
@@ -282,3 +279,4 @@ void		response::setData( Request req ){
 std::string	response::getHeaders( void ) const { return this->_headers; }
 std::string	response::getBody( void ) const { return this->_body; }
 Request	response::getRequest( void ) const { return this->_req; }
+cgi			response::getCgi( void ) const { return _cgi;}
