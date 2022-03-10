@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 11:13:58 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/10 14:05:22 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,12 +74,16 @@ void	socketsIO::eventListener()
 	int rc;
 	bool connClosed;
 	bool isErrorResp = false;
+	
 	while (1)
 	{
 		// isErrorResp = false;
 		connClosed = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
+		for (size_t i = 0 ; i < _pollfds.size() ; i++) {
+			std::cout << _pollfds[i].fd << std::endl;
+		}
 		if (rc < 0)
 			throw socketIOErr("poll: ");
 		for (int i = 0; i < _nfds; i++)
@@ -116,6 +120,17 @@ void	socketsIO::eventListener()
 					std::cout << "fd: " << _pollfds[i].fd << " received: " << rc << " bytes" << std::endl;
 					try {
 						_requests[_pollfds[i].fd].parse();
+						if (g_sigpipe) {
+							_requests.erase(_pollfds[i].fd);
+							_responses.erase(_pollfds[i].fd);
+							std::cout << "client with fd: " << _pollfds[i].fd << " closed and AFTER ERROOR IN UPLOAD" << std::endl;
+							close(_pollfds[i].fd);
+							_pollfds.erase(_pollfds.begin() + i);
+							_nfds--;
+							isErrorResp = false;
+							g_sigpipe = false;
+							continue ;
+						}
 					}
 					catch (const std::exception &e) {
 						_responses[_pollfds[i].fd].setData( _requests.find(_pollfds[i].fd)->second);
@@ -169,6 +184,7 @@ void	socketsIO::eventListener()
 								_pollfds.erase(_pollfds.begin() + i);
 								_nfds--;
 								isErrorResp = false;
+								g_sigpipe = false;
 							}
 							continue;
 						}
@@ -215,6 +231,8 @@ void	socketsIO::eventListener()
 					else{
 						std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after send error" << std::endl;
 						close(_pollfds[i].fd);
+						_requests.erase(_pollfds[i].fd);
+						_responses.erase(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
 						continue ;
@@ -223,6 +241,8 @@ void	socketsIO::eventListener()
 					{
 						std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after being served and Connection set to Close" << std::endl;
 						close(_pollfds[i].fd);
+						_requests.erase(_pollfds[i].fd);
+						_responses.erase(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
 					}

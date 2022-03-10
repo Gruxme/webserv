@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 11:14:35 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/10 14:05:43 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ bool	response::isAutoIndex( void ) const{
 	return _autoIndex;
 }
 
-void	response::errorMsg( std::string type){
+void	response::errorMsg( std::string type ){
 	std::ostringstream	errRes;
 	struct stat			status;
 	std::string			errorFile;
@@ -149,6 +149,7 @@ void response::_getResrc( std::string absPath ) {
 				errorMsg("500 Internal Server Error");
 		}
 		else{
+			close(fd);
 			std::ostringstream	res;
 			struct stat			status;
 			const char *mimeType;

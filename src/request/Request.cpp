@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/10 12:36:57 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/10 13:59:34 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,10 +255,11 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     uint16_t n = 0;
     this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName;
     // FILE * fptr = fopen(this->_bodyFilename.c_str(), "w");
-    int fd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    if (_bodyFd == -1)
+        _bodyFd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     struct pollfd fds = {};
-    fds.fd = fd;
-    this->_bodyFd = fds.fd;
+    fds.fd = _bodyFd;
+    // this->_bodyFd = fds.fd;
     fds.events = POLLOUT;
     int rc = poll(&fds, 1, 0);
     if (rc < 1)
@@ -309,12 +310,6 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
         ;
     else if (rc == 1 && fds.events & POLLOUT) {
         std::string str = _toString(iss.rdbuf());
-        /* size_t contentLen = std::stoi(this->_headers.find("Content-Length")->second);
-        size_t l = str.length();
-        for (size_t i = 0; i < l; i++) {
-            write(fds.fd, &str[i], 1);        
-        } */
-        // std::cout << str.length() << std::endl;
         this->_totalBytesRead += write(fds.fd, str.c_str(), str.length());
     }
     /* if (_compareContentLengthWithBody(fd) != _BODY_COMPLETE_) {
@@ -322,7 +317,7 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
         unlink(this->_bodyFilename.c_str());
         throw parseErr("400 Bad Request");
     } */
-    // close(fd);
+    // close(_bodyFd);
 }
 
 bool	Request::_headersComplete( void ) {
