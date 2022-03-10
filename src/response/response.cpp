@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 18:48:56 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/10 22:04:35 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,7 +213,33 @@ void		response::_postResrc( std::string absPath ){
 	}
 }
 void		response::_deleteResrc( std::string absPath ){
-	(void)absPath;
+	if (_req.getUriExtension() == PHP){
+		_cgi.processing_cgi(_req, absPath);
+	}
+	else if(_req.getUriExtension() == PY){
+		_cgi.processing_cgi(_req, absPath);
+	}
+	else {
+		if(remove(absPath.c_str()) < 0){
+			if(errno == ENOENT)
+				errorMsg("404 Not Found");
+			else
+				errorMsg("403 Forbidden");
+		}
+		else{
+			std::ostringstream res;
+
+			time_t now = time(0);
+			char *date = new char[30]();
+			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+			res << "HTTP/1.1 204 No Content\r\nDate: " << date << "\r\n"
+				<< "Server: Webserv/4.2.0 \r\n";
+			delete[] date;
+			res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
+			_headers = res.str();
+			_bodySize = 0;
+		}
+	}
 }
 
 void		response::setBytesSent(size_t bytesSent){
