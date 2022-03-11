@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/11 03:04:56 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 08:37:40 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,8 @@ void    Request::reset( void ) {
     this->_bodyFd = -1;
 }
 
+// bool _TEST_FOR_METHODS_ = false;
+
 void	Request::_extractData( void ) {
 	std::string	tmp = this->_path;
 	if (std::count(tmp.begin(), tmp.end(), '/') == 1) {
@@ -103,6 +105,7 @@ void	Request::_extractData( void ) {
 			if ("/" == _config.getLocationClass()[i].getPath()) {
 				this->_fileName = tmp;
 				this->_pos = i;
+                // _TEST_FOR_METHODS_ = true;
 				return ;
 			}
 		}
@@ -114,6 +117,7 @@ void	Request::_extractData( void ) {
 				try {
 					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
 					this->_pos = i;
+                    // _TEST_FOR_METHODS_ = true;
 					return ;
 				} catch (...) {
 					return ;
@@ -149,6 +153,12 @@ void	Request::parse( void ) {
                 _extractHeaders(iss);
                 _headersPassed = true;
                 _extractData();
+                std::cout << this->_method << " " << this->_pos << " " << this->getConfig().getLocationClass()[this->_pos].getMethod() << std::endl;
+                // exit(0);
+                /* - THIS SHOULD WORK -- */
+                /* if (this->_pos != -1 && this->_method != this->getConfig().getLocationClass()[this->_pos].getMethod())  {
+                    throw parseErr("403 Forbidden");
+                } */
             }
             catch(const std::exception& e) {
                 throw parseErr(e.what());
