@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/11 14:00:02 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/11 16:41:07 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,7 @@ void	response::errorMsg( std::string type ){
 	if(stat(errorFile.c_str(), &status) < 0){
 		char *cwd = getcwd(NULL, 0);
 		errorFile = cwd;
-		errorFile += "/errorPages/" + statusCode + ".html";
+		errorFile += "/defaultPages/" + statusCode + ".html";
 		stat(errorFile.c_str(), &status);
 		delete(cwd);
 	}
@@ -161,6 +161,10 @@ void response::_getResrc( std::string absPath ) {
 			delete[] date;
 			stat(absPath.c_str(), &status);
 			if (S_ISDIR(status.st_mode)){
+				if(_req.getConfig().getLocationClass()[_req.getPos()].getPath() == "/"){
+					errorMsg("200 OK");
+					return ;
+				}
 				if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex()) {
 					errorMsg("403 Forbidden");
 					return ;
