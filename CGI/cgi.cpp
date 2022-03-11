@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 15:00:06 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/11 15:27:56 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,11 @@ void cgi::setRequest(Request request) {
 	this->_request = request;
 	std::string path = _request.getConfig().getLocationClass()[request.getPos()].getCgiExt();
 	this->arg = _request.getConfig().getLocationClass()[_request.getPos()].getRoot() + _request.getFileName();
-	this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].split(path, ' ')[1];
-	// if (_request.getUriExtension() == PHP)
-	// 	this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].split(path, ' ')[1];
-	// else if (_request.getUriExtension() == PY)
-	// 	this->scriptType = "/usr/bin/python";
+	// this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].split(path, ' ')[1];
+	if (_request.getUriExtension() == PHP)
+		this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
+	else if (_request.getUriExtension() == PY)
+		this->scriptType = "/usr/bin/python";
 }
 
 std::string cgi::getOsName()
@@ -142,18 +142,19 @@ void cgi::exec_scriptGET(int fd)
 
 	setEnv();
 	std::cout << "[ " << _request.getBodyFd() << " ]\n";
-	_tmpOutputFileName = "response" + std::to_string(clock());
 	fd1 = open(_tmpOutputFileName.c_str() , O_RDWR| O_CREAT | O_TRUNC, 0777);
 	dup2(fd1, 0);
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
-    if (ret == -1) {
-		throw "500 Internal Server Error";
-	}
+	std::cerr << "execve failed with ret: " << ret << "and error of " << strerror(errno) << std::endl;
+    // if (ret == -1) {
+	// 	throw "500 Internal Server Error";
+	// }
 }
 
 void cgi::processing_cgi(Request request)
 {	
+	_tmpOutputFileName = "response" + std::to_string(clock());
 	if (request.getMethod() == "POST") {	
 		int fd;
 		pid_t pid;
