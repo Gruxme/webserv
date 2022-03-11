@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/11 11:34:59 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 13:14:20 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,8 @@ void	response::errorMsg( std::string type ){
 		int pos = _req.getPos();
 		if (pos != -1 && (allowedMethods = _req.getConfig().getLocationClass()[pos].getMethod()).empty() == false )
 			errRes << "Allow: " << allowedMethods << "\r\n";
-		errRes << "Allow: GET, POST, DELETE\r\n";
+		else
+			errRes << "Allow: GET, POST, DELETE\r\n";
 	}
 	errRes << "Content-Type: text/html\r\n";
 	std::cout << errorFile << std::endl;
@@ -285,14 +286,14 @@ bool	response::isError( void ) const{
 }
 
 void response::serveRequest( void ) {
-	// if (_req.getMethod() == _req.getConfig().getLocationClass()[_req.getPos()].getMethod()) {
+	if (_req.getMethod() == _req.getConfig().getLocationClass()[_req.getPos()].getMethod()) {
 		if (_req.getMethod() == "GET")
 			_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 		else if (_req.getMethod() == "POST") // take upload path and upload filename instead
 			_postResrc();
 		else if(_req.getMethod() == "DELETE")
 			_deleteResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
-	// }
+	}
 	else
 		errorMsg("405 Method Not Allowed");
     return ; 
