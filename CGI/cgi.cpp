@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 11:54:21 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 13:08:26 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ void cgi::setEnv()
 		// 	setenv("QUERY_STRING", _tmp.c_str(), 1);
 		// }
 		setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
-		setenv("REDIRECT_STATUS","200", 1);
+		setenv("REDIRECT_STATUS","true", 1);
 		setenv("CONTENT_TYPE", _request.getHeaders().find("Content-Type")->second.c_str(), 1);
 		setenv("SCRIPT_FILENAME", arg.c_str(), 1);
 
@@ -150,13 +150,7 @@ void cgi::exec_scriptGET(int fd)
 }
 
 void cgi::processing_cgi(Request request)
-{
-	int fd;
-	pid_t pid;
-	std::string filename = "response.txt";
-	fd = open(filename.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
-	setRequest(request);
-	
+{	
 	if (request.getMethod() == "POST") {	
 		int fd;
 		pid_t pid;
@@ -173,11 +167,7 @@ void cgi::processing_cgi(Request request)
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
 			exec_script(filename);
-		int	status = 0;
-		int ret = 0;
-		while (waitpid(-1, &status, 0) > 0)
-			if (WIFEXITED(status))
-				ret = WEXITSTATUS(status);
+		wait(NULL);
 		int fd2 = open(filename.c_str(), O_RDONLY);
 		parseOutput(fd2);
 		close(fd2);
@@ -227,7 +217,7 @@ std::string	cgi::_generateTmp( int fd ) {
 			}
 		}
 	}
-	_contentLength =  tmp.substr(tmp.find("/r/n/r/n") + 4, tmp.length()).length();
+	_contentLength =  tmp.substr(tmp.find("\r\n\r\n") + 4, tmp.length()).length();
 	return tmp;
 }
 
