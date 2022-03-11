@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 00:11:49 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 02:42:04 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 extern char **environ;
 
-cgi::cgi() : _status(""), _location(""), _contentLength(0), _output("") {
+cgi::cgi() : _status("200 OK"), _location(""), _contentLength(0), _output(""), _tmp("") {
 /* 	std::cout << "POS = " << _request.getPos() << std::endl;
 	exit(0);
 	std::string	s = _request.getConfig().getLocationClass()[_request.getPos()].getCgiExt();
@@ -44,6 +44,7 @@ cgi& cgi::operator=( cgi const &rhs ) {
 		this->_location = rhs._location;
 		this->_contentLength = rhs._contentLength;
 		this->_output = rhs._output;
+		this->_tmp = rhs._tmp;
     }
     return *this;
 }
@@ -87,12 +88,20 @@ void cgi::setEnv()
 	if (_request.getMethod() == "POST")
 	{
 		std::cout << "--------------- ||| --- POST --- ||| ---------------\n";
-		setenv("CONTENT_LENGTH","178", 1);
+		setenv("CONTENT_LENGTH", _request.getHeaders().find("Content-Length")->second.c_str(), 1);
 		setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
-		setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
+
+		std::cout << _request.getBodyFd() << std::endl;
+		// exit(0);
+		if (!_request.getQuery().empty()) {
+			setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
+		}
+		else {
+			setenv("QUERY_STRING", _tmp.c_str(), 1);
+		}
 		setenv("REQUEST_METHOD",_request.getMethod().c_str(), 1);
 		setenv("REDIRECT_STATUS","200",1);
-		setenv("CONTENT_TYPE", "application/x-www-form-urlencoded",1);
+		setenv("CONTENT_TYPE", _request.getHeaders().find("Content-type")->second.c_str(),1);
 		setenv("SCRIPT_FILENAME", arg.c_str(), 1);
 	}
 	else if (_request.getMethod() == "GET")
@@ -107,22 +116,25 @@ void cgi::setEnv()
 	}
 }
 
-void cgi::exec_script(int fd)
+void cgi::exec_script( std::string filename )
 {
     int ret;
     char *tmp[3];
 	int fd1;
 
+	int fd = open(filename.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 	tmp[0] = (char*)scriptType.c_str();
 	tmp[1] = (char*)arg.c_str();
 	tmp[2] = NULL;
-
-	setEnv();
+	setEnv();	
 	std::cout << "[ " << _request.getBodyFd() << " ]\n";
-	fd1 = open(_request.getBodyFilename().c_str() , O_RDWR| O_CREAT | O_TRUNC, 0777);
+	fd1 = open(_request.getBodyFilename().c_str() , O_RDWR , 0777);
 	dup2(fd1, 0);
 	dup2(fd, 1);
-    ret = execve(tmp[0], tmp, environ);
+	
+    ret = execve(tmp[0], tmp, NULL);
+	
+	/* DONT FORGET ABOUT THIS */
     if (ret == -1) {
 		throw "500 Internal Server Error";
 	}
@@ -156,21 +168,38 @@ void cgi::processing_cgi(Request request, std::string absPath)
 {
 	int fd;
     pid_t pid;
-	std::string filename = "response.txt";
-
+	std::string filename = "response.txt";	
 	fd = open(filename.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
+
+//S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+	// int pip[2];
+
+	// pipe(pip);
+
 	setRequest(request, absPath);
+
+	
+	int fd5 = open(_request.getBodyFilename().c_str(), O_RDONLY);
+	_tmp = _generateTmp(fd5);
+
+	
 	std::cout << "[ -------- ] : " << _request.getQuery().c_str() << std::endl;
 	pid = fork();
 	if (pid == -1)
 		exit(EXIT_FAILURE);
 	else if (pid == 0)
 		exec_script(fd);
-	wait(NULL);
+	// wait(NULL);
+	int	status = 0;
+	int ret = 0;
+	while (waitpid(-1, &status, 0) > 0)
+		if (WIFEXITED(status))
+			ret = WEXITSTATUS(status);
 	close(fd);
 	int fd2 = open(filename.c_str(), O_RDONLY);
 	parseOutput(fd2);
 	close(fd2);
+	close(fd5);
 }
 
 
@@ -194,6 +223,26 @@ std::string	cgi::_generateTmp( int fd ) {
 				if (tmp.find("\r\n\r\n") != std::string::npos) {
 					_contentLength++;
 				}	
+			}
+		}
+	}
+	return tmp;
+}
+
+
+std::string	cgi::_generateTmpXDBRO( int fd ) {
+	std::string tmp = "";
+	struct pollfd  fds = {};
+	char buffer[4096];
+	bzero(&buffer, 4096);
+	int count = 0;
+	fds.fd = fd;
+	fds.events = POLLIN;
+	int rc = poll(&fds, 1, 0);
+	if (rc == 1 && fds.events & POLLIN ) {
+		while ((count = read(fds.fd, buffer, 4096)) > 0) {
+			for (int i = 0; i < count; i++) {
+				tmp += buffer[i];
 			}
 		}
 	}

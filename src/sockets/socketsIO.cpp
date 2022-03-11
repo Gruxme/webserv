@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 23:56:39 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 01:31:05 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,8 +197,10 @@ void	socketsIO::eventListener()
 					if(_responses[_pollfds[i].fd].getHeaderStatus() || _requests[_pollfds[i].fd].getUriExtension() != 0)
 						if(_responses[_pollfds[i].fd].isAutoIndex())
 							content = _responses[_pollfds[i].fd].indexListContent();
-						else if (_requests[_pollfds[i].fd].getUriExtension() != 0)
+						else if (_requests[_pollfds[i].fd].getUriExtension() != 0){
 							content = _responses[_pollfds[i].fd].getCgi().getContent();
+							std::cout << content << std::endl;
+						}
 						else
 							content = _responses[_pollfds[i].fd].getBodyContent();
 					else {
@@ -216,9 +218,9 @@ void	socketsIO::eventListener()
 						}
 						else if (rc == static_cast<int>(content.length()) && !_responses[_pollfds[i].fd].getHeaderStatus())
 							_responses[_pollfds[i].fd].headersSent();
-						else if(_responses[_pollfds[i].fd].getHeaderStatus())
+						else if(_responses[_pollfds[i].fd].getHeaderStatus() && _requests[_pollfds[i].fd].getUriExtension() == 0)
 							_responses[_pollfds[i].fd].setBytesSent(rc);
-						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
+						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe || _requests[_pollfds[i].fd].getUriExtension() != 0)
 						{
 							std::cout << "client with fd: " << _pollfds[i].fd << " kept alive and reset to POLLIN" << std::endl;
 							// _requests.erase(_pollfds[i].fd));

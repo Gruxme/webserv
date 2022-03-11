@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/11 00:13:50 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 00:14:26 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,11 +210,9 @@ void		response::_postResrc( std::string absPath ){
 	}
 }
 void		response::_deleteResrc( std::string absPath ){
-	if (_req.getUriExtension() == PHP){
+	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
 		_cgi.processing_cgi(_req, absPath);
-	}
-	else if(_req.getUriExtension() == PY){
-		_cgi.processing_cgi(_req, absPath);
+		_headersSent = true;
 	}
 	else {
 		if(remove(absPath.c_str()) < 0){
