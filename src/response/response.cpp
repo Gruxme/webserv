@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/11 13:14:20 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 14:00:02 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,6 +182,8 @@ void response::_getResrc( std::string absPath ) {
 				else
 					res << "Content-Type: " << mimeType << "\r\n";
 				res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
+				if(_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
+					res << "Content-Disposition: attachment\r\n";
 				_body = absPath;
 			}
 			res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
