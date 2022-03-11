@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/11 08:37:40 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 10:43:55 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,10 +153,7 @@ void	Request::parse( void ) {
                 _extractHeaders(iss);
                 _headersPassed = true;
                 _extractData();
-                std::cout << this->_method << " " << this->_pos << " " << this->getConfig().getLocationClass()[this->_pos].getMethod() << std::endl;
-                // exit(0);
-                /* - THIS SHOULD WORK -- */
-                /* if (this->_pos != -1 && this->_method != this->getConfig().getLocationClass()[this->_pos].getMethod())  {
+               /*  if (this->_pos != -1 && this->_method != this->getConfig().getLocationClass()[this->_pos].getMethod())  {
                     throw parseErr("403 Forbidden");
                 } */
             }

@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 04:15:50 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 11:19:55 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,6 @@ class cgi
 
 	public:
 		void	parseOutput( int fd );
-		void	parseOutputGET( int fd );
 		std::string	getContent( void ) const;
 			
 		void setEnv();

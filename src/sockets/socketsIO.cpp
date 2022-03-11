@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/11 08:59:52 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 10:34:50 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,6 +136,8 @@ void	socketsIO::eventListener()
 						_responses[_pollfds[i].fd].setData( _requests.find(_pollfds[i].fd)->second);
 						_responses[_pollfds[i].fd].errorMsg(e.what());
 						isErrorResp = _responses[_pollfds[i].fd].isError();
+						_pollfds[i].events = POLLOUT;
+						continue;
 					}
 					
 					// check if req complete and set event to pollout

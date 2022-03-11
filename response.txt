@@ -1,0 +1,12 @@
+X-Powered-By: PHP/8.1.2
+Content-type: text/html; charset=UTF-8
+
+<html>
+<body>
+<form method="POST" action="/test.php">
+  Name: <input type="text" name="fname">
+  <input type="submit">
+</form>
+
+</body>
+</html>
