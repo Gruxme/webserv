@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 11:19:55 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 14:46:36 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ class cgi
 		size_t		_contentLength;
 		std::string	_output;
 		std::string	_tmp;
+		std::string	_tmpOutputFileName;
 
 	public:
 		void	parseOutput( int fd );

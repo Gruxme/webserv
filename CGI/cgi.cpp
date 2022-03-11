@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 13:08:26 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 15:00:06 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,13 @@ cgi& cgi::operator=( cgi const &rhs ) {
 
 void cgi::setRequest(Request request) {
 	this->_request = request;
+	std::string path = _request.getConfig().getLocationClass()[request.getPos()].getCgiExt();
 	this->arg = _request.getConfig().getLocationClass()[_request.getPos()].getRoot() + _request.getFileName();
-	if (_request.getUriExtension() == PHP)
-		this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
-	else if (_request.getUriExtension() == PY)
-		this->scriptType = "/usr/bin/python";
+	this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].split(path, ' ')[1];
+	// if (_request.getUriExtension() == PHP)
+	// 	this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].split(path, ' ')[1];
+	// else if (_request.getUriExtension() == PY)
+	// 	this->scriptType = "/usr/bin/python";
 }
 
 std::string cgi::getOsName()
@@ -140,7 +142,8 @@ void cgi::exec_scriptGET(int fd)
 
 	setEnv();
 	std::cout << "[ " << _request.getBodyFd() << " ]\n";
-	fd1 = open("response.txt" , O_RDWR| O_CREAT | O_TRUNC, 0777);
+	_tmpOutputFileName = "response" + std::to_string(clock());
+	fd1 = open(_tmpOutputFileName.c_str() , O_RDWR| O_CREAT | O_TRUNC, 0777);
 	dup2(fd1, 0);
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
@@ -154,8 +157,7 @@ void cgi::processing_cgi(Request request)
 	if (request.getMethod() == "POST") {	
 		int fd;
 		pid_t pid;
-		std::string filename = "response.txt";	
-		fd = open(filename.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
+		fd = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 		close(fd);
 		setRequest(request);
 		int fd5 = open(_request.getBodyFilename().c_str(), O_RDONLY);
@@ -166,9 +168,10 @@ void cgi::processing_cgi(Request request)
 		if (pid == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
-			exec_script(filename);
+			exec_script(_tmpOutputFileName);
 		wait(NULL);
-		int fd2 = open(filename.c_str(), O_RDONLY);
+		remove(_request.getBodyFilename().c_str());
+		int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
 		parseOutput(fd2);
 		close(fd2);
 	}
@@ -176,8 +179,7 @@ void cgi::processing_cgi(Request request)
 	else {
 		int fd;
 		pid_t pid;
-		std::string filename = "response.txt";
-		fd = open(filename.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
+		fd = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 		setRequest(request);
 		std::cout << "[ --------  GET] : " << _request.getQuery().c_str() << std::endl;
 		pid = fork();
@@ -187,7 +189,7 @@ void cgi::processing_cgi(Request request)
 			exec_scriptGET(fd);
 		wait(NULL);
 		close(fd);
-		int fd2 = open(filename.c_str(), O_RDONLY);
+		int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
 		parseOutput(fd2);
 		close(fd2);
 	}
@@ -243,6 +245,7 @@ void	cgi::parseOutput( int fd ) {
 	delete[] date;
 	std::cout << _contentLength << std::endl;
 	_output += "Content-Length: " + std::to_string(_contentLength) + "\r\nConnection: " + _request.getHeaders().find("Connection")->second + "\r\n" + tmp;
+	remove(_tmpOutputFileName.c_str());
 }
 
 std::string	cgi::getContent( void ) const {
