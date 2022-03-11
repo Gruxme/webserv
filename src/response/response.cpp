@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/11 16:41:07 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/11 16:52:41 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,21 +162,32 @@ void response::_getResrc( std::string absPath ) {
 			stat(absPath.c_str(), &status);
 			if (S_ISDIR(status.st_mode)){
 				if(_req.getConfig().getLocationClass()[_req.getPos()].getPath() == "/"){
-					errorMsg("200 OK");
-					return ;
+					_body = _req.getConfig().getLocationClass()[_req.getPos()].getRoot() + "/" + _req.getConfig().getIndex();
+					if(stat(_body.c_str(), &status) < 0){
+						errorMsg("200 OK");
+						return;
+					}		
+					else{
+						res << "Content-Type: text/html\r\n";
+						res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
+					}			
 				}
-				if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex()) {
-					errorMsg("403 Forbidden");
-					return ;
+				else {
+					if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
+					{
+						errorMsg("403 Forbidden");
+						return;
+					}
+					_autoIndex = true;
+					if (!_autoindexModule(absPath))
+					{
+						errorMsg("500 Internal Server Error");
+						return;
+					}
+					res << "Content-Type: text/html\r\n";
+					res << "Content-Length: " << (_bodySize = _indexList.length()) << "\r\n";
+					_body = "";
 				}
-				_autoIndex = true;
-				if(!_autoindexModule(absPath)){
-					errorMsg("500 Internal Server Error");
-					return;
-				}
-				res << "Content-Type: text/html\r\n";
-				res << "Content-Length: " << (_bodySize = _indexList.length()) << "\r\n";
-				_body = "";
 			}
 			else
 			{
