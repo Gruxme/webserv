@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 03:12:30 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 04:15:50 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ class cgi
 
 		void processing_cgi(Request request);
 		void exec_script( std::string filename );
+		void exec_scriptGET(int fd);
 		// void script_output(int fd);
 		
 		std::string getDate();
@@ -64,6 +65,7 @@ class cgi
 
 	public:
 		void	parseOutput( int fd );
+		void	parseOutputGET( int fd );
 		std::string	getContent( void ) const;
 			
 		void setEnv();
