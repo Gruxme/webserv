@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 02:42:04 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 04:00:25 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,6 @@
 extern char **environ;
 
 cgi::cgi() : _status("200 OK"), _location(""), _contentLength(0), _output(""), _tmp("") {
-/* 	std::cout << "POS = " << _request.getPos() << std::endl;
-	exit(0);
-	std::string	s = _request.getConfig().getLocationClass()[_request.getPos()].getCgiExt();
-	std::vector<std::string> myvec = _request.getConfig().getLocationClass()[_request.getPos()].split(s, ' ');
-	this->scriptType = myvec[1]; */
-
-	/* -- FOOKING INITIALIZE YOUR PRIVATE ATTRIBUTES */
 	this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
 }
 
@@ -34,12 +27,8 @@ cgi& cgi::operator=( cgi const &rhs ) {
     if (this != &rhs)
 	{
         this->_request = rhs._request;
-        this->getOrPost = rhs.getOrPost;
-        this->documentOrRedirection = rhs.documentOrRedirection;
-        this->queryString = rhs.queryString;
         this->arg = rhs.arg;
         this->scriptType = rhs.scriptType;
-        this->_buffer = rhs._buffer;
 		this->_status = rhs._status;
 		this->_location = rhs._location;
 		this->_contentLength = rhs._contentLength;
@@ -49,10 +38,11 @@ cgi& cgi::operator=( cgi const &rhs ) {
     return *this;
 }
 
-void cgi::setRequest(Request request, std::string absPath)
+void cgi::setRequest(Request request)
 {
 	this->_request = request;
-	this->arg = absPath;
+	this->arg = _request.getConfig().getLocationClass()[_request.getPos()].getRoot() + _request.getFileName();
+	// this->arg = _request.getLocationClass()[_pos].getRoot() + _fileName;
 	std::cout << "--------------- [ " << arg << " ] ------------------\n";
 }
 
@@ -91,8 +81,6 @@ void cgi::setEnv()
 		setenv("CONTENT_LENGTH", _request.getHeaders().find("Content-Length")->second.c_str(), 1);
 		setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
 
-		std::cout << _request.getBodyFd() << std::endl;
-		// exit(0);
 		if (!_request.getQuery().empty()) {
 			setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
 		}
@@ -101,7 +89,7 @@ void cgi::setEnv()
 		}
 		setenv("REQUEST_METHOD",_request.getMethod().c_str(), 1);
 		setenv("REDIRECT_STATUS","200",1);
-		setenv("CONTENT_TYPE", _request.getHeaders().find("Content-type")->second.c_str(),1);
+		setenv("CONTENT_TYPE", _request.getHeaders().find("Content-Type")->second.c_str(),1);
 		setenv("SCRIPT_FILENAME", arg.c_str(), 1);
 	}
 	else if (_request.getMethod() == "GET")
@@ -122,9 +110,9 @@ void cgi::exec_script( std::string filename )
     char *tmp[3];
 	int fd1;
 
-	int fd = open(filename.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
-	tmp[0] = (char*)scriptType.c_str();
-	tmp[1] = (char*)arg.c_str();
+	int fd = open(filename.c_str() , O_RDWR);
+	tmp[0] = (char *)scriptType.c_str();
+	tmp[1] = (char *)arg.c_str();
 	tmp[2] = NULL;
 	setEnv();	
 	std::cout << "[ " << _request.getBodyFd() << " ]\n";
@@ -132,74 +120,39 @@ void cgi::exec_script( std::string filename )
 	dup2(fd1, 0);
 	dup2(fd, 1);
 	
-    ret = execve(tmp[0], tmp, NULL);
+    ret = execve(tmp[0], tmp, environ);
 	
-	/* DONT FORGET ABOUT THIS */
     if (ret == -1) {
 		throw "500 Internal Server Error";
 	}
 }
 
-void cgi::setHeader(const std::string &key, const std::string &value, bool end)
-{
-	this->_buffer += key + ": " + value + "\r\n";
-	if (end)
-		_buffer += "\r\n";
-}
-
-void cgi::handleResponse(int code)
-{
-	this->_buffer.insert(0, "Accept-Ranges: none\r\n");
-	this->_buffer.insert(0, "Server: webserv/1.1 " + getOsName() + "\r\n");
-	this->_buffer.insert(0, "Date: " + getDate() + "\r\n");
-	this->_buffer.insert(0, "HTTP/1.1 " + std::to_string(code) + " " + "OK" + "\r\n");
-	std::cout << _buffer;
-}
-
-void cgi::handleRedirectResponse()
-{
-	this->_buffer.insert(0, "Accept-Ranges: none\r\n");
-	this->_buffer.insert(0, "Server: webserv/1.1 \r\n");
-	this->_buffer.insert(0, "Date: " + getDate() + "\r\n");
-	this->_buffer.insert(0, "HTTP/1.1 \r\n");
-}
-
-void cgi::processing_cgi(Request request, std::string absPath)
+void cgi::processing_cgi(Request request)
 {
 	int fd;
     pid_t pid;
 	std::string filename = "response.txt";	
 	fd = open(filename.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
-
-//S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
-	// int pip[2];
-
-	// pipe(pip);
-
-	setRequest(request, absPath);
-
-	
+	close(fd);
+	setRequest(request);
 	int fd5 = open(_request.getBodyFilename().c_str(), O_RDONLY);
 	_tmp = _generateTmp(fd5);
-
+	close(fd5);
 	
 	std::cout << "[ -------- ] : " << _request.getQuery().c_str() << std::endl;
 	pid = fork();
 	if (pid == -1)
 		exit(EXIT_FAILURE);
 	else if (pid == 0)
-		exec_script(fd);
-	// wait(NULL);
+		exec_script(filename);
 	int	status = 0;
 	int ret = 0;
 	while (waitpid(-1, &status, 0) > 0)
 		if (WIFEXITED(status))
 			ret = WEXITSTATUS(status);
-	close(fd);
 	int fd2 = open(filename.c_str(), O_RDONLY);
 	parseOutput(fd2);
 	close(fd2);
-	close(fd5);
 }
 
 
@@ -230,7 +183,7 @@ std::string	cgi::_generateTmp( int fd ) {
 }
 
 
-std::string	cgi::_generateTmpXDBRO( int fd ) {
+/* std::string	cgi::_generateTmpXDBRO( int fd ) {
 	std::string tmp = "";
 	struct pollfd  fds = {};
 	char buffer[4096];
@@ -247,7 +200,7 @@ std::string	cgi::_generateTmpXDBRO( int fd ) {
 		}
 	}
 	return tmp;
-}
+} */
 
 void	cgi::parseOutput( int fd ) {
 	std::string tmp = this->_generateTmp(fd);
@@ -268,7 +221,8 @@ void	cgi::parseOutput( int fd ) {
 	_output += "\r\nServer: Webserv/4.2.0 \r\n";
 	delete[] date;
 	std::cout << _contentLength << std::endl;
-	_output += "Content-Length: " + std::to_string(_contentLength) + "\r\nConnection: " + _request.getHeaders().find("Connection")->second + tmp;
+	_output += "Content-Length: " + std::to_string(_contentLength) + "\r\nConnection: " + _request.getHeaders().find("Connection")->second + "\r\n";
+	_output += tmp;
 }
 
 std::string	cgi::getContent( void ) const {

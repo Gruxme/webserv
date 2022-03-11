@@ -6,7 +6,7 @@
 /*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/11 00:14:26 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/11 03:14:18 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,7 @@ std::string		response::indexListContent( void ) const{
 
 void response::_getResrc( std::string absPath ) {
 	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
-		_cgi.processing_cgi(_req, absPath);
+		_cgi.processing_cgi(_req);
 		_headersSent = true;
 	}
 	else{
@@ -191,9 +191,9 @@ void response::_getResrc( std::string absPath ) {
 }
 
 
-void		response::_postResrc( std::string absPath ){
+void		response::_postResrc(){
 	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
-		_cgi.processing_cgi(_req, absPath);
+		_cgi.processing_cgi(_req);
 		_headersSent = true;
 	}
 	else {
@@ -211,7 +211,7 @@ void		response::_postResrc( std::string absPath ){
 }
 void		response::_deleteResrc( std::string absPath ){
 	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
-		_cgi.processing_cgi(_req, absPath);
+		_cgi.processing_cgi(_req);
 		_headersSent = true;
 	}
 	else {
@@ -288,7 +288,7 @@ void response::serveRequest( void ) {
 	if (_req.getMethod() == "GET")
 		_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 	else if (_req.getMethod() == "POST") // take upload path and upload filename instead
-		_postResrc(_req.getBodyFilename());
+		_postResrc();
 	else if(_req.getMethod() == "DELETE")
 		_deleteResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 	else

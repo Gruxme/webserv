@@ -33,7 +33,7 @@ class response {
 
 	private:
 		void		_getResrc( std::string absPath );
-		void		_postResrc( std::string absPath );
+		void		_postResrc();
 		void		_deleteResrc( std::string absPath );
 		bool		_autoindexModule( std::string path );
 
