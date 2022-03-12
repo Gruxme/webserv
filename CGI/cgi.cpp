@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/12 20:28:16 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 21:01:02 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,7 +217,10 @@ std::string	cgi::_generateTmp( int fd ) {
 			}
 		}
 	}
-	_contentLength =  tmp.substr(tmp.find("\r\n\r\n") + 4, tmp.length()).length();
+	if(count == 0)
+		_contentLength = 0;
+	else
+		_contentLength =  tmp.substr(tmp.find("\r\n\r\n") + 4, tmp.length()).length();
 	return tmp;
 }
 

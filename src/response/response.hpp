@@ -36,7 +36,6 @@ class response {
 		void		_postResrc();
 		void		_deleteResrc( std::string absPath );
 		bool		_autoindexModule( std::string path );
-
 		void		_extractData( void );
 		
 	public:
@@ -63,7 +62,6 @@ class response {
 		size_t		getBodySize( void ) const;
 		bool		bodyEof( void ) const;
 		cgi			getCgi( void ) const;
-		
 	
 	private:
 		std::string			_headers;

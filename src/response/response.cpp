@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/12 20:45:34 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 21:02:13 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,124 +135,118 @@ std::string		response::indexListContent( void ) const{
 }
 
 void response::_getResrc( std::string absPath ) {
-	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY) {
-		_cgi.processing_cgi(_req);
-		_headersSent = true;
+	int fd = -1;
+	if ((fd = open(absPath.c_str(), O_RDONLY)) < 0)
+	{
+		if (errno == ENOENT)
+			errorMsg("404 Not Found");
+		else if (errno == EACCES)
+			errorMsg("403 Forbidden");
+		else
+			errorMsg("500 Internal Server Error");
 	}
-	else{
-		int	fd = -1;
-		if((fd = open(absPath.c_str(), O_RDONLY)) < 0){
-			if(errno == ENOENT)
-				errorMsg("404 Not Found");
-			else if(errno == EACCES)
-				errorMsg("403 Forbidden");
-			else
-				errorMsg("500 Internal Server Error");
-		}
-		else{
-			close(fd);
-			std::ostringstream	res;
-			struct stat			status;
-			const char *mimeType;
-
-			time_t now = time(0);
-			char *date = new char[30]();
-			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
-			res << "HTTP/1.1 200 OK\r\nDate: " << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
-			delete[] date;
-			stat(absPath.c_str(), &status);
-			if (S_ISDIR(status.st_mode)){
-				if(_req.getConfig().getLocationClass()[_req.getPos()].getPath() == "/"){
-					_body = _req.getConfig().getLocationClass()[_req.getPos()].getRoot() + "/" + _req.getConfig().getIndex();
-					if(stat(_body.c_str(), &status) < 0){
-						errorMsg("200 OK");
-						return;
-					}		
-					else{
-						res << "Content-Type: text/html\r\n";
-						res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
-					}			
-				}
-				else {
-					if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
-					{
-						errorMsg("403 Forbidden");
-						return;
-					}
-					_autoIndex = true;
-					if (!_autoindexModule(absPath))
-					{
-						errorMsg("500 Internal Server Error");
-						return;
-					}
-					res << "Content-Type: text/html\r\n";
-					res << "Content-Length: " << (_bodySize = _indexList.length()) << "\r\n";
-					_body = "";
-				}
-			}
-			else
-			{
-				mimeType = MimeTypes::getType(absPath.c_str());
-				if (mimeType == NULL)
-					res << "Content-Type: text/plain\r\n";
-				else
-					res << "Content-Type: " << mimeType << "\r\n";
-				res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
-				if(_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
-					res << "Content-Disposition: attachment\r\n";
-				_body = absPath;
-			}
-			res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
-			_headers = res.str();
-		}
-	}
-    return ;
-}
-
-
-void		response::_postResrc() {
-	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
-		_cgi.processing_cgi(_req);
-		_headersSent = true;
-	}
-	else {
-		std::ostringstream	res;
+	else
+	{
+		close(fd);
+		std::ostringstream res;
+		struct stat status;
+		const char *mimeType;
 
 		time_t now = time(0);
 		char *date = new char[30]();
 		strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
-		res << "HTTP/1.1 201 CREATED\r\nDate: " << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
+		res << "HTTP/1.1 200 OK\r\nDate: " << date << "\r\n"
+			<< "Server: Webserv/4.2.0 \r\n";
+		delete[] date;
+		stat(absPath.c_str(), &status);
+		if (S_ISDIR(status.st_mode))
+		{
+			if (_req.getConfig().getLocationClass()[_req.getPos()].getPath() == "/")
+			{
+				_body = _req.getConfig().getLocationClass()[_req.getPos()].getRoot() + "/" + _req.getConfig().getIndex();
+				if (stat(_body.c_str(), &status) < 0)
+				{
+					errorMsg("200 OK");
+					return;
+				}
+				else
+				{
+					res << "Content-Type: text/html\r\n";
+					res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
+				}
+			}
+			else
+			{
+				if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
+				{
+					errorMsg("403 Forbidden");
+					return;
+				}
+				_autoIndex = true;
+				if (!_autoindexModule(absPath))
+				{
+					errorMsg("500 Internal Server Error");
+					return;
+				}
+				res << "Content-Type: text/html\r\n";
+				res << "Content-Length: " << (_bodySize = _indexList.length()) << "\r\n";
+				_body = "";
+			}
+		}
+		else
+		{
+			mimeType = MimeTypes::getType(absPath.c_str());
+			if (mimeType == NULL)
+				res << "Content-Type: text/plain\r\n";
+			else
+				res << "Content-Type: " << mimeType << "\r\n";
+			res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
+			if (_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
+				res << "Content-Disposition: attachment\r\n";
+			_body = absPath;
+		}
+		res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
+		_headers = res.str();
+	}
+	return ;
+}
+
+
+void		response::_postResrc() {
+
+	std::ostringstream res;
+
+	time_t now = time(0);
+	char *date = new char[30]();
+	strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+	res << "HTTP/1.1 201 CREATED\r\nDate: " << date << "\r\n"
+		<< "Server: Webserv/4.2.0 \r\n";
+	delete[] date;
+	res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
+	_headers = res.str();
+	_bodySize = 0;
+}
+void		response::_deleteResrc( std::string absPath ){
+	if (remove(absPath.c_str()) < 0)
+	{
+		if (errno == ENOENT)
+			errorMsg("404 Not Found");
+		else
+			errorMsg("403 Forbidden");
+	}
+	else
+	{
+		std::ostringstream res;
+
+		time_t now = time(0);
+		char *date = new char[30]();
+		strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+		res << "HTTP/1.1 204 No Content\r\nDate: " << date << "\r\n"
+			<< "Server: Webserv/4.2.0 \r\n";
 		delete[] date;
 		res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
 		_headers = res.str();
 		_bodySize = 0;
-	}
-}
-void		response::_deleteResrc( std::string absPath ){
-	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
-		_cgi.processing_cgi(_req);
-		_headersSent = true;
-	}
-	else {
-		if(remove(absPath.c_str()) < 0){
-			if(errno == ENOENT)
-				errorMsg("404 Not Found");
-			else
-				errorMsg("403 Forbidden");
-		}
-		else{
-			std::ostringstream res;
-
-			time_t now = time(0);
-			char *date = new char[30]();
-			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
-			res << "HTTP/1.1 204 No Content\r\nDate: " << date << "\r\n"
-				<< "Server: Webserv/4.2.0 \r\n";
-			delete[] date;
-			res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
-			_headers = res.str();
-			_bodySize = 0;
-		}
 	}
 }
 
@@ -304,8 +298,13 @@ bool	response::isError( void ) const{
 }
 
 void response::serveRequest( void ) {
-	std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
-	if (std::find(v.begin(), v.end(), _req.getMethod()) != v.end()) {
+	LocationClass s = _req.getConfig().getLocationClass()[_req.getPos()];
+	std::string ext = s.split(s.getCgiExt(), ' ')[0];
+	if (ext == _req.getUriExtension()){
+		_cgi.processing_cgi(_req);
+		_headersSent = true;
+	}
+	else if (_req.getMethod() == _req.getConfig().getLocationClass()[_req.getPos()].getMethod()) {
 		if (_req.getMethod() == "GET")
 			_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 		else if (_req.getMethod() == "POST") // take upload path and upload filename instead

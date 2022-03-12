@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/12 20:47:31 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 21:01:13 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ Request::Request() :
     _query(""),
     _path(""),
     _protocol(""),
-    _uriExtension(0),
+    _uriExtension(""),
     _bodyFilename(""),
 	_status(false),
     _config(),
@@ -68,7 +68,7 @@ std::string Request::getUri( void ) const { return this->_uri; }
 std::string Request::getQuery( void ) const { return this->_query; }
 std::string Request::getPath( void ) const { return this->_path; }
 std::string Request::getProtocol(void ) const { return this->_protocol; }
-short       Request::getUriExtension( void ) const { return this->_uriExtension; }
+std::string	Request::getUriExtension( void ) const { return this->_uriExtension; }
 std::string Request::getBodyFilename( void ) const { return this->_bodyFilename; }
 bool		Request::isComplete( void ) const { return _status; }
 std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->_headers; }
@@ -86,7 +86,7 @@ void    Request::reset( void ) {
     this->_query = "";
     this->_path = "";
     this->_protocol = "";
-    this->_uriExtension = 0;
+    this->_uriExtension = "";
     this->_headers.clear();
     this->_port = 0;
     this->_bodyFilename = "";
@@ -173,7 +173,7 @@ void	Request::parse( void ) {
             }
         }
         if (this->_method == "POST") {
-            if (this->_uriExtension == 0) {
+            if (this->_uriExtension.empty()) {
                 if (this->_config.getLocationClass()[this->_pos].getUpload().empty()) {
                     throw parseErr("403 Forbidden");
                 }
@@ -224,8 +224,8 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
         this->_path.erase(pos, this->_path.length());
     }
     myvec[2] == "HTTP/1.1" ? this->_protocol = myvec[2] : throw parseErr("505 HTTP Version Not Supported");
-    if (_hasEnding(this->_uri, ".py")) { this->_uriExtension = PY; }
-    else if (_hasEnding(this->_uri, ".php")) { this->_uriExtension = PHP; }
+    if (_hasEnding(this->_uri, ".py")) { this->_uriExtension = ".py"; }
+    else if (_hasEnding(this->_uri, ".php")) { this->_uriExtension = ".php"; }
 }
 
 void    Request::_extractHeaders( std::stringstream & iss ) {
@@ -320,7 +320,7 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     if (_checkContentLength() == _CONTENT_LENGTH_NOT_FOUND_ ||
             _checkContentLength() == _CONTENT_LENGTH_NEGATIVE_)
         throw parseErr("400 Bad Request");
-    (_uriExtension == 0) ? this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName : // NOT_CGI
+    (_uriExtension.empty()) ? this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName : // NOT_CGI
     this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _fileName + _toString(clock()); // CGI
     if (_bodyFd == -1)
         _bodyFd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);

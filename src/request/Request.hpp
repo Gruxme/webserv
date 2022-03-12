@@ -39,7 +39,7 @@ class Request {
         std::string _query;
         std::string _path;
         std::string _protocol;
-        short       _uriExtension;
+        std::string	_uriExtension;
         std::map<std::string, std::string>  _headers;
 		size_t		_port;
         std::string _bodyFilename;
@@ -64,7 +64,7 @@ class Request {
         std::string getQuery( void ) const;
         std::string getPath( void ) const;
         std::string getProtocol(void ) const;
-        short       getUriExtension( void ) const;
+        std::string getUriExtension( void ) const;
         std::map<std::string, std::string> const &getHeaders( void ) const;
         std::string getBodyFilename( void ) const;
 		bool		isComplete( void ) const;
