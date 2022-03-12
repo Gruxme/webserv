@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/09 15:42:31 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 15:56:43 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,10 @@ class socketsIO
 		socketsIO();
 		socketsIO(const socketsIO& x);
 		~socketsIO();
-		socketsIO&	operator=(const socketsIO& x);
-		void	setSock(sockets *sock);
-		void	eventListener( void );
+		socketsIO&			operator=(const socketsIO& x);
+		void				setSock(sockets *sock);
+		void				eventListener( void );
+		sockets*			find(size_t port);
 
 		class socketIOErr: public std::exception{
 			public:

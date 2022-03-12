@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/10 18:27:33 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 16:05:11 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,16 @@ int	main(int argc, char **argv)
 	}
 
 	signal(SIGPIPE, sigHandler);
+	sockets*	sock;
 	for (size_t i = 0; i < confFile.getServerCount(); i++) {
-		//setter in socket to bind appropriate server config
-		server.setSock(new sockets(confFile.getServerConfigClass()[i], SOMAXCONN));
+		if((sock = server.find(confFile.getServerConfigClass()[i].getPort())) != NULL)
+			sock->setConfig(confFile.getServerConfigClass()[i]);
+		else{
+			sock = new sockets(confFile.getServerConfigClass()[i].getPort(), SOMAXCONN);
+			server.setSock(sock);
+			sock->setConfig(confFile.getServerConfigClass()[i]);
+		}
 	}
-	server.eventListener();
+	// server.eventListener();
 	return (EXIT_SUCCESS);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   sockets.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/09 15:42:34 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 16:08:09 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,17 +26,19 @@ class sockets
 {
 	public:
 		sockets();
-		explicit sockets(ServerConfigClass conf, int maxLoad);
+		explicit sockets(size_t port, int maxLoad);
 		sockets(const sockets& x);
 		~sockets();
 		sockets&	operator=(const sockets& x);
 		
-		int						acceptClient();
-		std::vector<int>&		getClientsVec();
-		int						getNumSds() const ;
-		int						getMainSock() const ;
-		ServerConfigClass		getConfig() const ;
-		struct sockaddr_in		getAddr() const;
+		int								acceptClient();
+		std::vector<int>&				getClientsVec();
+		int								getNumSds() const ;
+		int								getMainSock() const ;
+		// ServerConfigClass				getConfig() const ;
+		std::vector<ServerConfigClass>	getConfigs() const ;
+		struct sockaddr_in				getAddr() const;
+		void							setConfig(ServerConfigClass conf);
 
 		class socketErr: public std::exception{
 			public:
@@ -51,11 +53,12 @@ class sockets
 		};
 	private:
 		void					_listener(int maxLoad);
-		void 					_bindSock();
+		void 					_bindSock(size_t port);
 		
 	private:
-		int						_mainSd, _nsds;
-		std::vector<int>		_clients;
-		ServerConfigClass		_config;
-		struct sockaddr_in		_address;
+		int								_mainSd, _nsds;
+		std::vector<int>				_clients;
+		std::vector<ServerConfigClass>	_configs;
+		// ServerConfigClass				_config;
+		struct sockaddr_in				_address;
 };
