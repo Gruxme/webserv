@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/11 13:18:26 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/12 17:21:48 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@ Request::Request() :
     _path(""),
     _protocol(""),
     _uriExtension(0),
-	_port(0), // to be filled with default port of default server
     _bodyFilename(""),
 	_status(false),
     _config(),
+	_tmpConfigs(),
     _fileName(""),
     _pos(-1),
     _bodyFd(-1),
@@ -51,6 +51,7 @@ Request& Request::operator=( Request const &rhs ) {
         this->_bodyFilename = rhs._bodyFilename;
         this->_status = rhs._status;
         this->_config = rhs._config;
+		this->_tmpConfigs = rhs._tmpConfigs;
         this->_fileName = rhs._fileName;
         this->_pos = rhs._pos;
         this->_bodyFd = rhs._bodyFd;
@@ -71,13 +72,12 @@ short       Request::getUriExtension( void ) const { return this->_uriExtension;
 std::string Request::getBodyFilename( void ) const { return this->_bodyFilename; }
 bool		Request::isComplete( void ) const { return _status; }
 std::map<std::string, std::string> const& Request::getHeaders( void ) const { return this->_headers; }
-size_t 		Request::getPort( void ) const { return this->_port; }
 ServerConfigClass   Request::getConfig( void ) const { return this->_config; }
 std::string Request::getFileName( void) const { return this->_fileName; }
 short       Request::getPos( void ) const { return this->_pos; }
 int         Request::getBodyFd( void) const { return this->_bodyFd; }
 int         Request::getTotalBytesRead( void ) const { return this->_totalBytesRead; }
-void		Request::setConfig( ServerConfigClass config ){ this->_config = config; }
+void		Request::setConfigs( std::vector<ServerConfigClass> configs ) { this->_tmpConfigs = configs; }
 
 void    Request::reset( void ) {
     this->_dataGatherer = "";
@@ -142,6 +142,18 @@ void    Request::append( const char * recvBuffer, int size ) {
     return ;
 }
 
+void	Request::_setConfig( void ) {
+	std::string srvName = this->_headers.find("Host")->second;
+	// this->_config.~ServerConfigClass();
+	for (size_t i = 0; i < _tmpConfigs.size(); i++) {
+		if (srvName == _tmpConfigs[i].getServerName()) {
+			this->_config = _tmpConfigs[i];
+			return ;
+		}
+	}
+	this->_config = _tmpConfigs[0];
+}
+
 void	Request::parse( void ) {
     
 	if (_headersComplete() == true || _headersPassed == true) {
@@ -152,6 +164,7 @@ void	Request::parse( void ) {
                 _extractRequestLine(iss);
                 _extractHeaders(iss);
                 _headersPassed = true;
+				_setConfig();
                 _extractData();
             }
             catch(const std::exception& e) {
@@ -227,11 +240,13 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
             _checkHeadersKeySyntax(myvec[0]) == false)
             throw parseErr("400 Bad Request");
         if (this->_headers.find(myvec[0]) == this->_headers.end()) {
-            this->_headers[myvec[0]] = myvec[1];
+            // this->_headers[myvec[0]] = myvec[1];
     		if (myvec[0] == "Host" && (myvec[1].find(':') != std::string::npos)) {
-                std::string s = myvec[1].substr(myvec[1].find(':') + 1, myvec[1].length());
-                (!s.empty() && s.find_first_not_of("0123456789") == std::string::npos) ? this->_port = std::stoi(s) : throw parseErr("400 Bad Request");
+				myvec[0] = myvec[0].substr(0, myvec[0].find(':'));
+                // std::string s = myvec[1].substr(myvec[1].find(':') + 1, myvec[1].length());
+                // (!s.empty() && s.find_first_not_of("0123456789") == std::string::npos) ? this->_port = std::stoi(s) : throw parseErr("400 Bad Request");
             }
+			this->_headers[myvec[0]] = myvec[1];
         }
         else throw parseErr("400 Bad Request");
         myvec.clear();

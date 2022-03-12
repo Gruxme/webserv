@@ -45,4 +45,5 @@ class ServerConfigClass {
         std::string     getErrorPage() const;
         size_t			getLocationCount() const;
         std::vector<LocationClass>  getLocationClass() const;
+
 };

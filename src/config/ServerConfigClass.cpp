@@ -56,3 +56,5 @@ std::string     ServerConfigClass::getAccessLog() const { return this->_accessLo
 std::string     ServerConfigClass::getErrorPage() const { return this->_errorPage; }
 size_t   ServerConfigClass::getLocationCount() const { return this->_locationCount; }
 std::vector<LocationClass>  ServerConfigClass::getLocationClass() const { return this->_location; }
+
+

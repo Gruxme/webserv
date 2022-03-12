@@ -45,6 +45,7 @@ class Request {
         std::string _bodyFilename;
 		bool		_status;
         ServerConfigClass   _config;
+        std::vector<ServerConfigClass>   _tmpConfigs;
         std::string _fileName;
         short       _pos;
         int         _bodyFd;
@@ -65,7 +66,6 @@ class Request {
         std::string getProtocol(void ) const;
         short       getUriExtension( void ) const;
         std::map<std::string, std::string> const &getHeaders( void ) const;
-		size_t 		getPort( void ) const;
         std::string getBodyFilename( void ) const;
 		bool		isComplete( void ) const;
         std::string getFileName( void ) const;
@@ -73,7 +73,8 @@ class Request {
         int         getBodyFd( void ) const;
         int         getTotalBytesRead( void ) const;
         ServerConfigClass getConfig( void ) const;
-        void    setConfig( ServerConfigClass config );
+        void    setConfigs( std::vector<ServerConfigClass> configs );
+
 
         /* -- PUBLIC METHODS */
         void    append( const char * recvBuffer, int size );
@@ -87,6 +88,7 @@ class Request {
         void    _handleBasicRequest( std::stringstream & iss );
 		bool	_headersComplete( void );
         bool    _bodyComplete( void );
+		void	_setConfig( void );
 
     public:
 		void	parse( void );

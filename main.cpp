@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/12 16:05:11 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/12 16:27:32 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,6 @@ int	main(int argc, char **argv)
 			sock->setConfig(confFile.getServerConfigClass()[i]);
 		}
 	}
-	// server.eventListener();
+	server.eventListener();
 	return (EXIT_SUCCESS);
 }
