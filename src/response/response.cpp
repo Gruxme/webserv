@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/12 21:33:27 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 22:45:37 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,8 @@ bool	response::_autoindexModule(std::string path){
 	struct stat		status;
 	char			*date = new char[20]();
 	std::ostringstream dirListHtml;
-	dirListHtml << "<html>\n<head><title>Index of " << path << "</title></head>\n<body>\n<h1>Index of "\
-				<< path << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
+	dirListHtml << "<html>\n<head><title>Index of " << _req.getPath() << "</title></head>\n<body>\n<h1>Index of "\
+				<< _req.getPath() << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
 	if ((dir = opendir(path.c_str())) != NULL){
 		while ((ent = readdir(dir)) != NULL){
 			std::string	fileName(ent->d_name);

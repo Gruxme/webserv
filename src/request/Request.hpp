@@ -41,7 +41,6 @@ class Request {
         std::string _protocol;
         std::string	_uriExtension;
         std::map<std::string, std::string>  _headers;
-		size_t		_port;
         std::string _bodyFilename;
 		bool		_status;
         ServerConfigClass   _config;

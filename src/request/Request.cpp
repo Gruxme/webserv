@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/12 21:23:03 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 22:36:42 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ Request& Request::operator=( Request const &rhs ) {
         this->_protocol = rhs._protocol;
         this->_uriExtension = rhs._uriExtension;
         this->_headers = rhs._headers;
-        this->_port = rhs._port;
         this->_bodyFilename = rhs._bodyFilename;
         this->_status = rhs._status;
         this->_config = rhs._config;
@@ -88,7 +87,6 @@ void    Request::reset( void ) {
     this->_protocol = "";
     this->_uriExtension = "";
     this->_headers.clear();
-    this->_port = 0;
     this->_bodyFilename = "";
     this->_status = false;
     this->_fileName = "";
@@ -116,11 +114,11 @@ void	Request::_extractData( void ) {
 			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath()) &&
 				std::find(v.begin(), v.end(), _method) != v.end()) {
 				try {
-					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
 					this->_pos = i;
+					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
                     // _TEST_FOR_METHODS_ = true;
 					return ;
-				} catch (...) {
+				} catch (std::exception &e) {
 					return ;
 				}
 			}
@@ -249,8 +247,6 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
             // this->_headers[myvec[0]] = myvec[1];
     		if (myvec[0] == "Host" && (myvec[1].find(':') != std::string::npos)) {
 				myvec[0] = myvec[0].substr(0, myvec[0].find(':'));
-                // std::string s = myvec[1].substr(myvec[1].find(':') + 1, myvec[1].length());
-                // (!s.empty() && s.find_first_not_of("0123456789") == std::string::npos) ? this->_port = std::stoi(s) : throw parseErr("400 Bad Request");
             }
 			this->_headers[myvec[0]] = myvec[1];
         }

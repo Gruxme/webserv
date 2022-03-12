@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/12 21:01:02 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 00:00:42 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,24 +203,24 @@ void cgi::processing_cgi(Request request)
 
 std::string	cgi::_generateTmp( int fd ) {
 	std::string tmp = "";
+	bool wasHere = false;
 	struct pollfd  fds = {};
 	char buffer[4096];
 	bzero(&buffer, 4096);
 	int count = 0;
 	fds.fd = fd;
 	fds.events = POLLIN;
+
 	int rc = poll(&fds, 1, 0);
 	if (rc == 1 && fds.events & POLLIN ) {
 		while ((count = read(fds.fd, buffer, 4096)) > 0) {
 			for (int i = 0; i < count; i++) {
+				wasHere = true;
 				tmp += buffer[i];	
 			}
 		}
 	}
-	if(count == 0)
-		_contentLength = 0;
-	else
-		_contentLength =  tmp.substr(tmp.find("\r\n\r\n") + 4, tmp.length()).length();
+	if (wasHere == true) _contentLength =  tmp.substr(tmp.find("\r\n\r\n") + 4, tmp.length()).length();
 	return tmp;
 }
 
