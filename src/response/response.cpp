@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/11 16:52:41 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/12 17:59:03 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,7 @@ std::string		response::indexListContent( void ) const{
 }
 
 void response::_getResrc( std::string absPath ) {
-	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY){
+	if (_req.getUriExtension() == PHP || _req.getUriExtension() == PY) {
 		_cgi.processing_cgi(_req);
 		_headersSent = true;
 	}
