@@ -2,7 +2,7 @@ NAME := webserv
 CC := clang++
 CFLAGS := -Wall -Werror -Wextra --std=c++98
 DFLAGS := -fsanitize=address -g3
-SRC := main.cpp \
+SRC := main.cpp ./src/utils/utils.cpp \
 ./src/config/ConfigClass.cpp ./src/config/ServerConfigClass.cpp ./src/config/LocationClass.cpp \
 ./src/request/Request.cpp \
 ./src/response/response.cpp ./src/response/mimeTypes.cpp \
