@@ -13,7 +13,7 @@
 # include "ServerConfigClass.hpp"
 
 ServerConfigClass::ServerConfigClass() :
-    _port(8080),
+    _port(-1),
     _serverName(""),
     _root(""),
     _redirect(""),
