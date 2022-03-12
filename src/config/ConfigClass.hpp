@@ -44,6 +44,20 @@ class ConfigClass {
 
 		void	parseConfigFile( void );
 
+		std::string _ltrim(const std::string &s, const std::string set ) {
+			size_t start = s.find_first_not_of(set);
+			return (start == std::string::npos) ? "" : s.substr(start);
+		}
+
+		std::string _rtrim(const std::string &s, const std::string set ) {
+			size_t end = s.find_last_not_of(set);
+			return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+		}
+
+		std::string _trim(const std::string &s, const std::string set ) {
+			return _rtrim(_ltrim(s, set), set);
+		}
+
 		class parseErr : public std::exception {
         public:
             explicit parseErr( const std::string &errStr ) throw() : _errStr(errStr) {}

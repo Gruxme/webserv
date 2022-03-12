@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/12 17:56:38 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 20:28:16 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,9 @@ cgi& cgi::operator=( cgi const &rhs ) {
 
 void cgi::setRequest(Request request) {
 	this->_request = request;
-	std::string path = _request.getConfig().getLocationClass()[request.getPos()].getCgiExt();
+	std::string path = _request.getConfig().getLocationClass()[request.getPos()].getCgi()[1];
 	this->arg = _request.getConfig().getLocationClass()[_request.getPos()].getRoot() + _request.getFileName();
-	this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].split(path, ' ')[1];
+	this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].getCgi()[1];
 /* 	if (_request.getUriExtension() == PHP)
 		this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
 	else if (_request.getUriExtension() == PY)

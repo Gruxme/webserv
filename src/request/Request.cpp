@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/12 17:21:48 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/12 20:47:31 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,9 @@ void	Request::_extractData( void ) {
 	}
 	while (420) {
 		for (size_t i = 0; i < _config.getLocationCount(); i++) {
+            std::vector<std::string> v = _config.getLocationClass()[i].getMethods();
 			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath()) &&
-				this->_method == _config.getLocationClass()[i].getMethod()) {
+				std::find(v.begin(), v.end(), _method) != v.end()) {
 				try {
 					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
 					this->_pos = i;

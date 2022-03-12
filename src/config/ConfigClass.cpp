@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/12 19:06:48 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 20:47:39 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,20 +30,6 @@ ConfigClass::~ConfigClass() {}
 std::string 	ConfigClass::getConfigFile( void ) const { return this->_configFile; }
 size_t			ConfigClass::getServerCount( void ) const { return this->_serverCount; }
 std::vector<ServerConfigClass> ConfigClass::getServerConfigClass( void ) const { return _serverConf; }
-
-std::string _ltrim(const std::string &s, const std::string set ) {
-    size_t start = s.find_first_not_of(set);
-    return (start == std::string::npos) ? "" : s.substr(start);
-}
-
-std::string _rtrim(const std::string &s, const std::string set ) {
-    size_t end = s.find_last_not_of(set);
-    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
-}
-
-std::string _trim(const std::string &s, const std::string set ) {
-    return _rtrim(_ltrim(s, set), set);
-}
 
 /* ----- Setters ---- */
 void    ConfigClass::_allocateServers( void ) {
