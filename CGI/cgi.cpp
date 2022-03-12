@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/12 17:56:38 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 18:14:00 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,7 +217,10 @@ std::string	cgi::_generateTmp( int fd ) {
 			}
 		}
 	}
-	_contentLength =  tmp.substr(tmp.find("\r\n\r\n") + 4, tmp.length()).length();
+	if(count == 0)
+		_contentLength = 0;
+	else
+		_contentLength =  tmp.substr(tmp.find("\r\n\r\n") + 4, tmp.length()).length();
 	return tmp;
 }
 
