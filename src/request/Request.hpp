@@ -22,6 +22,7 @@
 # include <algorithm>
 # include <fcntl.h>
 # include "../config/ServerConfigClass.hpp"
+# include "../utils/utils.hpp"
 
 # define PY 1
 # define PHP 2
@@ -89,27 +90,14 @@ class Request {
 		bool	_headersComplete( void );
         bool    _bodyComplete( void );
 		void	_setConfig( void );
-
-    public:
-		void	parse( void );
-
-    private:
-        /* ----- Utils ------ */
-        template <class T>
-            inline std::string _toString( const T& t );
-        std::vector<std::string> _split( std::string str, char separator );
-        void    _eraseSubstr( std::string &str, const std::string &substr );
-        void    _eraseAllSubstr( std::string &str, const std::string &substr );
-        std::string _ltrim( const std::string &s, const std::string &delim );
-        bool    _checkHeadersKeySyntax( std::string key );
-        bool    _hasEnding( std::string const &fullString, std::string const &ending );
-        int     _findFileSize( int fd );
-        bool    _isHexNotation( std::string const& s );
-        int     _hexadecimalToDecimal( std::string hexVal );
         bool    _checkContentLength( void );
         short   _compareContentLengthWithBody( int fd );
         void    _extractData( void );
+        template <class T>
+            inline std::string _toString( const T& t );
 
+    public:
+		void	parse( void );
 
         /* ----- Exceptions ----- */
         class parseErr : public std::exception {
