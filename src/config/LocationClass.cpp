@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:04 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/09 19:07:27 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 19:04:21 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,29 +38,30 @@ LocationClass & LocationClass::operator=( LocationClass const &rhs ) {
 
 /* ----- Location Parser ----- */
 void    LocationClass::parseLocation( std::string buffer ) {
+    bool processedAlready = false;
     if (!buffer.empty()) {
         switch (buffer[0]) {
             case 'a':
-                if (std::strncmp("autoindex = ", buffer.c_str(), 12) == 0) {
+                if (processedAlready == false && std::strncmp("autoindex = ", buffer.c_str(), 12) == 0) {
                     if (std::strncmp("autoindex = on", buffer.c_str(), 14) == 0) this->_autoindex = _AUTOINDEX_ON_;
                     else if (std::strncmp("autoindex = off", buffer.c_str(), 15) == 0) this->_autoindex = _AUTOINDEX_OFF_;
                     break ;
                 }
                 throw parseErr("SyntaxError || Loc 1");
             case 'c':
-                if (std::strncmp("cgi_ext = ", buffer.c_str(), 10) == 0) {
+                if (this->_cgiExt.empty() && std::strncmp("cgi_ext = ", buffer.c_str(), 10) == 0) {
                     this->_cgiExt = buffer.substr(buffer.find("cgi_ext = ") + strlen("cgi_ext = "));
                     break ;
                 }
                 throw parseErr("SyntaxError || Loc 2");
             case 'm':
-                if (std::strncmp("method = ", buffer.c_str(), 9) == 0) {
+                if (this->_method.empty() && std::strncmp("method = ", buffer.c_str(), 9) == 0) {
                     this->_method = buffer.substr(buffer.find("method = ") + strlen("method = "));
                     break ;
                 }
                 throw parseErr("SyntaxError || Loc 3");
             case 'p':
-                if (std::strncmp("path = ", buffer.c_str(), 7) == 0) {
+                if (this->_path.empty() && std::strncmp("path = ", buffer.c_str(), 7) == 0) {
                     this->_path = buffer.substr(buffer.find("path = ") + strlen("path = "));
                     if (this->_path[this->_path.size() - 1] != '/')
                         this->_path += "/";
@@ -68,19 +69,19 @@ void    LocationClass::parseLocation( std::string buffer ) {
                 }
                 throw parseErr("SyntaxError || Loc 4");
             case 'r':
-                if (std::strncmp("root = ", buffer.c_str(), 7) == 0) {
+                if (this->_root.empty() && std::strncmp("root = ", buffer.c_str(), 7) == 0) {
                     this->_root = buffer.substr(buffer.find("root = ") + strlen("root = "));
                     if (this->_root[this->_root.size() - 1] == '/')
                         this->_root.resize(this->_root.size() - 1);
                     break ;
                 }
-                else if (std::strncmp("redirect = ", buffer.c_str(), 11) == 0) {
+                else if (this->_redirect.empty() && std::strncmp("redirect = ", buffer.c_str(), 11) == 0) {
                     this->_redirect = buffer.substr(buffer.find("redirect = ") + strlen("redirect = "));
                     break ;
                 }
                 throw parseErr("SyntaxError || Loc 5");
             case 'u':
-                if (std::strncmp("upload = ", buffer.c_str(), 0) == 0) {
+                if (this->_upload.empty() && std::strncmp("upload = ", buffer.c_str(), 0) == 0) {
                     this->_upload = buffer.substr(buffer.find("upload = ") + strlen("upload = "));
                     if (this->_upload[this->_upload.size() - 1] == '/')
                         this->_upload.resize(this->_upload.size() - 1);
