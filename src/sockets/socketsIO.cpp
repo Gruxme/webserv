@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/12 18:35:49 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/12 21:29:30 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,6 @@ void	socketsIO::eventListener()
 	
 	while (1)
 	{
-		isErrorResp = false;
 		connClosed = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);

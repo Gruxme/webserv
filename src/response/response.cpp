@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/12 21:02:13 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 21:33:27 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,9 +108,11 @@ void	response::errorMsg( std::string type ){
 		std::string allowedMethods;
 		//check allowed method in location if any first
 		int pos = _req.getPos();
-		std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
-		if (pos != -1 && std::find(v.begin(), v.end(), this->_req.getMethod()) != v.end() )
-			errRes << "Allow: " << allowedMethods << "\r\n";
+		if (pos != -1 ) {
+			std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
+			if (std::find(v.begin(), v.end(), this->_req.getMethod()) != v.end())
+				errRes << "Allow: " << allowedMethods << "\r\n";
+		}
 		else
 			errRes << "Allow: GET, POST, DELETE\r\n";
 	}
@@ -298,13 +300,12 @@ bool	response::isError( void ) const{
 }
 
 void response::serveRequest( void ) {
-	LocationClass s = _req.getConfig().getLocationClass()[_req.getPos()];
-	std::string ext = s.split(s.getCgiExt(), ' ')[0];
-	if (ext == _req.getUriExtension()){
+	std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
+	if (_req.getConfig().getLocationClass()[_req.getPos()].getCgi()[0] == _req.getUriExtension()){
 		_cgi.processing_cgi(_req);
 		_headersSent = true;
 	}
-	else if (_req.getMethod() == _req.getConfig().getLocationClass()[_req.getPos()].getMethod()) {
+	else if (std::find(v.begin(), v.end(), _req.getMethod()) != v.end()) {
 		if (_req.getMethod() == "GET")
 			_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 		else if (_req.getMethod() == "POST") // take upload path and upload filename instead

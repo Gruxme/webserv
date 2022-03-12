@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/12 21:01:13 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 21:23:03 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,16 +181,21 @@ void	Request::parse( void ) {
             std::map<std::string, std::string>::iterator transferEncoding = _headers.find("Transfer-Encoding");
             if (transferEncoding != _headers.end() && transferEncoding->second == "chunked") {
                 if (_bodyComplete() == true) {
-                    _handleChunkedRequest(iss);
-                    _status = true;
-                    return ;
+                    try {
+                        _handleChunkedRequest(iss);
+                        _status = true;
+                        return ;
+                    }
+                    catch( const std::exception& e ) {
+                        throw parseErr(e.what());
+                    }
                 }
             }
             try {
                 _handleBasicRequest(iss);
             }
             catch ( const std::exception &e ) {
-                throw (e);
+                throw parseErr(e.what());
             }
             std::cout << _totalBytesRead << " " << std::stoi(_headers.find("Content-Length")->second) << std::endl;
             if (_totalBytesRead == std::stoi(_headers.find("Content-Length")->second)) {
@@ -277,6 +282,9 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     // FILE * fptr = fopen(this->_bodyFilename.c_str(), "w");
     if (_bodyFd == -1)
         _bodyFd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    if(_bodyFd < 0)
+        if(errno == EISDIR)
+            throw parseErr("403 Forbidden");
     struct pollfd fds = {};
     fds.fd = _bodyFd;
     // this->_bodyFd = fds.fd;
@@ -324,6 +332,9 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _fileName + _toString(clock()); // CGI
     if (_bodyFd == -1)
         _bodyFd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    if(_bodyFd < 0)
+        if(errno == EISDIR)
+            throw parseErr("403 Forbidden");
     struct pollfd fds = {};
     fds.fd = _bodyFd;
     fds.events = POLLOUT;
