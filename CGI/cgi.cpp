@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:57:02 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 15:00:31 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,9 +79,7 @@ void cgi::_exec_script( std::string filename )
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
 	std::cerr << "execve failed with ret: " << ret << " and error of " << strerror(errno) << std::endl;
-    if (ret == -1) {
-		throw "500 Internal Server Error";
-	}
+	exit(errno);
 }
 
 void cgi::_exec_scriptGET(int fd)
