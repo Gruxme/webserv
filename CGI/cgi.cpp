@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:37:41 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 14:49:32 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,15 +31,15 @@ cgi& cgi::operator=( cgi const &rhs ) {
     return *this;
 }
 
-void cgi::setRequest(Request request) {
+void cgi::_setRequest( Request request ) {
 	this->_request = request;
 	std::string path = _request.getConfig().getLocationClass()[request.getPos()].getCgi()[1];
 	this->arg = _request.getConfig().getLocationClass()[_request.getPos()].getRoot() + _request.getFileName();
 	this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].getCgi()[1];
-	setEnv();
+	_setEnv();
 }
 
-std::string cgi::getDate()
+std::string cgi::_getDate()
 {
 	char buf[100];
 	time_t now = std::time(0);
@@ -48,7 +48,7 @@ std::string cgi::getDate()
 	return std::string(buf);
 }
 
-void cgi::setEnv()
+void cgi::_setEnv()
 {
 	setenv("CONTENT_LENGTH", _request.getHeaders().find("Content-Length")->second.c_str(), 1);
 	setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
@@ -64,8 +64,7 @@ void cgi::setEnv()
 	setenv("SCRIPT_FILENAME", arg.c_str(), 1);
 }
 
-
-void cgi::exec_script( std::string filename )
+void cgi::_exec_script( std::string filename )
 {
     int ret;
     char *tmp[3];
@@ -85,7 +84,7 @@ void cgi::exec_script( std::string filename )
 	}
 }
 
-void cgi::exec_scriptGET(int fd)
+void cgi::_exec_scriptGET(int fd)
 {
 	int ret;
     char *tmp[3];
@@ -114,14 +113,14 @@ void _parent( void ) {
 }
 
 void cgi::processing_cgi( Request request )
-{	
+{
+	_setRequest(request);
 	_tmpOutputFileName = "response" + std::to_string(clock());
 	int fd;
 	pid_t pid;
 	fd = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 	if (request.getMethod() == "POST") {
 		close(fd);
-		setRequest(request);
 		int fd5 = open(_request.getBodyFilename().c_str(), O_RDONLY);
 		_tmp = _generateTmp(fd5);
 		close(fd5);
@@ -130,20 +129,19 @@ void cgi::processing_cgi( Request request )
 			exit(EXIT_FAILURE);
 		else if (pid == 0) {
 			try {
-				exec_script(_tmpOutputFileName);			
+				_exec_script(_tmpOutputFileName);			
 			} catch (std::exception &e) {
 				std::cout << e.what() << std::endl;
 			}
 		}
 	}
 	else {
-		setRequest(request);
 		pid = fork();
 		if (pid == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0) {
 			try {
-				exec_scriptGET(fd);			
+				_exec_scriptGET(fd);			
 			} catch (std::exception &e) {
 				std::cout << e.what() << std::endl;
 			}
@@ -153,7 +151,7 @@ void cgi::processing_cgi( Request request )
 	_parent();
 	if (_request.getMethod() == "POST") remove(_request.getBodyFilename().c_str());
 	int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
-	parseOutput(fd2);
+	_parseOutput(fd2);
 	close(fd2);
 }
 
@@ -166,7 +164,6 @@ std::string	cgi::_generateTmp( int fd ) {
 	int count = 0;
 	fds.fd = fd;
 	fds.events = POLLIN;
-
 	int rc = poll(&fds, 1, 0);
 	if (rc == 1 && fds.events & POLLIN ) {
 		while ((count = read(fds.fd, buffer, 4096)) > 0) {
@@ -180,12 +177,8 @@ std::string	cgi::_generateTmp( int fd ) {
 	return tmp;
 }
 
-
-
-void	cgi::parseOutput( int fd ) {
+void	cgi::_parseOutput( int fd ) {
 	std::string tmp = this->_generateTmp(fd);
-	std::cout << std::endl;
-	std::cout << "#### DEBUGGGGOU {TMP} ####" << std::endl;
 	std::stringstream ss(tmp);
 	std::string buffer;
 	std::getline(ss, buffer);

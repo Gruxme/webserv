@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:23:30 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 14:47:48 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,8 @@
 #include <string>
 #include <algorithm>
 #include "../src/request/Request.hpp"
-// #include "../src/response/response.hpp"
-// #include "../src/config/LocationClass.hpp"
 
-class cgi
-{
+class cgi {
 	public:
 		Request _request;
 		std::string arg;
@@ -44,15 +41,16 @@ class cgi
 		cgi( cgi const &obj );
 		cgi& operator=( cgi const &rhs );
 
-		void processing_cgi(Request request);
-		void exec_script( std::string filename );
-		void exec_scriptGET(int fd);
-		
-		std::string getDate();
+		void processing_cgi( Request request );
 
-		void setRequest(Request request);
-
+	private:		
+		void _exec_script( std::string filename );
+		void _exec_scriptGET(int fd);
+		std::string _getDate();
+		void _setRequest(Request request);
 		std::string	_generateTmp( int fd );
+		void _setEnv();
+		void _parseOutput( int fd );
 
 	private:
 		std::string	_status;
@@ -63,9 +61,6 @@ class cgi
 		std::string	_tmpOutputFileName;
 
 	public:
-		void	parseOutput( int fd );
 		std::string	getContent( void ) const;
-			
-		void setEnv();
-		void setHeader(const std::string &key, const std::string &value, bool end);
+
 };
