@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/11 14:46:36 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/13 12:52:04 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,8 @@ class cgi
 		void processing_cgi(Request request);
 		void exec_script( std::string filename );
 		void exec_scriptGET(int fd);
-		// void script_output(int fd);
 		
 		std::string getDate();
-		std::string getOsName();
 
 		void setRequest(Request request);
 
