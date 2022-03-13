@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:26:29 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 14:32:38 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,8 +142,6 @@ void _parent( void ) {
 	while (waitpid(-1, &status, 0) > 0)
 		if (WIFEXITED(status))
 			ret = WEXITSTATUS(status);
-	std::cout << ret << std::endl;
-	exit(0);
 }
 
 void cgi::processing_cgi( Request request )
@@ -162,20 +160,31 @@ void cgi::processing_cgi( Request request )
 		pid = fork();
 		if (pid == -1)
 			exit(EXIT_FAILURE);
-		else if (pid == 0)
-			exec_script(_tmpOutputFileName);
+		else if (pid == 0) {
+			try {
+				exec_script(_tmpOutputFileName);			
+			} catch (std::exception &e) {
+				std::cout << e.what() << std::endl;
+				exit(0);
+			}
+		}
 	}
 	else {
 		setRequest(request);
 		pid = fork();
 		if (pid == -1)
 			exit(EXIT_FAILURE);
-		else if (pid == 0)
-			exec_scriptGET(fd);
+		else if (pid == 0) {
+			try {
+				exec_scriptGET(fd);			
+			} catch (std::exception &e) {
+				std::cout << e.what() << std::endl;
+				exit(0);
+			}
+		}
 		close(fd);
 	}
-	
-	wait(NULL);
+	_parent();
 	if (_request.getMethod() == "POST") remove(_request.getBodyFilename().c_str());
 	int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
 	parseOutput(fd2);
