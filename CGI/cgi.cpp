@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:18:14 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 14:23:47 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,22 +93,20 @@ void cgi::setEnv()
 }
 
 
-void cgi::exec_script( int getFd, std::string filename )
+void cgi::exec_script( std::string filename )
 {
     int ret;
     char *tmp[3];
 	int fd1;
-	int fd;
 
-	if (_request.getMethod() == "POST")
-		fd = open(filename.c_str() , O_RDWR);
+	int fd = open(filename.c_str() , O_RDWR);
 	tmp[0] = (char *)scriptType.c_str();
 	tmp[1] = (char *)arg.c_str();
 	tmp[2] = NULL;
 	setEnv();	
 	fd1 = open(_request.getBodyFilename().c_str() , O_RDWR , 0777);
 	dup2(fd1, 0);
-	_request.getMethod() == "POST" ? dup2(fd, 1) : dup2(getFd, 1);
+	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
 	std::cerr << "execve failed with ret: " << ret << "and error of " << strerror(errno) << std::endl;
     if (ret == -1) {
@@ -116,7 +114,7 @@ void cgi::exec_script( int getFd, std::string filename )
 	}
 }
 
-/* void cgi::exec_scriptGET(int fd)
+void cgi::exec_scriptGET(int fd)
 {
 	int ret;
     char *tmp[3];
@@ -136,7 +134,7 @@ void cgi::exec_script( int getFd, std::string filename )
     if (ret == -1) {
 		throw "500 Internal Server Error";
 	}
-} */
+}
 
 void cgi::processing_cgi( Request request )
 {	
@@ -150,19 +148,21 @@ void cgi::processing_cgi( Request request )
 		int fd5 = open(_request.getBodyFilename().c_str(), O_RDONLY);
 		_tmp = _generateTmp(fd5);
 		close(fd5);
+		
 		pid = fork();
 		if (pid == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
-			exec_script(-1, _tmpOutputFileName);
+			exec_script(_tmpOutputFileName);
 	}
+	
 	else {
 		setRequest(request);
 		pid = fork();
 		if (pid == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
-			exec_script(fd, NULL);
+			exec_scriptGET(fd);
 		close(fd);
 	}
 	wait(NULL);

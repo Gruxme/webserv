@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:17:36 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 14:23:30 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,8 @@ class cgi
 		cgi& operator=( cgi const &rhs );
 
 		void processing_cgi(Request request);
-		void exec_script( int getFd, std::string filename );
-		// void exec_scriptGET();
+		void exec_script( std::string filename );
+		void exec_scriptGET(int fd);
 		
 		std::string getDate();
 
