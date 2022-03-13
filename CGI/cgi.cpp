@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 21:35:56 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/13 21:37:19 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,8 +107,7 @@ int	_parent( pid_t pid ) {
 	int ret = 0;
 	while (waitpid(pid, &status, 0) > 0)
 		if (WIFEXITED(status))
-			ret = WEXITSTATUS(status);\
-	ret = 1;
+			ret = WEXITSTATUS(status);
 	return ret;
 }
 
