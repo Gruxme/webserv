@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:02:19 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 14:12:56 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,14 @@
 
 extern char **environ;
 
-cgi::cgi() : _status("200 OK"), _location(""), _contentLength(0), _output(""), _tmp("") { }	
-cgi::~cgi() { }
+cgi::cgi() : _status("200 OK"), _location(""), _contentLength(0), _output(""), _tmp("") {
+}
+
+cgi::~cgi() {
+}
+
 cgi::cgi( cgi const &obj ) { *this = obj; }
+
 cgi& cgi::operator=( cgi const &rhs ) {
     if (this != &rhs) {
         this->_request = rhs._request;
@@ -36,6 +41,10 @@ void cgi::setRequest(Request request) {
 	std::string path = _request.getConfig().getLocationClass()[request.getPos()].getCgi()[1];
 	this->arg = _request.getConfig().getLocationClass()[_request.getPos()].getRoot() + _request.getFileName();
 	this->scriptType = _request.getConfig().getLocationClass()[_request.getPos()].getCgi()[1];
+/* 	if (_request.getUriExtension() == PHP)
+		this->scriptType = "/Users/sel-fadi/.brew/bin/php-cgi";
+	else if (_request.getUriExtension() == PY)
+		this->scriptType = "/usr/bin/python"; */
 }
 
 std::string cgi::getDate()
@@ -49,26 +58,38 @@ std::string cgi::getDate()
 
 void cgi::setEnv()
 {
-	/* std::map<std::string, std::string>::iterator it = _request.getHeaders().begin();
-	std::map<std::string, std::string>::iterator ite = _request.getHeaders().end();
-	for (; it != ite; ++it)
-		std::cout << it->first << " " << it->second << std::endl;
-	exit(0); */
-	setenv("CONTENT_LENGTH", _request.getHeaders().find("Content-Length")->second.c_str(), 1);
-	if (_request.getHeaders().find("Content-Type") != _request.getHeaders().end())
+	std::cout << _request.getMethod().c_str() << std::endl;
+	if (_request.getMethod() == "POST")
+	{
+		std::cout << "--------------- ||| --- POST --- ||| ---------------\n";
+		setenv("CONTENT_LENGTH", _request.getHeaders().find("Content-Length")->second.c_str(), 1);
+		setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
+		// if (!_request.getQuery().empty()) {
+		// 	setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
+		// }
+		// else {
+		// 	setenv("QUERY_STRING", _tmp.c_str(), 1);
+		// }
+		setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
+		setenv("REDIRECT_STATUS","true", 1);
 		setenv("CONTENT_TYPE", _request.getHeaders().find("Content-Type")->second.c_str(), 1);
-	else
-		setenv("CONTENT_TYPE", "text/html; charset=UTF-8", 1);
-	setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
-	setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
-	setenv("REDIRECT_STATUS","true", 1);
-	setenv("SCRIPT_FILENAME", arg.c_str(), 1);
-	setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
-	setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
-	setenv("PATH_INFO", _request.getPath().c_str(), 1);		
-	setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
-	setenv("REDIRECT_STATUS","true",1);
-	setenv("SCRIPT_FILENAME", arg.c_str(), 1);
+		setenv("SCRIPT_FILENAME", arg.c_str(), 1);
+
+/* 		std::cout << _request.getHeaders().find("Content-Length")->second.c_str() << std::endl;
+		std::cout << _request.getMethod().c_str() << std::endl;
+		std::cout << _request.getHeaders().find("Content-Type")->second.c_str() << std::endl;
+		std::cout << arg.c_str() << std::endl; */
+	}
+	else if (_request.getMethod() == "GET")
+	{
+		std::cout << "--------------- ||| ----- GET ----- ||| ---------------\n";
+		setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
+		setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
+		setenv("PATH_INFO", _request.getPath().c_str(), 1);		
+		setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
+		setenv("REDIRECT_STATUS","true",1);
+		setenv("SCRIPT_FILENAME", arg.c_str(), 1);
+	}
 }
 
 
@@ -82,11 +103,12 @@ void cgi::exec_script( std::string filename )
 	tmp[0] = (char *)scriptType.c_str();
 	tmp[1] = (char *)arg.c_str();
 	tmp[2] = NULL;
-	setEnv();
+	setEnv();	
 	fd1 = open(_request.getBodyFilename().c_str() , O_RDWR , 0777);
 	dup2(fd1, 0);
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
+	std::cerr << "execve failed with ret: " << ret << "and error of " << strerror(errno) << std::endl;
     if (ret == -1) {
 		throw "500 Internal Server Error";
 	}
@@ -104,14 +126,14 @@ void cgi::exec_scriptGET(int fd)
 
 	setEnv();
 	std::cout << "[ " << _request.getBodyFd() << " ]\n";
-	fd1 = open(_tmpOutputFileName.c_str() , O_RDWR| O_CREAT | O_TRUNC, 0777);
+	fd1 = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 	dup2(fd1, 0);
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
 	std::cerr << "execve failed with ret: " << ret << "and error of " << strerror(errno) << std::endl;
-    // if (ret == -1) {
-	// 	throw "500 Internal Server Error";
-	// }
+    if (ret == -1) {
+		throw "500 Internal Server Error";
+	}
 }
 
 void cgi::processing_cgi( Request request )
@@ -132,11 +154,6 @@ void cgi::processing_cgi( Request request )
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
 			exec_script(_tmpOutputFileName);
-		wait(NULL);
-		remove(_request.getBodyFilename().c_str());
-		int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
-		parseOutput(fd2);
-		close(fd2);
 	}
 	
 	else {
@@ -150,14 +167,14 @@ void cgi::processing_cgi( Request request )
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
 			exec_scriptGET(fd);
-		wait(NULL);
 		close(fd);
-		int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
-		parseOutput(fd2);
-		close(fd2);
 	}
+	wait(NULL);
+	if (_request.getMethod() == "POST") remove(_request.getBodyFilename().c_str());
+	int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
+	parseOutput(fd2);
+	close(fd2);
 }
-
 
 
 
