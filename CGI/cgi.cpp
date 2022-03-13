@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:12:56 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 14:18:14 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,20 +93,22 @@ void cgi::setEnv()
 }
 
 
-void cgi::exec_script( std::string filename )
+void cgi::exec_script( int getFd, std::string filename )
 {
     int ret;
     char *tmp[3];
 	int fd1;
+	int fd;
 
-	int fd = open(filename.c_str() , O_RDWR);
+	if (_request.getMethod() == "POST")
+		fd = open(filename.c_str() , O_RDWR);
 	tmp[0] = (char *)scriptType.c_str();
 	tmp[1] = (char *)arg.c_str();
 	tmp[2] = NULL;
 	setEnv();	
 	fd1 = open(_request.getBodyFilename().c_str() , O_RDWR , 0777);
 	dup2(fd1, 0);
-	dup2(fd, 1);
+	_request.getMethod() == "POST" ? dup2(fd, 1) : dup2(getFd, 1);
     ret = execve(tmp[0], tmp, environ);
 	std::cerr << "execve failed with ret: " << ret << "and error of " << strerror(errno) << std::endl;
     if (ret == -1) {
@@ -114,7 +116,7 @@ void cgi::exec_script( std::string filename )
 	}
 }
 
-void cgi::exec_scriptGET(int fd)
+/* void cgi::exec_scriptGET(int fd)
 {
 	int ret;
     char *tmp[3];
@@ -134,39 +136,33 @@ void cgi::exec_scriptGET(int fd)
     if (ret == -1) {
 		throw "500 Internal Server Error";
 	}
-}
+} */
 
 void cgi::processing_cgi( Request request )
 {	
 	_tmpOutputFileName = "response" + std::to_string(clock());
+	int fd;
+	pid_t pid;
+	fd = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 	if (request.getMethod() == "POST") {	
-		int fd;
-		pid_t pid;
-		fd = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 		close(fd);
 		setRequest(request);
 		int fd5 = open(_request.getBodyFilename().c_str(), O_RDONLY);
 		_tmp = _generateTmp(fd5);
 		close(fd5);
-		
 		pid = fork();
 		if (pid == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
-			exec_script(_tmpOutputFileName);
+			exec_script(-1, _tmpOutputFileName);
 	}
-	
 	else {
-		int fd;
-		pid_t pid;
-		fd = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
 		setRequest(request);
-		std::cout << "[ --------  GET] : " << _request.getQuery().c_str() << std::endl;
 		pid = fork();
 		if (pid == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
-			exec_scriptGET(fd);
+			exec_script(fd, NULL);
 		close(fd);
 	}
 	wait(NULL);
