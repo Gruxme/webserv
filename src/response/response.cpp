@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/12 22:45:37 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/13 14:58:26 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ response	&response::operator=(const response &x){
 	return *this;
 }
 
-void	response::headersSent(){
+void	response::headersSent() {
 	_headersSent = true;
 }
 
@@ -302,7 +302,12 @@ bool	response::isError( void ) const{
 void response::serveRequest( void ) {
 	std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
 	if (_req.getConfig().getLocationClass()[_req.getPos()].getCgi()[0] == _req.getUriExtension()){
-		_cgi.processing_cgi(_req);
+		try {
+			_cgi.processing_cgi(_req);
+		} catch ( std::string strErr ) {
+			errorMsg(strErr);
+			return ;
+		}
 		_headersSent = true;
 	}
 	else if (std::find(v.begin(), v.end(), _req.getMethod()) != v.end()) {

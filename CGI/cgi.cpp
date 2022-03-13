@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 14:54:18 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 14:57:02 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,15 +102,13 @@ void cgi::_exec_scriptGET(int fd)
 	exit(errno);
 }
 
-void _parent( void ) {
+int	_parent( void ) {
 	int status;
 	int ret = 0;
 	while (waitpid(-1, &status, 0) > 0)
 		if (WIFEXITED(status))
 			ret = WEXITSTATUS(status);
-	if (ret) {
-		throw "500 Internal Server Error";
-	}
+	return ret;
 }
 
 void cgi::processing_cgi( Request request )
@@ -129,11 +127,7 @@ void cgi::processing_cgi( Request request )
 		if (pid == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0) {
-			try {
-				_exec_script(_tmpOutputFileName);			
-			} catch (std::exception &e) {
-				std::cout << e.what() << std::endl;
-			}
+			_exec_script(_tmpOutputFileName);			
 		}
 	}
 	else {
@@ -141,15 +135,12 @@ void cgi::processing_cgi( Request request )
 		if (pid == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0) {
-			try {
-				_exec_scriptGET(fd);			
-			} catch (std::exception &e) {
-				std::cout << e.what() << std::endl;
-			}
+			_exec_scriptGET(fd);			
 		}
 		close(fd);
 	}
-	_parent();
+	if (_parent())
+		throw "500 Internal Server Error";
 	if (_request.getMethod() == "POST") remove(_request.getBodyFilename().c_str());
 	int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
 	_parseOutput(fd2);
