@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/13 15:37:58 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 21:25:45 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,12 +279,12 @@ std::string	response::getBodyContent( void ){
 		return "";
 	if(_bodyFd == -1)
 	{
-		_bodyFd = open(_body.c_str(), O_RDONLY); // make it non block
+		_bodyFd = open(_body.c_str(), O_RDONLY);
 		fcntl(_bodyFd, F_SETFL, O_NONBLOCK);
 	}
 	fds.fd = _bodyFd;
 	fds.events = POLLIN;
-	if ((poll(&fds, 1, -1) > 0) && (fds.revents = POLLIN))
+	if ((poll(&fds, 1, -1) > 0) && (fds.revents == POLLIN))
 	{
 		bzero(&buff, 2028*100);
 		if ((rc = read(fds.fd, &buff, 2028*100)) > 0){
@@ -304,8 +304,9 @@ void response::serveRequest( void ) {
 	if (_req.getConfig().getLocationClass()[_req.getPos()].getCgi()[0] == _req.getUriExtension()){
 		try {
 			_cgi.processing_cgi(_req);
-		} catch ( std::string strErr ) {
+		} catch ( const char * strErr ) {
 			errorMsg(strErr);
+			_error = true ;
 			return ;
 		}
 		_headersSent = true;

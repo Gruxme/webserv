@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socketsIO.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/13 12:13:34 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 21:34:36 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,15 +205,15 @@ void	socketsIO::eventListener()
 					_responses[_pollfds[i].fd].setData(currReq);
 					if(!_responses[_pollfds[i].fd].getHeaderStatus())
 						_responses[_pollfds[i].fd].serveRequest();
-					if(_responses[_pollfds[i].fd].getHeaderStatus() || !_requests[_pollfds[i].fd].getUriExtension().empty())
+					if(_responses[_pollfds[i].fd].getHeaderStatus())
 						if(_responses[_pollfds[i].fd].isAutoIndex())
 							content = _responses[_pollfds[i].fd].indexListContent();
-						else if (!_requests[_pollfds[i].fd].getUriExtension().empty()){
-							content = _responses[_pollfds[i].fd].getCgi().getContent();
-							std::cout << content << std::endl;
-						}
 						else
 							content = _responses[_pollfds[i].fd].getBodyContent();
+					else if ((_requests[_pollfds[i].fd].getUriExtension() == ".py" || _requests[_pollfds[i].fd].getUriExtension() == ".php") && !_responses[_pollfds[i].fd].isError()){
+						content = _responses[_pollfds[i].fd].getCgi().getContent();
+						std::cout << content << std::endl;
+					}
 					else {
 						content = _responses[_pollfds[i].fd].getHeaders();
 						std::cout << content << std::endl;
@@ -229,9 +229,11 @@ void	socketsIO::eventListener()
 						}
 						else if (rc == static_cast<int>(content.length()) && !_responses[_pollfds[i].fd].getHeaderStatus())
 							_responses[_pollfds[i].fd].headersSent();
-						else if(_responses[_pollfds[i].fd].getHeaderStatus() && _requests[_pollfds[i].fd].getUriExtension().empty())
+						else if(_responses[_pollfds[i].fd].getHeaderStatus() && ((_requests[_pollfds[i].fd].getUriExtension() != ".php" && _requests[_pollfds[i].fd].getUriExtension() != ".py") || _responses[_pollfds[i].fd].isError())){
 							_responses[_pollfds[i].fd].setBytesSent(rc);
-						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe || !_requests[_pollfds[i].fd].getUriExtension().empty())
+							std::cout << "set bytes sent\n";
+						}
+						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe || ((_requests[_pollfds[i].fd].getUriExtension() == ".py" || _requests[_pollfds[i].fd].getUriExtension() == ".php") && !_responses[_pollfds[i].fd].isError()))
 						{
 							std::cout << "client with fd: " << _pollfds[i].fd << " kept alive and reset to POLLIN" << std::endl;
 							// _requests.erase(_pollfds[i].fd));

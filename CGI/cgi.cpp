@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 15:00:31 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/13 21:35:56 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,7 @@ void cgi::_exec_script( std::string filename )
 	dup2(fd1, 0);
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
+	remove(_request.getBodyFilename().c_str());
 	std::cerr << "execve failed with ret: " << ret << " and error of " << strerror(errno) << std::endl;
 	exit(errno);
 }
@@ -96,16 +97,18 @@ void cgi::_exec_scriptGET(int fd)
 	dup2(fd1, 0);
 	dup2(fd, 1);
     ret = execve(tmp[0], tmp, environ);
+	remove(_tmpOutputFileName.c_str());
 	std::cerr << "execve failed with ret: " << ret << " and error of " << strerror(errno) << std::endl;
 	exit(errno);
 }
 
-int	_parent( void ) {
+int	_parent( pid_t pid ) {
 	int status;
 	int ret = 0;
-	while (waitpid(-1, &status, 0) > 0)
+	while (waitpid(pid, &status, 0) > 0)
 		if (WIFEXITED(status))
-			ret = WEXITSTATUS(status);
+			ret = WEXITSTATUS(status);\
+	ret = 1;
 	return ret;
 }
 
@@ -123,7 +126,7 @@ void cgi::processing_cgi( Request request )
 		close(fd5);
 		pid = fork();
 		if (pid == -1)
-			exit(EXIT_FAILURE);
+			throw "500 Internal Server Error";
 		else if (pid == 0) {
 			_exec_script(_tmpOutputFileName);			
 		}
@@ -131,14 +134,14 @@ void cgi::processing_cgi( Request request )
 	else {
 		pid = fork();
 		if (pid == -1)
-			exit(EXIT_FAILURE);
+			throw "500 Internal Server Error";
 		else if (pid == 0) {
 			_exec_scriptGET(fd);			
 		}
 		close(fd);
 	}
-	if (_parent())
-		throw "500 Internal Server Error";
+	if (_parent(pid))
+		throw "500 Internal Server Error"; // waitpid doesn't catch the return of the process
 	if (_request.getMethod() == "POST") remove(_request.getBodyFilename().c_str());
 	int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
 	_parseOutput(fd2);
