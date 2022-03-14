@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/14 17:50:21 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 18:16:35 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,12 +107,14 @@ void cgi::_exec_scriptGET(int fd)
 	exit(errno);
 }
 
-int	_parent( pid_t pid ) {
+int	_parent( pid_t pid, time_t t ) {
 	int status;
 	int ret = 0;
-	while (waitpid(pid, &status, 0) > 0)
-		if (WIFEXITED(status))
-			ret = WEXITSTATUS(status);
+	while (time(NULL) - t < 5) {
+		while (waitpid(pid, &status, 0) > 0)
+			if (WIFEXITED(status))
+				ret = WEXITSTATUS(status);
+	}
 	return ret;
 }
 
@@ -123,6 +125,7 @@ void cgi::processing_cgi( Request request )
 	int fd;
 	pid_t pid;
 	fd = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
+	time_t timeStart = clock();
 	if (request.getMethod() == "POST") {
 		close(fd);
 		int fd5 = open(_request.getBodyFilename().c_str(), O_RDONLY);
@@ -144,7 +147,7 @@ void cgi::processing_cgi( Request request )
 		}
 		close(fd);
 	}
-	if (_parent(pid))
+	if (_parent(pid, timeStart))
 		throw "500 Internal Server Error"; // waitpid doesn't catch the return of the process
 	int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
 	_parseOutput(fd2);
