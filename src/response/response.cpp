@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/13 21:25:45 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 13:06:19 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
-	_error(false), _autoIndex(false), _req(), _cgi() {}
+	_error(false), _autoIndex(false), _isCgi(false), _req(), _cgi() {}
 
 response::~response() {
 	//check if sigpipe would need close of fd here
@@ -38,6 +38,7 @@ response	&response::operator=(const response &x){
 	_autoIndex = x._autoIndex;
 	_req = x._req;
 	_cgi = x._cgi;
+	_isCgi = x._isCgi;
 	return *this;
 }
 
@@ -299,6 +300,10 @@ bool	response::isError( void ) const{
 	return _error;
 }
 
+bool 	response::isCgi(void) const{
+	return _isCgi;
+}
+
 void response::serveRequest( void ) {
 	std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
 	if (_req.getConfig().getLocationClass()[_req.getPos()].getCgi()[0] == _req.getUriExtension()){
@@ -309,6 +314,7 @@ void response::serveRequest( void ) {
 			_error = true ;
 			return ;
 		}
+		_isCgi = true;
 		_headersSent = true;
 	}
 	else if (std::find(v.begin(), v.end(), _req.getMethod()) != v.end()) {

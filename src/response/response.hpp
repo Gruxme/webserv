@@ -58,6 +58,7 @@ class response {
 		bool		getHeaderStatus( void ) const;
 		bool		getStatus( void ) const;
 		bool		isError( void ) const;
+		bool		isCgi( void ) const;
 		bool		isAutoIndex( void ) const;
 		size_t		getBodySize( void ) const;
 		bool		bodyEof( void ) const;
@@ -73,6 +74,7 @@ class response {
 		bool				_headersSent;
 		bool				_error;
 		bool				_autoIndex;
+		bool				_isCgi;
 		Request				_req;
 		cgi					_cgi;
 };
