@@ -6,7 +6,11 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2022/03/14 17:33:33 by abiari           ###   ########.fr       */
+=======
+/*   Updated: 2022/03/14 16:54:56 by aabounak         ###   ########.fr       */
+>>>>>>> 33c4bad07f52a23901c1d629bb020cadd317d26f
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +60,10 @@ void cgi::_setEnv()
 	setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
 	setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
 	setenv("REDIRECT_STATUS","true", 1);
-	setenv("CONTENT_TYPE", _request.getHeaders().find("Content-Type")->second.c_str(), 1);
+	if (_request.getHeaders().find("Content-Type") != _request.getHeaders().end())
+		setenv("CONTENT_TYPE", _request.getHeaders().find("Content-Type")->second.c_str(), 1);
+	else
+		setenv("CONTENT-TYPE", "text/html; charset=utf-8", 1);
 	setenv("SCRIPT_FILENAME", arg.c_str(), 1);
 	setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
 	setenv("QUERY_STRING", _request.getQuery().c_str(), 1);
@@ -175,7 +182,8 @@ void	cgi::_parseOutput( int fd ) {
 	std::string tmp = this->_generateTmp(fd);
 	std::stringstream ss(tmp);
 	std::string buffer;
-	std::getline(ss, buffer);
+	std::getline(ss, buffer);;
+
 	if (std::strncmp("Status: ", buffer.c_str(), 8) == 0) {
 		this->_status = buffer.substr(buffer.find("Status: ") + strlen("Status: "));
 		tmp.erase(tmp.begin(), tmp.begin() + buffer.length());
@@ -187,7 +195,6 @@ void	cgi::_parseOutput( int fd ) {
 	_output += date;
 	_output += "\r\nServer: Webserv/4.2.0 \r\n";
 	delete[] date;
-	std::cout << _contentLength << std::endl;
 	_output += "Content-Length: " + std::to_string(_contentLength) + "\r\nConnection: " + _request.getHeaders().find("Connection")->second + tmp;
 	remove(_tmpOutputFileName.c_str());
 }
