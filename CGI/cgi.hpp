@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 13:32:54 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/06 14:04:33 by sel-fadi         ###   ########.fr       */
+/*   Updated: 2022/03/14 19:15:41 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,39 +26,42 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <string>
+#include <algorithm>
 #include "../src/request/Request.hpp"
 
-class cgi
-{
+class cgi {
 	public:
-		Request request;
-		bool getOrPost;
-		bool documentOrRedirection;
-		char *queryString;
+		Request _request;
 		std::string arg;
 		std::string scriptType;
-		std::vector<std::string> my_headers;
-		std::vector<std::string> my_headerPost;
-		std::string _buffer;
+
 	public:
 		cgi();
 		~cgi();
 		cgi( cgi const &obj );
-		cgi& operator= ( cgi const& rhs );
+		cgi& operator=( cgi const &rhs );
 
-		void processing_cgi(Request &request);
-		void exec_script(int *fd, int *fd1);
-		void script_output(int *fd, int *fd1, pid_t pid);
-		
-		std::string getDate();
-		const char* getErrorMessage(int error);
-		std::string getOsName();
-		
-		std::vector<std::string> setEnvInVector(Request &request);
-		std::vector<std::string> setEnvInVectorPost(Request &request);
-		char *const* setEnv(std::vector<std::string> my_env);
-		void setEnv(int getOrPost);
-		void setHeader(const std::string &key, const std::string &value, bool end);
-		void handleRedirectResponse();
-		void handleResponse(int code);
+		void processing_cgi( Request request );
+
+	private:		
+		void _exec_script( std::string filename );
+		void _exec_scriptGET(int fd);
+		std::string _getDate();
+		void _setRequest(Request request);
+		std::string	_generateTmp( int fd );
+		void _setEnv();
+		void _parseOutput( int fd );
+		int	_parent( pid_t pid );
+
+	private:
+		std::string	_status;
+		std::string	_location;
+		size_t		_contentLength;
+		std::string	_output;
+		std::string	_tmp;
+		std::string	_tmpOutputFileName;
+
+	public:
+		std::string	getContent( void ) const;
+
 };

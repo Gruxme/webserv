@@ -23,7 +23,7 @@ class ServerConfigClass {
         std::string     _root;
         std::string     _redirect;
         std::string     _index;
-        size_t			_bodySizeLimit;
+        size_t          _bodySizeLimit;
         std::string     _accessLog;
         std::string     _errorPage;
         size_t			_locationCount;
@@ -45,4 +45,5 @@ class ServerConfigClass {
         std::string     getErrorPage() const;
         size_t			getLocationCount() const;
         std::vector<LocationClass>  getLocationClass() const;
+
 };

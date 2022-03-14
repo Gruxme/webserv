@@ -19,6 +19,7 @@
 # include <fstream>
 # include <algorithm>
 # include "ServerConfigClass.hpp"
+# include "../utils/utils.hpp"
 
 class ConfigClass {
 

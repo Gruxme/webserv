@@ -1,24 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerConfigClass.cpp                                   :+:      :+:    :+:   */
+/*   ServerConfigClass.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:06 by aabounak          #+#    #+#             */
-/*   Updated: 2022/02/23 10:57:12 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/14 21:02:40 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "ServerConfigClass.hpp"
 
 ServerConfigClass::ServerConfigClass() :
-    _port(8080),
+    _port(-1),
     _serverName(""),
     _root(""),
     _redirect(""),
     _index(""),
-    _bodySizeLimit(0),
+    _bodySizeLimit(10 * 1024 * 1024),
     _accessLog(""),
     _errorPage(""),
     _locationCount(0),
@@ -56,3 +56,5 @@ std::string     ServerConfigClass::getAccessLog() const { return this->_accessLo
 std::string     ServerConfigClass::getErrorPage() const { return this->_errorPage; }
 size_t   ServerConfigClass::getLocationCount() const { return this->_locationCount; }
 std::vector<LocationClass>  ServerConfigClass::getLocationClass() const { return this->_location; }
+
+

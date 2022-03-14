@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 01:50:10 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/03 18:40:55 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/12 21:55:53 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 # include <iostream>
 # include <string>
 # include <vector>
+# include "../utils/utils.hpp"
+
 
 # define _AUTOINDEX_OFF_ 0
 # define _AUTOINDEX_ON_ 1
@@ -22,9 +24,10 @@ class LocationClass {
     private:
         std::string _path;
         std::string _root;
-        std::string _method;
+        std::vector<std::string> _methods;
         std::string _redirect;
-        std::string _cgiExt;
+        std::string _upload;
+        std::vector<std::string> _cgi;
         bool        _autoindex;
         
     public:
@@ -37,16 +40,14 @@ class LocationClass {
         /* ----- PRIVATE ----- */
         /* ----- Location Parser ----- */
         void    parseLocation( std::string buffer );
-        
-        /* -- PUBLIC METHOD */
-        std::vector<std::string> split( std::string str, char separator );
 
         /* ----- Getters----- */
         std::string getPath( void ) const;
         std::string getRoot( void ) const;
-        std::string getMethod( void ) const;
+        std::vector<std::string> getMethods( void ) const;
         std::string getRedirect( void ) const;
-        std::string getCgiExt( void ) const;
+        std::string getUpload( void ) const;
+        std::vector<std::string> getCgi( void ) const;
         bool        getAutoIndex( void ) const;
 
         class parseErr : public std::exception {

@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/07 17:27:01 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 18:57:03 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,17 @@ socketsIO&	socketsIO::operator=(const socketsIO& x){
 	return *this;
 }
 
+sockets* 	socketsIO::find(size_t port){
+	std::vector<sockets *>::iterator	it = _socks.begin();
+	std::vector<sockets *>::iterator	ite = _socks.end();
+	while(it != ite){
+		if ((*it)->getConfigs()[0].getPort() == port)
+			return *it;
+		it++;
+	}
+	return NULL;
+}
+
 void	socketsIO::setSock(sockets *sock){
 	struct	pollfd	fds = {};
 	_socks.push_back(sock);
@@ -50,10 +61,11 @@ bool	socketsIO::_tryConnect( int fd ){
 		if (fd != _socks[j]->getMainSock())
 			continue;
 		wasMainSock = true;
-		std::cout << "socket listening on port: " << _socks[j]->getConfig().getPort() << " is readable, with fd: " << fd << std::endl;
+		std::cout << "socket listening on port: " << _socks[j]->getConfigs()[0].getPort() << " is readable, with fd: " << fd << std::endl;
 		try
 		{
 			fds.fd = _socks[j]->acceptClient();
+			_requests[fds.fd].setConfigs(_socks[j]->getConfigs());
 		}
 		catch (const std::exception &e)
 		{
@@ -72,13 +84,16 @@ void	socketsIO::eventListener()
 	char buffer[4096];
 	int rc;
 	bool connClosed;
-	bool isErrorResp;
+	bool isErrorResp = false;
+	
 	while (1)
 	{
-		// isErrorResp = false;
 		connClosed = false;
 		std::cout << "Waiting on poll..." << std::endl;
 		rc = poll(&_pollfds[0], _nfds, -1);
+		for (size_t i = 0 ; i < _pollfds.size() ; i++) {
+			std::cout << _pollfds[i].fd << std::endl;
+		}
 		if (rc < 0)
 			throw socketIOErr("poll: ");
 		for (int i = 0; i < _nfds; i++)
@@ -94,6 +109,8 @@ void	socketsIO::eventListener()
 				_nfds--;
 				continue;
 			}
+
+			
 			if (!_tryConnect(_pollfds[i].fd))
 			{
 				if (_pollfds[i].revents == POLLIN)
@@ -101,30 +118,37 @@ void	socketsIO::eventListener()
 					std::cout << "POLLIN on: " << _pollfds[i].fd << std::endl;
 					bzero(buffer, 4096);
 					rc = recv(_pollfds[i].fd, &buffer, sizeof(buffer), 0);
-					if (rc == -1)
-						continue;
-					if (rc == 0){
+					if (rc == 0 || rc == -1){
+						std::cout << "recv from: " << _pollfds[i].fd << " failed. Connection closed and client removed" << std::endl;
 						close(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
-						continue ; // still not sure of this
+						continue;
 					}
-					_requests[_pollfds[i].fd].append(&buffer[0]);
+					_requests[_pollfds[i].fd].append(&buffer[0], rc);
 					std::cout << "fd: " << _pollfds[i].fd << " received: " << rc << " bytes" << std::endl;
 					try {
 						_requests[_pollfds[i].fd].parse();
-					}
-					catch (const std::exception &e){
-						if (_requests.find(_pollfds[i].fd)->second.getPort() == 0)
-							_responses[_pollfds[i].fd].setData(_socks[0]->getConfig(), _requests.find(_pollfds[i].fd)->second);
-						else
-						{
-							for (size_t j = 0; j < _socks.size(); j++)
-								if (_socks[j]->getConfig().getPort() == _requests.find(_pollfds[i].fd)->second.getPort())
-									_responses[_pollfds[i].fd].setData(_socks[j]->getConfig(), _requests.find(_pollfds[i].fd)->second);
+						if (g_sigpipe) {
+							_requests.erase(_pollfds[i].fd);
+							_responses.erase(_pollfds[i].fd);
+							std::cout << "client with fd: " << _pollfds[i].fd << " closed and AFTER ERROR IN UPLOAD" << std::endl;
+							close(_pollfds[i].fd);
+							_pollfds.erase(_pollfds.begin() + i);
+							_nfds--;
+							isErrorResp = false;
+							g_sigpipe = false;
+							continue ;
 						}
-						_responses[_pollfds[i].fd].errorMsg(e.what());
-						isErrorResp = _responses[_pollfds[i].fd].isError();
+					}
+					catch (const std::exception &e) {
+						if(_requests[_pollfds[i].fd].getConfig().getLocationClass()[_requests[_pollfds[i].fd].getPos()].getRedirect().empty()){
+							_responses[_pollfds[i].fd].setData(_requests.find(_pollfds[i].fd)->second);
+							_responses[_pollfds[i].fd].errorMsg(e.what());
+							isErrorResp = _responses[_pollfds[i].fd].isError();
+							_pollfds[i].events = POLLOUT;
+							continue;
+						}
 					}
 					// check if req complete and set event to pollout
 					if (_requests[_pollfds[i].fd].isComplete() || isErrorResp)
@@ -170,25 +194,24 @@ void	socketsIO::eventListener()
 								_pollfds.erase(_pollfds.begin() + i);
 								_nfds--;
 								isErrorResp = false;
+								g_sigpipe = false;
 							}
 							continue;
 						}
 					}
 					bool connClose = currReq.getHeaders().find("Connection")->second == "close";
-					if(currReq.getPort() == 0)
-						_responses[_pollfds[i].fd].setData(_socks[0]->getConfig(), currReq);
-					else {
-						for (size_t j = 0; j < _socks.size(); j++)
-							if (_socks[j]->getConfig().getPort() == currReq.getPort())
-								_responses[_pollfds[i].fd].setData(_socks[j]->getConfig(), currReq);
-					}
-					if(/* !_responses[_pollfds[i].fd].isError() &&  */!_responses[_pollfds[i].fd].getHeaderStatus())
+					_responses[_pollfds[i].fd].setData(currReq);
+					if(!_responses[_pollfds[i].fd].getHeaderStatus())
 						_responses[_pollfds[i].fd].serveRequest();
-					if(_responses[_pollfds[i].fd].getHeaderStatus())
+					if(_responses[_pollfds[i].fd].getHeaderStatus() && !_responses[_pollfds[i].fd].isCgi())
 						if(_responses[_pollfds[i].fd].isAutoIndex())
 							content = _responses[_pollfds[i].fd].indexListContent();
 						else
 							content = _responses[_pollfds[i].fd].getBodyContent();
+					else if (_responses[_pollfds[i].fd].isCgi()){
+						content = _responses[_pollfds[i].fd].getCgi().getContent();
+						std::cout << content << std::endl;
+					}
 					else {
 						content = _responses[_pollfds[i].fd].getHeaders();
 						std::cout << content << std::endl;
@@ -204,12 +227,23 @@ void	socketsIO::eventListener()
 						}
 						else if (rc == static_cast<int>(content.length()) && !_responses[_pollfds[i].fd].getHeaderStatus())
 							_responses[_pollfds[i].fd].headersSent();
-						else if(_responses[_pollfds[i].fd].getHeaderStatus())
+						else if(_responses[_pollfds[i].fd].getHeaderStatus() && !_responses[_pollfds[i].fd].isCgi()){
 							_responses[_pollfds[i].fd].setBytesSent(rc);
-						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe)
+						}
+						if(_responses[_pollfds[i].fd].isRedirect()){
+							std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after redirect to:  " 
+									<< _requests[_pollfds[i].fd].getConfig().getLocationClass()[_requests[_pollfds[i].fd].getPos()].getRedirect() << std::endl;
+							_requests.erase(_pollfds[i].fd);
+							_responses.erase(_pollfds[i].fd);
+							_pollfds.erase(_pollfds.begin() + i);
+							_nfds--;
+							continue ;
+						}
+						else if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe || _responses[_pollfds[i].fd].isCgi())
 						{
 							std::cout << "client with fd: " << _pollfds[i].fd << " kept alive and reset to POLLIN" << std::endl;
-							_requests.erase(_pollfds[i].fd);
+							// _requests.erase(_pollfds[i].fd));
+							_requests[_pollfds[i].fd].reset();
 							_responses.erase(_pollfds[i].fd);
 							_pollfds[i].events = POLLIN;
 							connClosed = true;
@@ -218,6 +252,8 @@ void	socketsIO::eventListener()
 					else{
 						std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after send error" << std::endl;
 						close(_pollfds[i].fd);
+						_requests.erase(_pollfds[i].fd);
+						_responses.erase(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
 						continue ;
@@ -226,6 +262,8 @@ void	socketsIO::eventListener()
 					{
 						std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after being served and Connection set to Close" << std::endl;
 						close(_pollfds[i].fd);
+						_requests.erase(_pollfds[i].fd);
+						_responses.erase(_pollfds[i].fd);
 						_pollfds.erase(_pollfds.begin() + i);
 						_nfds--;
 					}

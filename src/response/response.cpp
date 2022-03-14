@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/08 08:32:15 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 18:48:30 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,8 @@
 response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
-	_error(false), _autoIndex(false), _config(), _req(), _fileName(""),
-	_pos(-1)
-	{}
+	_error(false), _redirect(false), _autoIndex(false), _isCgi(false), _req(), _cgi() {}
+
 response::~response() {
 	//check if sigpipe would need close of fd here
 }
@@ -37,14 +36,14 @@ response	&response::operator=(const response &x){
 	_headersSent = x._headersSent;
 	_error = x._error;
 	_autoIndex = x._autoIndex;
-	_config = x._config;
 	_req = x._req;
-	_fileName = x._fileName;
-	_pos = x._pos;
+	_cgi = x._cgi;
+	_redirect = x._redirect;
+	_isCgi = x._isCgi;
 	return *this;
 }
 
-void	response::headersSent(){
+void	response::headersSent() {
 	_headersSent = true;
 }
 
@@ -62,8 +61,8 @@ bool	response::_autoindexModule(std::string path){
 	struct stat		status;
 	char			*date = new char[20]();
 	std::ostringstream dirListHtml;
-	dirListHtml << "<html>\n<head><title>Index of " << path << "</title></head>\n<body>\n<h1>Index of "\
-				<< path << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
+	dirListHtml << "<html>\n<head><title>Index of " << _req.getPath() << "</title></head>\n<body>\n<h1>Index of "\
+				<< _req.getPath() << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
 	if ((dir = opendir(path.c_str())) != NULL){
 		while ((ent = readdir(dir)) != NULL){
 			std::string	fileName(ent->d_name);
@@ -94,16 +93,13 @@ bool	response::isAutoIndex( void ) const{
 	return _autoIndex;
 }
 
-void	response::errorMsg( std::string type){
+void	response::errorMsg( std::string type ){
 	std::ostringstream	errRes;
 	struct stat			status;
 	std::string			errorFile;
 	std::string			statusCode = type.substr(0, 3);
 
-	// if(*(_config.getErrorPage().rbegin().base()) == '/')
-	// 	errorFile = _config.getErrorPage() + statusCode + ".html"; // Maybe do this in config parsing
-	// else
-	errorFile = _config.getErrorPage() + statusCode + ".html";
+	errorFile = _req.getConfig().getErrorPage() + statusCode + ".html";
 	errRes << "HTTP/1.1 " << type << "\r\nDate: ";
 	time_t	now = time(0);
 	char	*date = new char[30]();
@@ -113,16 +109,21 @@ void	response::errorMsg( std::string type){
 	if(statusCode == "405"){
 		std::string allowedMethods;
 		//check allowed method in location if any first
-		if(_pos != -1 && (allowedMethods = _config.getLocationClass()[_pos].getMethod()).empty() == false )
-			errRes << "Allow: " << allowedMethods << "\r\n";
-		errRes << "Allow: GET, POST, DELETE\r\n";
+		int pos = _req.getPos();
+		if (pos != -1 ) {
+			std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
+			if (std::find(v.begin(), v.end(), this->_req.getMethod()) != v.end())
+				errRes << "Allow: " << allowedMethods << "\r\n";
+		}
+		else
+			errRes << "Allow: GET, POST, DELETE\r\n";
 	}
 	errRes << "Content-Type: text/html\r\n";
 	std::cout << errorFile << std::endl;
 	if(stat(errorFile.c_str(), &status) < 0){
 		char *cwd = getcwd(NULL, 0);
 		errorFile = cwd;
-		errorFile += "/errorPages/" + statusCode + ".html";
+		errorFile += "/defaultPages/" + statusCode + ".html";
 		stat(errorFile.c_str(), &status);
 		delete(cwd);
 	}
@@ -138,40 +139,56 @@ std::string		response::indexListContent( void ) const{
 }
 
 void response::_getResrc( std::string absPath ) {
-	if (_req.getUriExtension() == PHP){
+	int fd = -1;
+	if ((fd = open(absPath.c_str(), O_RDONLY)) < 0)
+	{
+		if (errno == ENOENT)
+			errorMsg("404 Not Found");
+		else if (errno == EACCES)
+			errorMsg("403 Forbidden");
+		else
+			errorMsg("500 Internal Server Error");
+	}
+	else
+	{
+		close(fd);
+		std::ostringstream res;
+		struct stat status;
+		const char *mimeType;
 
-	}
-	else if(_req.getUriExtension() == PY){
-		
-	}
-	else{
-		int	fd = -1;
-		if((fd = open(absPath.c_str(), O_RDONLY)) < 0){
-			if(errno == ENOENT)
-				errorMsg("404 Not Found");
-			else if(errno == EACCES)
-				errorMsg("403 Forbidden");
+		time_t now = time(0);
+		char *date = new char[30]();
+		strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+		res << "HTTP/1.1 200 OK\r\nDate: " << date << "\r\n"
+			<< "Server: Webserv/4.2.0 \r\n";
+		delete[] date;
+		stat(absPath.c_str(), &status);
+		if (S_ISDIR(status.st_mode))
+		{
+			if (_req.getConfig().getLocationClass()[_req.getPos()].getPath() == "/")
+			{
+				_body = _req.getConfig().getLocationClass()[_req.getPos()].getRoot() + "/" + _req.getConfig().getIndex();
+				if (stat(_body.c_str(), &status) < 0)
+				{
+					errorMsg("200 OK");
+					return;
+				}
+				else
+				{
+					res << "Content-Type: text/html\r\n";
+					res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
+				}
+			}
 			else
-				errorMsg("500 Internal Server Error");
-		}
-		else{
-			std::ostringstream	res;
-			struct stat			status;
-			const char *mimeType;
-
-			time_t now = time(0);
-			char *date = new char[30]();
-			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
-			res << "HTTP/1.1 200 OK\r\nDate: " << date << "\r\n" << "Server: Webserv/4.2.0 \r\n";
-			free(date);
-			stat(absPath.c_str(), &status);
-			if(S_ISDIR(status.st_mode)){
-				/* if(!_config.getAutoIndex()){
+			{
+				if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
+				{
 					errorMsg("403 Forbidden");
-					return ;
-				} */
+					return;
+				}
 				_autoIndex = true;
-				if(!_autoindexModule(absPath)){
+				if (!_autoindexModule(absPath))
+				{
 					errorMsg("500 Internal Server Error");
 					return;
 				}
@@ -179,29 +196,62 @@ void response::_getResrc( std::string absPath ) {
 				res << "Content-Length: " << (_bodySize = _indexList.length()) << "\r\n";
 				_body = "";
 			}
-			else
-			{
-				mimeType = MimeTypes::getType(absPath.c_str());
-				if (mimeType == NULL)
-					res << "Content-Type: text/plain\r\n";
-				else
-					res << "Content-Type: " << mimeType << "\r\n";
-				res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
-				_body = absPath;
-			}
-			res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
-			_headers = res.str();
 		}
+		else
+		{
+			mimeType = MimeTypes::getType(absPath.c_str());
+			if (mimeType == NULL)
+				res << "Content-Type: text/plain\r\n";
+			else
+				res << "Content-Type: " << mimeType << "\r\n";
+			res << "Content-Length: " << (_bodySize = status.st_size) << "\r\n";
+			if (_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
+				res << "Content-Disposition: attachment\r\n";
+			_body = absPath;
+		}
+		res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
+		_headers = res.str();
 	}
-    return ;
+	return ;
 }
 
 
-void		response::_postResrc( std::string absPath ){
-	(void)absPath;
+void		response::_postResrc() {
+
+	std::ostringstream res;
+
+	time_t now = time(0);
+	char *date = new char[30]();
+	strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+	res << "HTTP/1.1 201 CREATED\r\nDate: " << date << "\r\n"
+		<< "Server: Webserv/4.2.0 \r\n";
+	delete[] date;
+	res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
+	_headers = res.str();
+	_bodySize = 0;
 }
 void		response::_deleteResrc( std::string absPath ){
-	(void)absPath;
+	if (remove(absPath.c_str()) < 0)
+	{
+		if (errno == ENOENT)
+			errorMsg("404 Not Found");
+		else
+			errorMsg("403 Forbidden");
+	}
+	else
+	{
+		std::ostringstream res;
+
+		time_t now = time(0);
+		char *date = new char[30]();
+		strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+		res << "HTTP/1.1 204 No Content\r\nDate: " << date << "\r\n"
+			<< "Server: Webserv/4.2.0 \r\n";
+		delete[] date;
+		res << "Connection: " << _req.getHeaders().find("Connection")->second << "\r\n\r\n";
+		_headers = res.str();
+		_bodySize = 0;
+	}
 }
 
 void		response::setBytesSent(size_t bytesSent){
@@ -226,14 +276,17 @@ std::string	response::getBodyContent( void ){
 	char				buff[2028*100];
 	std::string			content("");
 	int					rc = 0;
+
+	if(_req.getMethod() != "GET" && !_error)
+		return "";
 	if(_bodyFd == -1)
 	{
-		_bodyFd = open(_body.c_str(), O_RDONLY); // make it non block
+		_bodyFd = open(_body.c_str(), O_RDONLY);
 		fcntl(_bodyFd, F_SETFL, O_NONBLOCK);
 	}
 	fds.fd = _bodyFd;
 	fds.events = POLLIN;
-	if ((poll(&fds, 1, -1) > 0) && (fds.revents = POLLIN))
+	if ((poll(&fds, 1, -1) > 0) && (fds.revents == POLLIN))
 	{
 		bzero(&buff, 2028*100);
 		if ((rc = read(fds.fd, &buff, 2028*100)) > 0){
@@ -244,66 +297,62 @@ std::string	response::getBodyContent( void ){
 	return content;
 }
 
-void	response::_extractData( void ) {
-	std::string	tmp = this->_req.getPath();
-	if (std::count(tmp.begin(), tmp.end(), '/') == 1) {
-		for (size_t i = 0; i < _config.getLocationCount(); i++) {
-			if ("/" == _config.getLocationClass()[i].getPath()) {
-				this->_fileName = tmp;
-				this->_pos = i;
-				return ;
-			}
-		}
-	}
-	while (420) {
-		for (size_t i = 0; i < _config.getLocationCount(); i++) {
-			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath()) &&
-				this->_req.getMethod() == _config.getLocationClass()[i].getMethod()) {
-				try {
-					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
-					this->_pos = i;
-					return ;
-				} catch (...) {
-					return ;
-				}
-			}
-		}
-		try {
-			this->_fileName = tmp.substr(tmp.find_last_of("/"), tmp.length()) + _fileName;	
-			tmp = tmp.substr(0, tmp.find_last_of("/"));
-		} catch ( std::exception &e ) {
-			return ;
-		}
-	}
-}
-
-
 bool	response::isError( void ) const{
 	return _error;
 }
 
+bool 	response::isCgi(void) const{
+	return _isCgi;
+}
+
+bool 	response::isRedirect(void) const{
+	return _redirect;
+}
+
 void response::serveRequest( void ) {
-	this->_extractData();
-	std::string absolutePath = _config.getLocationClass()[this->_pos].getRoot() + _fileName;
-	if(_req.getMethod() == "GET")
-		_getResrc(absolutePath);
-	else if (_req.getMethod() == "POST")
-		_postResrc(absolutePath);
-	else if(_req.getMethod() == "DELETE")
-		_deleteResrc(absolutePath);
+	std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
+	if (_req.getConfig().getLocationClass()[_req.getPos()].getCgi()[0] == _req.getUriExtension()){
+		try {
+			_cgi.processing_cgi(_req);
+		} catch ( const char * strErr ) {
+			errorMsg(strErr);
+			_error = true ;
+			return ;
+		}
+		_isCgi = true;
+		_headersSent = true;
+	}
+	else if (std::find(v.begin(), v.end(), _req.getMethod()) != v.end()) {
+		if(!_req.getConfig().getLocationClass()[_req.getPos()].getRedirect().empty()){
+			std::ostringstream res;
+
+			time_t now = time(0);
+			char *date = new char[30]();
+			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+			res << "HTTP/1.1 301 Moved Permanently\r\nDate: " << date << "\r\n"
+				<< "Server: Webserv/4.2.0 \r\nContent-Length: 0\r\nContent-type: text/html\r\nLocation: "
+				<< _req.getConfig().getLocationClass()[_req.getPos()].getRedirect() << "\r\n\r\n";
+			delete[] date;
+			_headers = res.str();
+			_redirect = true;
+		}
+		else if (_req.getMethod() == "GET")
+			_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
+		else if (_req.getMethod() == "POST") // take upload path and upload filename instead
+			_postResrc();
+		else if(_req.getMethod() == "DELETE")
+			_deleteResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
+	}
 	else
 		errorMsg("405 Method Not Allowed");
     return ; 
 }
 
-void		response::setData( ServerConfigClass config, Request req ){
-	_config = config;
+void		response::setData( Request req ){
 	_req = req;
 }
 
 std::string	response::getHeaders( void ) const { return this->_headers; }
 std::string	response::getBody( void ) const { return this->_body; }
-ServerConfigClass	response::getConfig( void ) const { return this->_config; }
 Request	response::getRequest( void ) const { return this->_req; }
-std::string	response::getFileName( void ) const { return this->_fileName; }
-int			response::getPos( void ) const { return this->_pos; }
+cgi			response::getCgi( void ) const { return _cgi;}

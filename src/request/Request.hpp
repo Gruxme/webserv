@@ -20,7 +20,10 @@
 # include <map>
 # include <poll.h>
 # include <algorithm>
+# include <sys/stat.h>
+# include <fcntl.h>
 # include "../config/ServerConfigClass.hpp"
+# include "../utils/utils.hpp"
 
 # define PY 1
 # define PHP 2
@@ -38,11 +41,17 @@ class Request {
         std::string _query;
         std::string _path;
         std::string _protocol;
-        short       _uriExtension;
+        std::string	_uriExtension;
         std::map<std::string, std::string>  _headers;
-		size_t		_port;
         std::string _bodyFilename;
 		bool		_status;
+        ServerConfigClass   _config;
+        std::vector<ServerConfigClass>   _tmpConfigs;
+        std::string _fileName;
+        short       _pos;
+        int         _bodyFd;
+        ssize_t     _totalBytesRead;
+        bool        _headersPassed;
         
     public:
         Request();
@@ -56,14 +65,21 @@ class Request {
         std::string getQuery( void ) const;
         std::string getPath( void ) const;
         std::string getProtocol(void ) const;
-        short       getUriExtension( void ) const;
+        std::string getUriExtension( void ) const;
         std::map<std::string, std::string> const &getHeaders( void ) const;
-		size_t 		getPort( void ) const;
         std::string getBodyFilename( void ) const;
 		bool		isComplete( void ) const;
+        std::string getFileName( void ) const;
+        short       getPos( void) const;
+        int         getBodyFd( void ) const;
+        int         getTotalBytesRead( void ) const;
+        ServerConfigClass getConfig( void ) const;
+        void    setConfigs( std::vector<ServerConfigClass> configs );
+
 
         /* -- PUBLIC METHODS */
-        void    append( const char * recvBuffer );
+        void    append( const char * recvBuffer, int size );
+        void    reset( void );
 
     private:
         /* PVT -- THESE SHOULD CHECK FOR STANDARDS LATER -- */
@@ -73,26 +89,15 @@ class Request {
         void    _handleBasicRequest( std::stringstream & iss );
 		bool	_headersComplete( void );
         bool    _bodyComplete( void );
+		void	_setConfig( void );
+        bool    _checkContentLength( void );
+        short   _compareContentLengthWithBody( int fd );
+        void    _extractData( void );
+        template <class T>
+            inline std::string _toString( const T& t );
 
     public:
 		void	parse( void );
-
-    private:
-        /* ----- Utils ------ */
-        template <class T>
-            inline std::string _toString( const T& t );
-        std::vector<std::string> _split( std::string str, char separator );
-        void    _eraseSubstr( std::string &str, const std::string &substr );
-        void    _eraseAllSubstr( std::string &str, const std::string &substr );
-        std::string _ltrim( const std::string &s, const std::string &delim );
-        bool    _checkHeadersKeySyntax( std::string key );
-        bool    _hasEnding( std::string const &fullString, std::string const &ending );
-        int     _findFileSize( std::ofstream &file );
-        bool    _isHexNotation( std::string const& s );
-        int     _hexadecimalToDecimal( std::string hexVal );
-        bool    _checkContentLength( void );
-        short   _compareContentLengthWithBody( std::ofstream &f );
-
 
         /* ----- Exceptions ----- */
         class parseErr : public std::exception {
