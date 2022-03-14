@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/14 18:16:35 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/14 19:16:32 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,13 +107,21 @@ void cgi::_exec_scriptGET(int fd)
 	exit(errno);
 }
 
-int	_parent( pid_t pid, time_t t ) {
+int	cgi::_parent( pid_t pid ) {
 	int status;
 	int ret = 0;
-	while (time(NULL) - t < 5) {
-		while (waitpid(pid, &status, 0) > 0)
-			if (WIFEXITED(status))
+	time_t t = time(NULL);
+	while ((time(NULL) - t) < 3) {
+		if (waitpid(pid, &status, WNOHANG) > 0) {
+			if (WIFEXITED(status)) {
 				ret = WEXITSTATUS(status);
+				break ;
+			}
+		}
+	}
+	if (kill(pid, SIGKILL) == 0) {
+		remove(_tmpOutputFileName.c_str());
+		throw "500 Internal Server Error";
 	}
 	return ret;
 }
@@ -125,30 +133,32 @@ void cgi::processing_cgi( Request request )
 	int fd;
 	pid_t pid;
 	fd = open(_tmpOutputFileName.c_str() , O_RDWR | O_CREAT | O_TRUNC, 0777);
-	time_t timeStart = clock();
 	if (request.getMethod() == "POST") {
 		close(fd);
 		int fd5 = open(_request.getBodyFilename().c_str(), O_RDONLY);
 		_tmp = _generateTmp(fd5);
 		close(fd5);
 		pid = fork();
-		if (pid == -1)
+		if (pid == -1) {
 			throw "500 Internal Server Error";
+		}
 		else if (pid == 0) {
 			_exec_script(_tmpOutputFileName);			
 		}
 	}
 	else {
 		pid = fork();
-		if (pid == -1)
+		if (pid == -1) {
 			throw "500 Internal Server Error";
+		}
 		else if (pid == 0) {
 			_exec_scriptGET(fd);			
 		}
 		close(fd);
 	}
-	if (_parent(pid, timeStart))
+	if (_parent(pid)) {
 		throw "500 Internal Server Error"; // waitpid doesn't catch the return of the process
+	}
 	int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
 	_parseOutput(fd2);
 	remove(_request.getBodyFilename().c_str());
