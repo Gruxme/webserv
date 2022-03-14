@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfigClass.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:06 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/12 20:47:38 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/14 16:41:40 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ ServerConfigClass::ServerConfigClass() :
     _root(""),
     _redirect(""),
     _index(""),
-    _bodySizeLimit(0),
+    _bodySizeLimit(10240),
     _accessLog(""),
     _errorPage(""),
     _locationCount(0),

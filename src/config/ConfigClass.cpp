@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/12 21:55:38 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/14 16:39:46 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void    ConfigClass::parseConfigFile( void ) {
         }
         else {
             bool portSet = false;
+			bool bodySizeSet = false;
             size_t n_loc = 0;
             while (getline(file, buffer)) {
                 buffer = _trim(buffer, " ");
@@ -105,10 +106,14 @@ void    ConfigClass::parseConfigFile( void ) {
                         }
                         throw parseErr("SyntaxError || 1");
                     case 'b':
-                        if (this->_serverConf[n_serv]._bodySizeLimit == 0 && std::strncmp("body_size_limit = ", buffer.c_str(), 18) == 0) {
+                        if (bodySizeSet == false && std::strncmp("body_size_limit = ", buffer.c_str(), 18) == 0) {
                             this->_serverConf[n_serv]._bodySizeLimit = std::stoi(buffer.substr(buffer.find("body_size_limit = ") + strlen("body_size_limit = ")));
-                            break ;
-                        }
+							bodySizeSet = true;
+							if (this->_serverConf[n_serv]._bodySizeLimit < 0)
+								throw parseErr("SyntaxError || client body size limit can't be negative");
+							else
+								break;
+						}
                         throw parseErr("SyntaxError || 2");
                     case 'e':
                         if (this->_serverConf[n_serv]._errorPage.empty() && std::strncmp("error_page = ", buffer.c_str(), 13) == 0) {
