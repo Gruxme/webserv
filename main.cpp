@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: sel-fadi <sel-fadi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 18:42:26 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/12 16:27:32 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 21:28:10 by sel-fadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@
 
 bool g_sigpipe = false;
 
-void	sigHandler(int sigNum)
+void sigHandler( int sigNum )
 {
-	if(sigNum == SIGPIPE)
+	if (sigNum == SIGPIPE)
 		g_sigpipe = true;
 }
 
@@ -33,7 +33,7 @@ int	main(int argc, char **argv)
 		std::cout << "Usage: ./webserv path_to_config" << std::endl;
 		return (EXIT_FAILURE);
 	}
-	if(argc < 2)
+	if (argc < 2)
 		confFile = ConfigClass();
 	if (argc == 2)
 		confFile = ConfigClass(std::string(argv[1]));

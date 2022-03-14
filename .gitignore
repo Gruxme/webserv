@@ -1,7 +1,0 @@
-*.out
-*dSYM
-.vscode
-_TEMP_
-*.mp4
-*.jpeg
-www/html/*.mp4

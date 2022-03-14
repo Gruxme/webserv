@@ -1,5 +1,0 @@
-Socket listening on port 8000
-Socket listening on port 12
-Socket listening on port 4242
-Socket listening on port 8080
-Waiting on poll...
