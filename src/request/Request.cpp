@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/13 12:05:37 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/14 13:54:35 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void    Request::reset( void ) {
     this->_bodyFilename = "";
     this->_status = false;
     this->_fileName = "";
+    this->_totalBytesRead = 0;
     close(this->_bodyFd);
     this->_bodyFd = -1;
 }

@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/13 21:37:19 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 13:45:47 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,9 +141,9 @@ void cgi::processing_cgi( Request request )
 	}
 	if (_parent(pid))
 		throw "500 Internal Server Error"; // waitpid doesn't catch the return of the process
-	if (_request.getMethod() == "POST") remove(_request.getBodyFilename().c_str());
 	int fd2 = open(_tmpOutputFileName.c_str(), O_RDONLY);
 	_parseOutput(fd2);
+	remove(_request.getBodyFilename().c_str());
 	close(fd2);
 }
 
