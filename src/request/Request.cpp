@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/14 14:18:43 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 15:44:14 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,14 +197,16 @@ void	Request::parse( void ) {
                     }
                 }
             }
+			if(std::stoul(_headers.find("Content-Length")->second) > _config.getBodySizeLimit())
+				throw parseErr("413 Payload Too Large");
             try {
                 _handleBasicRequest(iss);
             }
             catch ( const std::exception &e ) {
                 throw parseErr(e.what());
             }
-            std::cout << _totalBytesRead << " " << std::stoi(_headers.find("Content-Length")->second) << std::endl;
-            if (_totalBytesRead == std::stoi(_headers.find("Content-Length")->second)) {
+            std::cout << _totalBytesRead << " " << std::stoul(_headers.find("Content-Length")->second) << std::endl;
+            if (_totalBytesRead == std::stol(_headers.find("Content-Length")->second)) {
                 _status = true;
             }
             return ;
@@ -364,9 +366,9 @@ bool    Request::_bodyComplete( void ) {
 
 bool    Request::_checkContentLength( void ) {
     if (this->_headers.find("Content-Length") != this->_headers.end()) {
-        int contentLength = 0;
+        size_t contentLength = 0;
         try {
-            contentLength = std::stoi(this->_headers.find("Content-Length")->second);
+            contentLength = std::stoul(this->_headers.find("Content-Length")->second);
             return (contentLength >= 0 ? _CONTENT_LENGTH_FOUND_ : _CONTENT_LENGTH_NEGATIVE_);
         } catch ( std::exception const &e ) {
             std::cout << e.what() << std::endl;
