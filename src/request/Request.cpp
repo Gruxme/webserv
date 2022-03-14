@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/14 13:54:35 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 14:18:43 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,25 +99,32 @@ void    Request::reset( void ) {
 
 void	Request::_extractData( void ) {
 	std::string	tmp = this->_path;
+	struct stat	status;
 	if (std::count(tmp.begin(), tmp.end(), '/') == 1) {
 		for (size_t i = 0; i < _config.getLocationCount(); i++) {
 			if ("/" == _config.getLocationClass()[i].getPath()) {
+				std::vector<std::string> v = _config.getLocationClass()[i].getMethods();
+					if (std::find(v.begin(), v.end(), _method) == v.end())
+						throw parseErr("405 Method Not Allowed");
 				this->_fileName = tmp;
 				this->_pos = i;
-                // _TEST_FOR_METHODS_ = true;
+				if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
+					throw parseErr("404 Not Found");
 				return ;
 			}
 		}
 	}
 	while (420) {
 		for (size_t i = 0; i < _config.getLocationCount(); i++) {
-            std::vector<std::string> v = _config.getLocationClass()[i].getMethods();
-			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath()) &&
-				std::find(v.begin(), v.end(), _method) != v.end()) {
+			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath())) {
 				try {
+					std::vector<std::string> v = _config.getLocationClass()[i].getMethods();
+					if (std::find(v.begin(), v.end(), _method) == v.end())
+						throw parseErr("405 Method Not Allowed");
 					this->_pos = i;
 					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
-                    // _TEST_FOR_METHODS_ = true;
+					if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
+						throw parseErr("404 Not Found");
 					return ;
 				} catch (std::exception &e) {
 					return ;

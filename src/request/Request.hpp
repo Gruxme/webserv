@@ -20,6 +20,7 @@
 # include <map>
 # include <poll.h>
 # include <algorithm>
+# include <sys/stat.h>
 # include <fcntl.h>
 # include "../config/ServerConfigClass.hpp"
 # include "../utils/utils.hpp"
