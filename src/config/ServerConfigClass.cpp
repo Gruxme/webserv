@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:06 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/14 16:41:40 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 21:02:40 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ ServerConfigClass::ServerConfigClass() :
     _root(""),
     _redirect(""),
     _index(""),
-    _bodySizeLimit(10240),
+    _bodySizeLimit(10 * 1024 * 1024),
     _accessLog(""),
     _errorPage(""),
     _locationCount(0),

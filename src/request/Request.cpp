@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/14 19:13:19 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 20:58:58 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,12 +104,12 @@ void	Request::_extractData( void ) {
 		for (size_t i = 0; i < _config.getLocationCount(); i++) {
 			if ("/" == _config.getLocationClass()[i].getPath()) {
 				std::vector<std::string> v = _config.getLocationClass()[i].getMethods();
-					if (std::find(v.begin(), v.end(), _method) == v.end())
-						throw parseErr("405 Method Not Allowed");
-				this->_fileName = tmp;
 				this->_pos = i;
+				if (std::find(v.begin(), v.end(), _method) == v.end())
+					throw parseErr("405 Method Not Allowed");
 				if(!_config.getLocationClass()[i].getRedirect().empty())
 					return ;
+				this->_fileName = tmp;
 				if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
 					throw parseErr("404 Not Found");
 				return ;
@@ -121,12 +121,12 @@ void	Request::_extractData( void ) {
 			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath())) {
 				try {
 					std::vector<std::string> v = _config.getLocationClass()[i].getMethods();
+					this->_pos = i;
 					if (std::find(v.begin(), v.end(), _method) == v.end())
 						throw parseErr("405 Method Not Allowed");
-					this->_pos = i;
-					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
 					if(!_config.getLocationClass()[i].getRedirect().empty())
 						return ;
+					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
 					if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
 						throw parseErr("404 Not Found");
 					return ;
@@ -231,8 +231,6 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::vector<std::string> myvec = _split(line, ' ');
 	if (myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE")
 		this->_method = myvec[0];
-	else
-		throw parseErr("405 Method Not Allowed");
     this->_uri = myvec[1];
     this->_path = this->_uri;
     size_t pos = this->_uri.find("?");
@@ -260,7 +258,7 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
         if (this->_headers.find(myvec[0]) == this->_headers.end()) {
             // this->_headers[myvec[0]] = myvec[1];
     		if (myvec[0] == "Host" && (myvec[1].find(':') != std::string::npos)) {
-				myvec[0] = myvec[0].substr(0, myvec[0].find(':'));
+				myvec[1] = myvec[1].substr(0, myvec[1].find(':'));
             }
 			this->_headers[myvec[0]] = myvec[1];
         }

@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:02 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/14 16:39:46 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 21:00:55 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,7 @@ void    ConfigClass::parseConfigFile( void ) {
                         throw parseErr("SyntaxError || 1");
                     case 'b':
                         if (bodySizeSet == false && std::strncmp("body_size_limit = ", buffer.c_str(), 18) == 0) {
-                            this->_serverConf[n_serv]._bodySizeLimit = std::stoi(buffer.substr(buffer.find("body_size_limit = ") + strlen("body_size_limit = ")));
+                            this->_serverConf[n_serv]._bodySizeLimit = std::stoul(buffer.substr(buffer.find("body_size_limit = ") + strlen("body_size_limit = "))) * 1024 * 1024;
 							bodySizeSet = true;
 							if (this->_serverConf[n_serv]._bodySizeLimit < 0)
 								throw parseErr("SyntaxError || client body size limit can't be negative");
