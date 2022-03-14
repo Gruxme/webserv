@@ -6,11 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2022/03/14 17:33:33 by abiari           ###   ########.fr       */
-=======
-/*   Updated: 2022/03/14 16:54:56 by aabounak         ###   ########.fr       */
->>>>>>> 33c4bad07f52a23901c1d629bb020cadd317d26f
+/*   Updated: 2022/03/14 17:50:21 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +191,10 @@ void	cgi::_parseOutput( int fd ) {
 	_output += date;
 	_output += "\r\nServer: Webserv/4.2.0 \r\n";
 	delete[] date;
-	_output += "Content-Length: " + std::to_string(_contentLength) + "\r\nConnection: " + _request.getHeaders().find("Connection")->second + tmp;
+	_output += "Content-Length: " + std::to_string(_contentLength) + "\r\nConnection: " + _request.getHeaders().find("Connection")->second + "\r\n";
+	if(tmp.find("\r\n\r\n") == std::string::npos)
+		_output += "\r\n";
+	_output += tmp;
 	remove(_tmpOutputFileName.c_str());
 }
 
