@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/14 18:48:30 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 23:45:34 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,7 +311,7 @@ bool 	response::isRedirect(void) const{
 
 void response::serveRequest( void ) {
 	std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
-	if (_req.getConfig().getLocationClass()[_req.getPos()].getCgi()[0] == _req.getUriExtension()){
+	if (!_req.getConfig().getLocationClass()[_req.getPos()].getCgi().empty() && _req.getConfig().getLocationClass()[_req.getPos()].getCgi()[0] == _req.getUriExtension()){
 		try {
 			_cgi.processing_cgi(_req);
 		} catch ( const char * strErr ) {

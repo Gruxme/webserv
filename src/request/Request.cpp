@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/14 20:58:58 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 23:45:12 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ Request::Request() :
     _config(),
 	_tmpConfigs(),
     _fileName(""),
-    _pos(-1),
+    _pos(0),
     _bodyFd(-1),
     _totalBytesRead(0),
     _headersPassed(false) {}
