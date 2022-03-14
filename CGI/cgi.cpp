@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/14 13:45:47 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 15:20:49 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,8 @@ std::string cgi::_getDate()
 
 void cgi::_setEnv()
 {
+	if (_request.getHeaders().find("Cookie") != _request.getHeaders().end())
+		setenv("HTTP_COOKIE", _request.getHeaders().find("Cookie")->second.c_str(), 1);
 	setenv("CONTENT_LENGTH", _request.getHeaders().find("Content-Length")->second.c_str(), 1);
 	setenv("SERVER_PROTOCOL", _request.getProtocol().c_str(), 1);
 	setenv("REQUEST_METHOD", _request.getMethod().c_str(), 1);
