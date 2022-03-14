@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/14 18:57:03 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 22:09:30 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,6 @@ void	socketsIO::eventListener()
 			{
 				std::cout << "client with fd: " << _pollfds[i].fd << " closed after client closed it's connection end" << std::endl;
 				close(_pollfds[i].fd);
-				std::cout << "Error: revents = " << std::hex << _pollfds[i].revents << std::endl << std::dec;
 				_pollfds.erase(_pollfds.begin() + i);
 				_nfds--;
 				continue;

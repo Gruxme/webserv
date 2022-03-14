@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/24 12:17:14 by sel-fadi          #+#    #+#             */
-/*   Updated: 2022/03/14 19:16:32 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/14 22:05:50 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,7 @@ void	cgi::_parseOutput( int fd ) {
 
 	if (std::strncmp("Status: ", buffer.c_str(), 8) == 0) {
 		this->_status = buffer.substr(buffer.find("Status: ") + strlen("Status: "));
-		tmp.erase(tmp.begin(), tmp.begin() + buffer.length());
+		tmp.erase(tmp.begin(), tmp.begin() + buffer.length() + 1);
 	}
 	_output += "HTTP/1.1 " + _status + "\r\nDate: ";
 	time_t now = time(0);
