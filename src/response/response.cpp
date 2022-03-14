@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/14 13:06:19 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 18:48:30 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 response::response() :
 	_headers(""), _body(""), _bodyFd(-1),
 	_bodySize(0), _totalSent(0), _headersSent(false),
-	_error(false), _autoIndex(false), _isCgi(false), _req(), _cgi() {}
+	_error(false), _redirect(false), _autoIndex(false), _isCgi(false), _req(), _cgi() {}
 
 response::~response() {
 	//check if sigpipe would need close of fd here
@@ -38,6 +38,7 @@ response	&response::operator=(const response &x){
 	_autoIndex = x._autoIndex;
 	_req = x._req;
 	_cgi = x._cgi;
+	_redirect = x._redirect;
 	_isCgi = x._isCgi;
 	return *this;
 }
@@ -304,6 +305,10 @@ bool 	response::isCgi(void) const{
 	return _isCgi;
 }
 
+bool 	response::isRedirect(void) const{
+	return _redirect;
+}
+
 void response::serveRequest( void ) {
 	std::vector<std::string> v = _req.getConfig().getLocationClass()[_req.getPos()].getMethods();
 	if (_req.getConfig().getLocationClass()[_req.getPos()].getCgi()[0] == _req.getUriExtension()){
@@ -318,7 +323,20 @@ void response::serveRequest( void ) {
 		_headersSent = true;
 	}
 	else if (std::find(v.begin(), v.end(), _req.getMethod()) != v.end()) {
-		if (_req.getMethod() == "GET")
+		if(!_req.getConfig().getLocationClass()[_req.getPos()].getRedirect().empty()){
+			std::ostringstream res;
+
+			time_t now = time(0);
+			char *date = new char[30]();
+			strftime(date, 29, "%a, %d %b %Y %T %Z", gmtime(&now));
+			res << "HTTP/1.1 301 Moved Permanently\r\nDate: " << date << "\r\n"
+				<< "Server: Webserv/4.2.0 \r\nContent-Length: 0\r\nContent-type: text/html\r\nLocation: "
+				<< _req.getConfig().getLocationClass()[_req.getPos()].getRedirect() << "\r\n\r\n";
+			delete[] date;
+			_headers = res.str();
+			_redirect = true;
+		}
+		else if (_req.getMethod() == "GET")
 			_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
 		else if (_req.getMethod() == "POST") // take upload path and upload filename instead
 			_postResrc();

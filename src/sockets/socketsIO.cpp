@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/14 13:12:05 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/14 18:57:03 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,7 @@ void	socketsIO::eventListener()
 						if (g_sigpipe) {
 							_requests.erase(_pollfds[i].fd);
 							_responses.erase(_pollfds[i].fd);
-							std::cout << "client with fd: " << _pollfds[i].fd << " closed and AFTER ERROOR IN UPLOAD" << std::endl;
+							std::cout << "client with fd: " << _pollfds[i].fd << " closed and AFTER ERROR IN UPLOAD" << std::endl;
 							close(_pollfds[i].fd);
 							_pollfds.erase(_pollfds.begin() + i);
 							_nfds--;
@@ -142,21 +142,20 @@ void	socketsIO::eventListener()
 						}
 					}
 					catch (const std::exception &e) {
-						_responses[_pollfds[i].fd].setData( _requests.find(_pollfds[i].fd)->second);
-						_responses[_pollfds[i].fd].errorMsg(e.what());
-						isErrorResp = _responses[_pollfds[i].fd].isError();
-						_pollfds[i].events = POLLOUT;
-						continue;
+						if(_requests[_pollfds[i].fd].getConfig().getLocationClass()[_requests[_pollfds[i].fd].getPos()].getRedirect().empty()){
+							_responses[_pollfds[i].fd].setData(_requests.find(_pollfds[i].fd)->second);
+							_responses[_pollfds[i].fd].errorMsg(e.what());
+							isErrorResp = _responses[_pollfds[i].fd].isError();
+							_pollfds[i].events = POLLOUT;
+							continue;
+						}
 					}
-					
 					// check if req complete and set event to pollout
 					if (_requests[_pollfds[i].fd].isComplete() || isErrorResp)
 						_pollfds[i].events = POLLOUT;
 					std::cout << "===============REQUEST BEGIN FOR FD: " << _pollfds[i].fd << "===================\n";
 					std::cout << _requests[_pollfds[i].fd] << std::endl;
 				}
-
-				
 				else if (_pollfds[i].revents == POLLOUT)
 				{
 					// response	currRes = _responses[_pollfds[i].fd];
@@ -230,9 +229,17 @@ void	socketsIO::eventListener()
 							_responses[_pollfds[i].fd].headersSent();
 						else if(_responses[_pollfds[i].fd].getHeaderStatus() && !_responses[_pollfds[i].fd].isCgi()){
 							_responses[_pollfds[i].fd].setBytesSent(rc);
-							std::cout << "set bytes sent\n";
 						}
-						if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe || _responses[_pollfds[i].fd].isCgi())
+						if(_responses[_pollfds[i].fd].isRedirect()){
+							std::cout << "client with fd: " << _pollfds[i].fd << " closed and deleted after redirect to:  " 
+									<< _requests[_pollfds[i].fd].getConfig().getLocationClass()[_requests[_pollfds[i].fd].getPos()].getRedirect() << std::endl;
+							_requests.erase(_pollfds[i].fd);
+							_responses.erase(_pollfds[i].fd);
+							_pollfds.erase(_pollfds.begin() + i);
+							_nfds--;
+							continue ;
+						}
+						else if (_responses[_pollfds[i].fd].bodyEof() || g_sigpipe || _responses[_pollfds[i].fd].isCgi())
 						{
 							std::cout << "client with fd: " << _pollfds[i].fd << " kept alive and reset to POLLIN" << std::endl;
 							// _requests.erase(_pollfds[i].fd));

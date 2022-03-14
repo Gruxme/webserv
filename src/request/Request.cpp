@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/14 16:56:45 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/14 19:13:19 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,8 @@ void	Request::_extractData( void ) {
 						throw parseErr("405 Method Not Allowed");
 				this->_fileName = tmp;
 				this->_pos = i;
+				if(!_config.getLocationClass()[i].getRedirect().empty())
+					return ;
 				if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
 					throw parseErr("404 Not Found");
 				return ;
@@ -123,6 +125,8 @@ void	Request::_extractData( void ) {
 						throw parseErr("405 Method Not Allowed");
 					this->_pos = i;
 					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
+					if(!_config.getLocationClass()[i].getRedirect().empty())
+						return ;
 					if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
 						throw parseErr("404 Not Found");
 					return ;
