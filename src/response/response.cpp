@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/23 11:14:05 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/14 23:45:34 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/15 19:59:32 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,8 @@ bool	response::_autoindexModule(std::string path){
 	std::ostringstream dirListHtml;
 	dirListHtml << "<html>\n<head><title>Index of " << _req.getPath() << "</title></head>\n<body>\n<h1>Index of "\
 				<< _req.getPath() << "</h1>\n<hr><pre><a href=\"../\">../</a>\n";
+	if(_req.getFileName().empty())
+		path += _req.getPath();
 	if ((dir = opendir(path.c_str())) != NULL){
 		while ((ent = readdir(dir)) != NULL){
 			std::string	fileName(ent->d_name);
@@ -165,7 +167,29 @@ void response::_getResrc( std::string absPath ) {
 		stat(absPath.c_str(), &status);
 		if (S_ISDIR(status.st_mode))
 		{
-			if (_req.getConfig().getLocationClass()[_req.getPos()].getPath() == "/")
+			if(_req.getUri() != "/"){
+				std::string uri = _req.getUri();
+				if (std::count(uri.begin(), uri.end(), '/') > 1){
+					if (!_req.getConfig().getLocationClass()[_req.getPos()].getAutoIndex())
+					{
+						errorMsg("403 Forbidden");
+						return;
+					}
+					if (!_autoindexModule(absPath)){
+						errorMsg("500 Internal Server Error");
+						return;
+					}
+					_autoIndex = true;
+					res << "Content-Type: text/html\r\n";
+					res << "Content-Length: " << (_bodySize = _indexList.length()) << "\r\n";
+					_body = "";
+				}
+				else{
+					errorMsg("404 Not Found");
+					return;
+				}
+			}
+			else if (_req.getConfig().getLocationClass()[_req.getPos()].getPath() == "/")
 			{
 				_body = _req.getConfig().getLocationClass()[_req.getPos()].getRoot() + "/" + _req.getConfig().getIndex();
 				if (stat(_body.c_str(), &status) < 0)
@@ -186,12 +210,12 @@ void response::_getResrc( std::string absPath ) {
 					errorMsg("403 Forbidden");
 					return;
 				}
-				_autoIndex = true;
 				if (!_autoindexModule(absPath))
 				{
 					errorMsg("500 Internal Server Error");
 					return;
 				}
+				_autoIndex = true;
 				res << "Content-Type: text/html\r\n";
 				res << "Content-Length: " << (_bodySize = _indexList.length()) << "\r\n";
 				_body = "";
@@ -338,7 +362,7 @@ void response::serveRequest( void ) {
 		}
 		else if (_req.getMethod() == "GET")
 			_getResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());
-		else if (_req.getMethod() == "POST") // take upload path and upload filename instead
+		else if (_req.getMethod() == "POST")
 			_postResrc();
 		else if(_req.getMethod() == "DELETE")
 			_deleteResrc(_req.getConfig().getLocationClass()[_req.getPos()].getRoot() + _req.getFileName());

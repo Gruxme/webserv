@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/14 23:45:12 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/15 15:48:28 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,9 +109,9 @@ void	Request::_extractData( void ) {
 					throw parseErr("405 Method Not Allowed");
 				if(!_config.getLocationClass()[i].getRedirect().empty())
 					return ;
-				this->_fileName = tmp;
 				if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
 					throw parseErr("404 Not Found");
+				this->_fileName = tmp;
 				return ;
 			}
 		}
@@ -126,10 +126,13 @@ void	Request::_extractData( void ) {
 						throw parseErr("405 Method Not Allowed");
 					if(!_config.getLocationClass()[i].getRedirect().empty())
 						return ;
-					this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
 					if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
 						throw parseErr("404 Not Found");
-					return ;
+					if(!this->_fileName.empty())
+					{
+						this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
+						return;
+					}
 				} catch (std::exception &e) {
 					return ;
 				}
