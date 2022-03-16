@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/14 22:09:30 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/16 09:59:37 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ bool	socketsIO::_tryConnect( int fd ){
 		catch (const std::exception &e)
 		{
 			std::cerr << e.what() << '\n';
-			break ;
+			return true ;
 		}
 		fds.events = POLLIN;
 		_nfds++;

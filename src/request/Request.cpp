@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/15 15:48:28 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/16 09:57:32 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,22 +119,22 @@ void	Request::_extractData( void ) {
 	while (420) {
 		for (size_t i = 0; i < _config.getLocationCount(); i++) {
 			if ((tmp == _config.getLocationClass()[i].getPath() || (tmp + "/") == _config.getLocationClass()[i].getPath())) {
+				std::vector<std::string> v = _config.getLocationClass()[i].getMethods();
+				this->_pos = i;
+				if (std::find(v.begin(), v.end(), _method) == v.end())
+					throw parseErr("405 Method Not Allowed");
+				if(!_config.getLocationClass()[i].getRedirect().empty())
+					return ;
+				if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
+					throw parseErr("404 Not Found");
 				try {
-					std::vector<std::string> v = _config.getLocationClass()[i].getMethods();
-					this->_pos = i;
-					if (std::find(v.begin(), v.end(), _method) == v.end())
-						throw parseErr("405 Method Not Allowed");
-					if(!_config.getLocationClass()[i].getRedirect().empty())
-						return ;
-					if(_method != "POST" && stat((_config.getLocationClass()[_pos].getRoot() + _fileName).c_str(), &status) < 0)
-						throw parseErr("404 Not Found");
 					if(!this->_fileName.empty())
 					{
 						this->_fileName = _fileName.substr(_fileName.find_first_of("/"), _fileName.length());
 						return;
 					}
 				} catch (std::exception &e) {
-					return ;
+					throw parseErr("500 Internal Server Error") ;
 				}
 			}
 		}
@@ -142,7 +142,7 @@ void	Request::_extractData( void ) {
 			this->_fileName = tmp.substr(tmp.find_last_of("/"), tmp.length()) + _fileName;	
 			tmp = tmp.substr(0, tmp.find_last_of("/"));
 		} catch ( std::exception &e ) {
-			return ;
+			throw parseErr("500 Internal Server Error");
 		}
 	}
 }
@@ -289,13 +289,15 @@ void Request::_handleChunkedRequest( std::stringstream & iss ) {
     ------ */
     std::string line;
     uint16_t n = 0;
-    (_uriExtension.empty()) ? this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _config.getLocationClass()[_pos].getUpload() + _fileName : // NOT_CGI
+    (_uriExtension.empty()) ? _config.getLocationClass()[_pos].getUpload() + _fileName : // NOT_CGI
     this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _fileName + _toString(clock()); // CGI
     if (_bodyFd == -1)
         _bodyFd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     if (_bodyFd < 0) {
         if (errno == EISDIR)
             throw parseErr("403 Forbidden");
+		else
+			throw parseErr("505 Internal Server Error");
     }
     struct pollfd fds = {};
     fds.fd = _bodyFd;
@@ -344,9 +346,12 @@ void    Request::_handleBasicRequest( std::stringstream & iss ) {
     this->_bodyFilename = _config.getLocationClass()[_pos].getRoot() + _fileName + _toString(clock()); // CGI
     if (_bodyFd == -1)
         _bodyFd = open(this->_bodyFilename.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IRUSR |  S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-    if(_bodyFd < 0)
+    if(_bodyFd < 0){
         if(errno == EISDIR)
             throw parseErr("403 Forbidden");
+		else
+			throw parseErr("500 Internal Server Error");
+	}
     struct pollfd fds = {};
     fds.fd = _bodyFd;
     fds.events = POLLOUT;
@@ -378,8 +383,8 @@ bool    Request::_checkContentLength( void ) {
             contentLength = std::stoul(this->_headers.find("Content-Length")->second);
             return (contentLength >= 0 ? _CONTENT_LENGTH_FOUND_ : _CONTENT_LENGTH_NEGATIVE_);
         } catch ( std::exception const &e ) {
-            std::cout << e.what() << std::endl;
-        }
+			throw parseErr("500 Internal Server Error");
+		}
     }
     return _CONTENT_LENGTH_NOT_FOUND_;
 }
