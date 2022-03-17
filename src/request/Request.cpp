@@ -6,7 +6,7 @@
 /*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/17 17:34:04 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/17 17:38:38 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -260,7 +260,7 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
         if ((myvec.at(0).empty() || myvec.at(1).empty()) ||
             _checkHeadersKeySyntax(myvec[0]) == false || (myvec[1][0] != ' ' || myvec[1][1] == ' ')) // Server does not implement HT check
             throw parseErr("400 Bad Request");
-        if (this->_headers.find(myvec[0]) != this->_headers.end()) {
+        if (this->_headers.find(myvec[0]) != this->_headers.end())
             throw parseErr("400 Bad Request");
         if (this->_headers.find(myvec[0]) == this->_headers.end()) {
     		if (myvec[0] == "Host" && (myvec[1].find(':') != std::string::npos)) {
