@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/17 16:33:57 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/17 17:34:04 by aabounak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,7 +232,7 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     std::vector<std::string> myvec = _split(line, ' ');
-    if(myvec.size() != 3)
+    if (myvec.size() != 3)
         throw parseErr("400 Bad Request");
 	if (myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE")
 		this->_method = myvec[0];
@@ -260,8 +260,9 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
         if ((myvec.at(0).empty() || myvec.at(1).empty()) ||
             _checkHeadersKeySyntax(myvec[0]) == false || (myvec[1][0] != ' ' || myvec[1][1] == ' ')) // Server does not implement HT check
             throw parseErr("400 Bad Request");
+        if (this->_headers.find(myvec[0]) != this->_headers.end()) {
+            throw parseErr("400 Bad Request");
         if (this->_headers.find(myvec[0]) == this->_headers.end()) {
-            // this->_headers[myvec[0]] = myvec[1];
     		if (myvec[0] == "Host" && (myvec[1].find(':') != std::string::npos)) {
 				myvec[1] = myvec[1].substr(0, myvec[1].find(':'));
             }
