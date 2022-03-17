@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/17 16:27:13 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/17 16:33:57 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,7 +258,7 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
         myvec.push_back(line.substr(0, line.find(':')));
         myvec.push_back(line.substr(myvec[0].length() + 1, line.length()));
         if ((myvec.at(0).empty() || myvec.at(1).empty()) ||
-            _checkHeadersKeySyntax(myvec[0]) == false || myvec[1][0] != ' ')
+            _checkHeadersKeySyntax(myvec[0]) == false || (myvec[1][0] != ' ' || myvec[1][1] == ' ')) // Server does not implement HT check
             throw parseErr("400 Bad Request");
         if (this->_headers.find(myvec[0]) == this->_headers.end()) {
             // this->_headers[myvec[0]] = myvec[1];
