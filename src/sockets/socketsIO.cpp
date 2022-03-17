@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/24 10:41:08 by abiari            #+#    #+#             */
-/*   Updated: 2022/03/16 09:59:37 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/17 16:22:05 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,7 +141,7 @@ void	socketsIO::eventListener()
 						}
 					}
 					catch (const std::exception &e) {
-						if(_requests[_pollfds[i].fd].getConfig().getLocationClass()[_requests[_pollfds[i].fd].getPos()].getRedirect().empty()){
+						if(_requests[_pollfds[i].fd].getConfig().getLocationClass().empty() || _requests[_pollfds[i].fd].getConfig().getLocationClass()[_requests[_pollfds[i].fd].getPos()].getRedirect().empty()){
 							_responses[_pollfds[i].fd].setData(_requests.find(_pollfds[i].fd)->second);
 							_responses[_pollfds[i].fd].errorMsg(e.what());
 							isErrorResp = _responses[_pollfds[i].fd].isError();

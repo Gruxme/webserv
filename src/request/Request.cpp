@@ -6,7 +6,7 @@
 /*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/16 09:57:32 by abiari           ###   ########.fr       */
+/*   Updated: 2022/03/17 16:21:45 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,6 +232,8 @@ void    Request::_extractRequestLine( std::stringstream & iss ) {
     std::getline(iss, line);
     line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     std::vector<std::string> myvec = _split(line, ' ');
+    if(myvec.size() != 3)
+        throw parseErr("400 Bad Request");
 	if (myvec[0] == "GET" or myvec[0] == "POST" or myvec[0] == "DELETE")
 		this->_method = myvec[0];
     this->_uri = myvec[1];
