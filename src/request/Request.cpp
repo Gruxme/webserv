@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aabounak <aabounak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiari <abiari@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 15:45:08 by aabounak          #+#    #+#             */
-/*   Updated: 2022/03/17 17:38:38 by aabounak         ###   ########.fr       */
+/*   Updated: 2022/03/17 18:29:34 by abiari           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,7 +266,7 @@ void    Request::_extractHeaders( std::stringstream & iss ) {
     		if (myvec[0] == "Host" && (myvec[1].find(':') != std::string::npos)) {
 				myvec[1] = myvec[1].substr(0, myvec[1].find(':'));
             }
-			this->_headers[myvec[0]] = myvec[1];
+			this->_headers[myvec[0]] = _trim(myvec[1], " ");
         }
         else throw parseErr("400 Bad Request");
         myvec.clear();
